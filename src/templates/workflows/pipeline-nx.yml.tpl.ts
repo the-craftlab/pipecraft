@@ -69,6 +69,30 @@ function extractUserSection(yamlContent: string): string | null {
   return extracted
 }
 
+function sanitizeUserSection(
+  userSection: string | null,
+  managedJobNames: string[]
+): string | null {
+  if (!userSection) {
+    return userSection
+  }
+
+  let sanitized = userSection
+
+  for (const jobName of managedJobNames) {
+    const escapedJobName = jobName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const jobBlockRegex = new RegExp(
+      String.raw`(?:^[ \t]*#.*\n)*^[ \t]*${escapedJobName}:\s*\n(?:^[ \t]+.*\n?)*`,
+      'gm'
+    )
+    sanitized = sanitized.replace(jobBlockRegex, '')
+  }
+
+  sanitized = sanitized.replace(/\n{3,}/g, '\n\n').trim()
+
+  return sanitized.length > 0 ? sanitized : null
+}
+
 /**
  * Create the test-nx job operation (Nx-specific)
  */
@@ -210,7 +234,7 @@ export const generate = (ctx: NxPipelineContext) =>
       const customJobsFromExisting: any[] = []
       if (fileExists) {
         const existingContent = fs.readFileSync(filePath, 'utf8')
-        userSection = extractUserSection(existingContent)
+        userSection = sanitizeUserSection(extractUserSection(existingContent), ['test-nx'])
         if (userSection) {
           logger.verbose('📋 Found user-customized section between markers')
         }
@@ -355,8 +379,8 @@ export const generate = (ctx: NxPipelineContext) =>
             const userSectionWithMarkers = `# <--START CUSTOM JOBS-->\n\n${contentToInsert}\n\n  # <--END CUSTOM JOBS-->`
             yamlContent = yamlContent + '\n\n  ' + userSectionWithMarkers
           }
-        } else if (!fileExists) {
-          // For new files, add placeholder markers
+        } else {
+          // Ensure placeholder markers exist when no custom content is preserved
           const versionOutputsPattern =
             /^( {2}version:\s*\n(?:.*\n)*? {4}outputs:\s*\n\s*version:.*)$/m
           yamlContent = yamlContent.replace(
