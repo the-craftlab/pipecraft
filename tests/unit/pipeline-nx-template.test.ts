@@ -205,4 +205,44 @@ jobs:
     expect(versionJob).toBeDefined()
     expect(versionJob.needs).toContain('test-nx')
   })
+
+  it('removes legacy custom test-nx job definitions when regenerating', async () => {
+    const pipelinePath = join(testDir, '.github', 'workflows', 'pipeline.yml')
+    const legacyWorkflow = `
+name: Pipeline
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "changes"
+  version:
+    runs-on: ubuntu-latest
+    needs: [changes]
+    steps:
+      - run: echo "version"
+    outputs:
+      version: 1.0.0
+
+  # <--START CUSTOM JOBS-->
+
+  # Legacy customization prior to managed test-nx job
+  test-nx:
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "old test nx"
+
+  # <--END CUSTOM JOBS-->
+`
+    writeFileSync(pipelinePath, legacyWorkflow)
+
+    const ctx = createContext()
+    const result = await generate(ctx)
+    const workflow = parseYAML(result.yamlContent)
+
+    expect(workflow.jobs['test-nx']).toBeDefined()
+    expect(workflow.jobs['test-nx'].if).toBeUndefined()
+    const occurrences = (result.yamlContent.match(/^\s{2}test-nx:/gm) || []).length
+    expect(occurrences).toBe(1)
+  })
 })
