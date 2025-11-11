@@ -245,16 +245,18 @@ function buildAutoMergeExpression(
   autoMerge?: Record<string, boolean>
 ): string {
   if (!autoMerge || branchFlow.length === 1) return `'false'`
-  if (branchFlow.length === 2) {
-    const target = branchFlow[1]
-    return `'${autoMerge[target] ? 'true' : 'false'}'`
+
+  const clauses: string[] = []
+  for (let i = 0; i < branchFlow.length - 1; i += 1) {
+    const sourceBranch = branchFlow[i]
+    const targetBranch = branchFlow[i + 1]
+    const isEnabled = autoMerge[targetBranch] ? 'true' : 'false'
+    clauses.push(`(github.ref_name == '${sourceBranch}' && '${isEnabled}')`)
   }
 
-  // For 3+ branches: develop → staging (check staging autoMerge), staging → main (check main autoMerge)
-  // github.ref_name == 'develop' && 'true' || 'false'
-  const stagingTarget = branchFlow[1]
-  const mainTarget = branchFlow[branchFlow.length - 1]
-  return `github.ref_name == '${branchFlow[0]}' && '${
-    autoMerge[stagingTarget] ? 'true' : 'false'
-  }' || '${autoMerge[mainTarget] ? 'true' : 'false'}'`
+  if (clauses.length === 0) {
+    return `'false'`
+  }
+
+  return `${clauses.join(' || ')} || 'false'`
 }
