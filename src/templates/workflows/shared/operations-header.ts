@@ -86,13 +86,13 @@ Runtime versions
     {
       path: 'env.NODE_VERSION',
       operation: 'preserve',
-      value: new Scalar('24'),
+      value: new Scalar('22'),
       required: true
     },
     {
       path: 'env.PNPM_VERSION',
       operation: 'preserve',
-      value: new Scalar('10'),
+      value: new Scalar('9'),
       required: true
     },
 
