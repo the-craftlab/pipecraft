@@ -35,7 +35,7 @@ import type { PipecraftConfig } from '../../types/index.js'
  *
  * Creates a GitHub Actions composite action that:
  * - Accepts domain configuration as JSON input (not hardcoded)
- * - Dynamically parses domains using jq
+ * - Dynamically parses domains using Node.js (with optional yq fallback for YAML)
  * - Checks for Nx availability in the repository
  * - Uses `nx show projects --affected` for dependency graph analysis
  * - Maps affected projects to domains dynamically
@@ -66,7 +66,7 @@ inputs:
   node-version:
     description: 'Node.js version to use'
     required: false
-    default: '20'
+    default: '22'
   pnpm-version:
     description: 'pnpm version to use (only used if pnpm detected)'
     required: false
@@ -324,12 +324,35 @@ runs:
         echo "$CHANGES_JSON" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
         
-        # Build comma-separated list of affected domains
-        AFFECTED_DOMAINS=$(echo "$CHANGES_JSON" | jq -r 'to_entries | map(select(.value == true) | .key) | join(",")')
+        # Build comma-separated list of affected domains without requiring jq
+        AFFECTED_DOMAINS=$(CHANGES_JSON="$CHANGES_JSON" node - <<'NODE'
+const data = process.env.CHANGES_JSON || '{}'
+let parsed = {}
+try {
+  parsed = JSON.parse(data)
+} catch (error) {
+  console.warn('⚠️  Unable to parse change detection JSON:', error.message)
+}
+const affected = Object.entries(parsed)
+  .filter(([, value]) => value === true)
+  .map(([key]) => key)
+  .join(',')
+process.stdout.write(affected)
+NODE
+)
         echo "affectedDomains=$AFFECTED_DOMAINS" >> $GITHUB_OUTPUT
         
         echo "📋 Change Detection Results:"
-        echo "$CHANGES_JSON" | jq '.'
+        CHANGES_JSON="$CHANGES_JSON" node - <<'NODE'
+const data = process.env.CHANGES_JSON || '{}'
+try {
+  const parsed = JSON.parse(data)
+  console.log(JSON.stringify(parsed, null, 2))
+} catch (error) {
+  console.warn('⚠️  Unable to pretty-print change detection JSON:', error.message)
+  console.log(data)
+}
+NODE
         echo "🎯 Affected domains: $AFFECTED_DOMAINS"
         echo "  nx-available: \${{ steps.nx-check.outputs.available }}"
 `
