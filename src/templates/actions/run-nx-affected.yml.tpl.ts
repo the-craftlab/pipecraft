@@ -65,7 +65,7 @@ inputs:
   node-version:
     description: 'Node.js version to use'
     required: false
-    default: '20'
+    default: '22'
   pnpm-version:
     description: 'pnpm version to use'
     required: false
@@ -78,6 +78,12 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: \${{ inputs.commitSha }}
+        fetch-depth: 0
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
@@ -182,8 +188,8 @@ runs:
 
         # Track overall success
         OVERALL_SUCCESS=true
-        RESULTS_JSON="{"
-        FAILED_LOGS_JSON="{"
+        RESULTS_FILE=$(mktemp)
+        FAILED_LOGS_FILE=$(mktemp)
 
         # Run each target
         for target in "\${TARGETS[@]}"; do
@@ -201,32 +207,65 @@ runs:
           # Run the target and capture result
           if $NX_CMD affected --target=$target --base=\${{ inputs.baseRef }} --head=\${{ inputs.commitSha }} $EXCLUDE_FLAG 2>&1 | tee "$LOG_FILE"; then
             echo "✅ $target passed"
-            RESULTS_JSON+="\"$target\":\"success\","
+            printf '%s\t%s\n' "$target" "success" >> "$RESULTS_FILE"
           else
             echo "❌ $target failed"
-            RESULTS_JSON+="\"$target\":\"failure\","
+            printf '%s\t%s\n' "$target" "failure" >> "$RESULTS_FILE"
             OVERALL_SUCCESS=false
 
             # Extract and store the failure log (last 100 lines, strip ANSI codes, escape for JSON)
             FAILURE_LOG=$(tail -n 100 "$LOG_FILE" | sed 's/\\x1b\\[[0-9;]*m//g' | sed 's/\\\\/\\\\\\\\/g' | sed 's/"/\\\\"/g' | sed ':a;N;$!ba;s/\\n/\\\\n/g')
-            FAILED_LOGS_JSON+="\"$target\":\"$FAILURE_LOG\","
+            printf '%s\t%s\n' "$target" "$FAILURE_LOG" >> "$FAILED_LOGS_FILE"
           fi
 
           rm -f "$LOG_FILE"
         done
 
-        # Close JSON and save to output
-        RESULTS_JSON="\${RESULTS_JSON%,}}"
-        echo "results=$RESULTS_JSON" >> $GITHUB_OUTPUT
+        RESULTS_JSON=$(RESULTS_FILE="$RESULTS_FILE" node - <<'NODE'
+const fs = require('fs')
 
-        FAILED_LOGS_JSON="\${FAILED_LOGS_JSON%,}}"
-        if [ "$FAILED_LOGS_JSON" != "{" ]; then
-          FAILED_LOGS_JSON+="}"
-        fi
-        # Use delimiter for multiline output
-        echo "failed_logs<<EOF" >> $GITHUB_OUTPUT
-        echo "$FAILED_LOGS_JSON" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+const file = process.env.RESULTS_FILE
+const result = {}
+
+if (file && fs.existsSync(file)) {
+  const lines = fs.readFileSync(file, 'utf8').split('\n').filter(Boolean)
+  for (const line of lines) {
+    const [target, ...rest] = line.split('\t')
+    const status = rest.join('\t')
+    if (target) {
+      result[target] = status || 'unknown'
+    }
+  }
+}
+
+process.stdout.write(JSON.stringify(result))
+NODE
+)
+
+        FAILED_LOGS_JSON=$(FAILED_LOGS_FILE="$FAILED_LOGS_FILE" node - <<'NODE'
+const fs = require('fs')
+
+const file = process.env.FAILED_LOGS_FILE
+const result = {}
+
+if (file && fs.existsSync(file)) {
+  const lines = fs.readFileSync(file, 'utf8').split('\n').filter(Boolean)
+  for (const line of lines) {
+    const [target, ...rest] = line.split('\t')
+    if (target && rest.length > 0) {
+      result[target] = rest.join('\t')
+    }
+  }
+}
+
+process.stdout.write(JSON.stringify(result))
+NODE
+)
+
+        rm -f "$RESULTS_FILE" "$FAILED_LOGS_FILE"
+
+        echo "results=$RESULTS_JSON" >> $GITHUB_OUTPUT
+        echo "failed_logs=$FAILED_LOGS_JSON" >> $GITHUB_OUTPUT
 
         # Set overall success
         if [ "$OVERALL_SUCCESS" = "false" ]; then
@@ -241,8 +280,8 @@ runs:
       uses: actions/github-script@v7
       with:
         script: |
-          const results = \${{ steps.nx-run.outputs.results || '{}' }};
-          const failedLogs = \${{ steps.nx-run.outputs.failed_logs || '{}' }};
+          const results = \${{ steps.nx-run.outputs.results && fromJSON(steps.nx-run.outputs.results) || {} }};
+          const failedLogs = \${{ steps.nx-run.outputs.failed_logs && fromJSON(steps.nx-run.outputs.failed_logs) || {} }};
           const targets = '\${{ inputs.targets }}'.split(',').map(t => t.trim());
           const exclude = '\${{ inputs.exclude }}';
 
