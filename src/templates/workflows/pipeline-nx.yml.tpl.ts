@@ -66,10 +66,7 @@ function extractUserSection(yamlContent: string): string | null {
   return extracted
 }
 
-function sanitizeUserSection(
-  userSection: string | null,
-  managedJobNames: string[]
-): string | null {
+function sanitizeUserSection(userSection: string | null, managedJobNames: string[]): string | null {
   if (!userSection) {
     return userSection
   }

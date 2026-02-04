@@ -82,7 +82,8 @@ export function ensureGateJob(doc: Document.Parsed, options: EnsureGateOptions) 
 
   if (!(jobsNode instanceof YAMLMap)) {
     jobsNode = new YAMLMap()
-    root.set('jobs', jobsNode)
+    const jobsPair = new Pair(new Scalar('jobs'), jobsNode)
+    ;(root.items as any[]).push(jobsPair)
   }
 
   const items = jobsNode.items as Pair[]
@@ -143,4 +144,3 @@ export function ensureGateJob(doc: Document.Parsed, options: EnsureGateOptions) 
     ;(gateMap as YAMLMap).set('if', buildIfExpression(prerequisites))
   }
 }
-

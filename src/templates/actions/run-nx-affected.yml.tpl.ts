@@ -29,7 +29,7 @@ import type { PipecraftConfig } from '../../types/index.js'
 /**
  * Generates the run-nx-affected composite action YAML content.
  */
- 
+
 function runNxAffectedActionTemplate(ctx: PinionContext) {
   return `name: 'Run Nx Affected'
 description: 'Runs Nx affected commands with caching and reporting'
@@ -350,7 +350,6 @@ NODE
           }
 `
 }
- 
 
 /**
  * Generator entry point for run-nx-affected composite action.

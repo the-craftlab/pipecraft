@@ -33,7 +33,11 @@ const DEFAULT_STRINGIFY_OPTIONS = {
   minContentWidth: 0
 }
 
-function applyManagedOperations(doc: Document.Parsed, operations: PathOperationConfig[], force: boolean) {
+function applyManagedOperations(
+  doc: Document.Parsed,
+  operations: PathOperationConfig[],
+  force: boolean
+) {
   if (!doc.contents) {
     return
   }
@@ -84,5 +88,3 @@ export function stringifyManagedWorkflow(
 }
 
 export { DEFAULT_STRINGIFY_OPTIONS as MANAGED_WORKFLOW_STRINGIFY_OPTIONS }
-
-
