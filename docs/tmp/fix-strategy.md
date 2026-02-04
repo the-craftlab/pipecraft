@@ -1,13 +1,16 @@
 # Pipecraft Cleanup Strategy
+
 **Created:** 2026-02-04
 **Status:** In Progress
 
 ## Overview
+
 Systematic cleanup of failing PRs and open issues in the Pipecraft repository.
 
 ## Current State Analysis
 
 ### PRs Status
+
 1. **#253 (CURRENT)** - fix/update-action-reference-org: ✅ ALL PASSING - Ready to merge
 2. **#291** - fix/remote-mode-mkdir-error: ❌ test-core FAILING
 3. **#286** - release/develop-to-staging-0.36.9: ❌ test-docs FAILING, promote FAILING
@@ -21,6 +24,7 @@ Systematic cleanup of failing PRs and open issues in the Pipecraft repository.
 11. **#235** - cicd/re-enable-tests: ❌ lint FAILING, test-core FAILING
 
 ### Critical Issues
+
 - #290: Package Manager missing configuration
 - #289: Duplicate BumpRules
 - #288: promote-branch auto-merge conflicts
@@ -42,29 +46,35 @@ Systematic cleanup of failing PRs and open issues in the Pipecraft repository.
 ## Execution Strategy
 
 ### Phase 1: Current PR (Immediate)
+
 - [x] Verify #253 is passing
 - [ ] Merge #253 to develop
 
 ### Phase 2: Fix Failing PRs (Priority)
+
 Work in parallel using worktrees:
 
 **Team A - Test Failures:**
+
 - [ ] #291: Fix test-core failure
 - [ ] #286: Fix test-docs and promote failures
 - [ ] #265: Fix lint and test-core failures
 - [ ] #235: Fix lint and test-core failures
 
 **Team B - Title/Lint Failures:**
+
 - [ ] #276: Fix PR title validation
 - [ ] #266: Fix PR title validation
 - [ ] #267: Fix lint failure
 
 **Team C - Stale PRs:**
+
 - [ ] #278: Re-run checks or rebase
 - [ ] #270: Re-run checks or rebase
 - [ ] #269: Re-run checks or rebase
 
 ### Phase 3: Critical Issues (High Impact)
+
 - [ ] #279: Fix heredoc syntax breaking YAML
 - [ ] #277: Fix single-branch workflow generation
 - [ ] #264: Fix GATE job references
@@ -72,12 +82,14 @@ Work in parallel using worktrees:
 - [ ] #256: Fix duplicate test-nx job
 
 ### Phase 4: Configuration Issues
+
 - [ ] #290: Add package manager configuration
 - [ ] #289: Fix duplicate BumpRules
 - [ ] #287: Fix release-it config hooks
 - [ ] #275: Add apply flag
 
 ### Phase 5: Feature Enhancements
+
 - [ ] #288: Fix promote-branch auto-merge
 - [ ] #281: Optimize git checkout
 - [ ] #280: Add committer email validation
@@ -88,6 +100,7 @@ Work in parallel using worktrees:
 - [ ] #262: Improve config template
 
 ## Worktree Setup
+
 ```bash
 # Create worktrees for parallel work
 git worktree add .worktrees/pr-291 fix/remote-mode-mkdir-error
@@ -97,6 +110,7 @@ git worktree add .worktrees/pr-265 copilot/fix-gate-job-references
 ```
 
 ## Progress Tracking
+
 - Total PRs: 11
 - Total Issues: 17 (excluding fake tasks)
 - Completed: 0

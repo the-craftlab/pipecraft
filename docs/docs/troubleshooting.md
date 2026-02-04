@@ -77,7 +77,7 @@ Check your `.github/workflows/pipeline.yml` has a permissions block near the top
 permissions:
   contents: write
   pull-requests: write
-  actions: write        # Required for workflow_dispatch
+  actions: write # Required for workflow_dispatch
 ```
 
 If you have an older workflow generated before this was added, regenerate it:
