@@ -125,10 +125,10 @@ export const validateConfig = (config: any) => {
     throw new Error('mergeStrategy must be either "fast-forward" or "merge"')
   }
 
-  // Validate branchFlow is a non-empty array with at least 2 branches
-  // (minimum trunk-based flow requires at least develop → main)
-  if (!Array.isArray(config.branchFlow) || config.branchFlow.length < 2) {
-    throw new Error('branchFlow must be an array with at least 2 branches')
+  // Validate branchFlow is a non-empty array
+  // Single-branch workflows are valid (e.g., GitHub Actions, libraries that publish from main)
+  if (!Array.isArray(config.branchFlow) || config.branchFlow.length < 1) {
+    throw new Error('branchFlow must be an array with at least 1 branch')
   }
 
   // Validate domains structure
