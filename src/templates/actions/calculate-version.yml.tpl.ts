@@ -188,26 +188,24 @@ runs:
  * @returns {Promise<PinionContext>} Updated context after file generation
  */
 export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig> }) =>
-  Promise.resolve(ctx)
-    .then(ctx => {
-      // Determine output directory based on actionSourceMode
-      const config = ctx.config || {}
+  Promise.resolve(ctx).then(ctx => {
+    // Determine output directory based on actionSourceMode
+    const config = ctx.config || {}
 
-      // Skip generation in remote mode - actions come from marketplace
-      if (!shouldGenerateActions(config)) {
-        logger.verbose('Skipping calculate-version action generation (using remote actions)')
-        return ctx
-      }
-      const outputDir = getActionOutputDir(config)
-      const filePath = `${outputDir}/calculate-version/action.yml`
-      const exists = fs.existsSync(filePath)
-      const status = exists ? '🔄 Merged with existing' : '📝 Created new'
-      logger.verbose(`${status} ${filePath}`)
-      return { ...ctx, actionOutputPath: filePath }
-    })
-    .then(ctx =>
-      renderTemplate(
-        versionActionTemplate,
-        toFile(ctx.actionOutputPath || 'actions/calculate-version/action.yml')
-      )(ctx)
-    )
+    // Skip generation in remote mode - actions come from marketplace
+    if (!shouldGenerateActions(config)) {
+      logger.verbose('Skipping calculate-version action generation (using remote actions)')
+      return ctx
+    }
+
+    const outputDir = getActionOutputDir(config)
+    const filePath = `${outputDir}/calculate-version/action.yml`
+    const exists = fs.existsSync(filePath)
+    const status = exists ? '🔄 Merged with existing' : '📝 Created new'
+    logger.verbose(`${status} ${filePath}`)
+
+    return renderTemplate(
+      versionActionTemplate,
+      toFile(filePath)
+    )(ctx)
+  })

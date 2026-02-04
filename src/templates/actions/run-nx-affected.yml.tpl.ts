@@ -337,25 +337,22 @@ runs:
  * @returns {Promise<PinionContext>} Updated context after file generation
  */
 export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig> }) =>
-  Promise.resolve(ctx)
-    .then(ctx => {
-      const config = ctx.config || {}
+  Promise.resolve(ctx).then(ctx => {
+    const config = ctx.config || {}
 
-      // Skip generation in remote mode - actions come from marketplace
-      if (!shouldGenerateActions(config)) {
-        logger.verbose('Skipping run-nx-affected action generation (using remote actions)')
-        return ctx
-      }
-      const outputDir = getActionOutputDir(config)
-      const filePath = `${outputDir}/run-nx-affected/action.yml`
-      const exists = fs.existsSync(filePath)
-      const status = exists ? '🔄 Merged with existing' : '📝 Created new'
-      logger.verbose(`${status} ${filePath}`)
-      return { ...ctx, actionOutputPath: filePath }
-    })
-    .then(ctx =>
-      renderTemplate(
-        runNxAffectedActionTemplate,
-        toFile(ctx.actionOutputPath || 'actions/run-nx-affected/action.yml')
-      )(ctx)
-    )
+    if (!shouldGenerateActions(config)) {
+      logger.verbose('Skipping run-nx-affected action generation (using remote actions)')
+      return ctx
+    }
+
+    const outputDir = getActionOutputDir(config)
+    const filePath = `${outputDir}/run-nx-affected/action.yml`
+    const exists = fs.existsSync(filePath)
+    const status = exists ? '🔄 Merged with existing' : '📝 Created new'
+    logger.verbose(`${status} ${filePath}`)
+
+    return renderTemplate(
+      runNxAffectedActionTemplate,
+      toFile(filePath)
+    )(ctx)
+  })

@@ -346,26 +346,22 @@ const promoteBranchActionTemplate = (ctx: any) => {
  * @returns {Promise<PinionContext>} Updated context after file generation
  */
 export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig> }) =>
-  Promise.resolve(ctx)
-    .then(ctx => {
-      // Check if file exists to determine merge status
-      const config = ctx.config || {}
+  Promise.resolve(ctx).then(ctx => {
+    const config = ctx.config || {}
 
-      // Skip generation in remote mode - actions come from marketplace
-      if (!shouldGenerateActions(config)) {
-        logger.verbose('Skipping promote-branch action generation (using remote actions)')
-        return ctx
-      }
-      const outputDir = getActionOutputDir(config)
-      const filePath = `${outputDir}/promote-branch/action.yml`
-      const exists = fs.existsSync(filePath)
-      const status = exists ? '🔄 Merged with existing' : '📝 Created new'
-      logger.verbose(`${status} ${filePath}`)
-      return { ...ctx, actionOutputPath: filePath }
-    })
-    .then(ctx =>
-      renderTemplate(
-        promoteBranchActionTemplate,
-        toFile(ctx.actionOutputPath || 'actions/promote-branch/action.yml')
-      )(ctx)
-    )
+    if (!shouldGenerateActions(config)) {
+      logger.verbose('Skipping promote-branch action generation (using remote actions)')
+      return ctx
+    }
+
+    const outputDir = getActionOutputDir(config)
+    const filePath = `${outputDir}/promote-branch/action.yml`
+    const exists = fs.existsSync(filePath)
+    const status = exists ? '🔄 Merged with existing' : '📝 Created new'
+    logger.verbose(`${status} ${filePath}`)
+
+    return renderTemplate(
+      promoteBranchActionTemplate,
+      toFile(filePath)
+    )(ctx)
+  })
