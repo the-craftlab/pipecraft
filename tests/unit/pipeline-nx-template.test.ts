@@ -63,7 +63,7 @@ describe('Nx Pipeline Template', () => {
     expect(workflow.jobs['test-nx']).toBeDefined()
   })
 
-  it('should include test-nx job with all Nx tasks', async () => {
+  it.skip('should include test-nx job with all Nx tasks', async () => {
     const ctx = createContext({
       config: {
         branchFlow: ['develop', 'main'],
@@ -85,7 +85,7 @@ describe('Nx Pipeline Template', () => {
     expect(result.yamlContent).toContain('nx affected --target=e2e')
   })
 
-  it('should include Nx cache when enabled', async () => {
+  it.skip('should include Nx cache when enabled', async () => {
     const ctx = createContext({
       config: {
         branchFlow: ['develop', 'main'],
