@@ -13,9 +13,6 @@ import type { PipecraftConfig } from '../../../types/index.js'
 
 export interface TagPromoteContext {
   branchFlow: string[]
-  deployJobNames: string[]
-  remoteTestJobNames: string[]
-  testJobNames?: string[] // Optional test job names for default tag job dependencies
   autoMerge?: Record<string, boolean> // autoMerge settings per branch
   config?: Partial<PipecraftConfig>
 }
@@ -24,7 +21,7 @@ export interface TagPromoteContext {
  * Create tag, promote, and release job operations
  */
 export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathOperationConfig[] {
-  const { branchFlow, deployJobNames, remoteTestJobNames, testJobNames = [], config = {} } = ctx
+  const { branchFlow, config = {} } = ctx
   // Provide sensible defaults if branchFlow is invalid
   const validBranchFlow =
     branchFlow && Array.isArray(branchFlow) && branchFlow.length > 0 ? branchFlow : ['main']
