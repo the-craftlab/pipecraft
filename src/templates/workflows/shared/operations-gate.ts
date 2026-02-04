@@ -97,8 +97,8 @@ export function ensureGateJob(doc: Document.Parsed, options: EnsureGateOptions) 
   } else {
     const insertionIndex = tagIndex !== -1 ? tagIndex : items.length
     gatePair = new Pair(new Scalar('gate'), new YAMLMap())
-    gatePair.spaceBefore = true
-    gatePair.commentBefore = GATE_COMMENT.trimEnd()
+    ;(gatePair as any).spaceBefore = true
+    ;(gatePair as any).commentBefore = GATE_COMMENT.trimEnd()
     items.splice(insertionIndex, 0, gatePair)
   }
 
@@ -112,19 +112,19 @@ export function ensureGateJob(doc: Document.Parsed, options: EnsureGateOptions) 
     gatePair.value = gateMap
   }
 
-  if (!gatePair.commentBefore) {
-    gatePair.commentBefore = GATE_COMMENT.trimEnd()
+  if (!(gatePair as any).commentBefore) {
+    ;(gatePair as any).commentBefore = GATE_COMMENT.trimEnd()
   }
 
   if (!gateExisted) {
-    ensureDefaultRunsAndSteps(gateMap)
+    ensureDefaultRunsAndSteps(gateMap as YAMLMap)
   }
 
   const shouldUpdateControlFields = force || !gateExisted
 
   if (shouldUpdateControlFields) {
-    gateMap.set('needs', buildNeedsSequence(prerequisites))
-    gateMap.set('if', buildIfExpression(prerequisites))
+    ;(gateMap as YAMLMap).set('needs', buildNeedsSequence(prerequisites))
+    ;(gateMap as YAMLMap).set('if', buildIfExpression(prerequisites))
   }
 }
 
