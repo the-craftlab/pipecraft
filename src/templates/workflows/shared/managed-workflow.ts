@@ -10,7 +10,7 @@
  * can reuse the same core structure.
  */
 
-import type { PinionContext, Configuration } from '@featherscloud/pinion'
+import type { Configuration, PinionContext } from '@featherscloud/pinion'
 import { Document, YAMLMap, parseDocument, stringify } from 'yaml'
 
 import {

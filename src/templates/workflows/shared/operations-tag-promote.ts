@@ -212,9 +212,13 @@ function buildAtLeastOneSuccessNoFailuresCondition(jobNames: string[]): string {
 /**
  * Helper to build promotable branches condition
  * Returns a condition that checks if current branch is promotable (all except final branch)
+ * For single-branch workflows, returns 'false' to skip the promote job
  */
 function buildPromotableBranchesCondition(branchFlow: string[]): string {
   const promotableBranches = branchFlow.slice(0, -1) // All branches except the last one
+  if (promotableBranches.length === 0) {
+    return 'false' // Single-branch workflow - no promotion needed
+  }
   return promotableBranches.map(branch => `github.ref_name == '${branch}'`).join(' || ')
 }
 
