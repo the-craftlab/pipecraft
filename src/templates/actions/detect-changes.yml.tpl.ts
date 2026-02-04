@@ -364,8 +364,5 @@ export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig
     const status = exists ? '🔄 Merged with existing' : '📝 Created new'
     logger.verbose(`${status} ${filePath}`)
 
-    return renderTemplate(
-      changesActionTemplate,
-      toFile(filePath)
-    )(ctx)
+    return renderTemplate(changesActionTemplate, toFile(filePath))(ctx)
   })
