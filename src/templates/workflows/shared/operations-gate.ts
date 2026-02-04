@@ -103,7 +103,22 @@ export function ensureGateJob(doc: Document.Parsed, options: EnsureGateOptions) 
   }
 
   const currentIndex = items.indexOf(gatePair)
-  const priorJobKeys = items.slice(0, currentIndex).map(pair => toKeyString(pair.key))
+  const priorJobs = items.slice(0, currentIndex)
+
+  // Filter out disabled jobs (those with if: false or if: ${{ false }})
+  const enabledPriorJobs = priorJobs.filter(pair => {
+    const jobMap = pair.value
+    if (!(jobMap instanceof YAMLMap)) return false
+
+    const ifCondition = jobMap.get('if')
+    if (!ifCondition) return true // No condition means enabled
+
+    // Check if explicitly disabled
+    const ifValue = ifCondition instanceof Scalar ? String(ifCondition.value).trim() : String(ifCondition).trim()
+    return ifValue !== 'false' && ifValue !== '${{ false }}'
+  })
+
+  const priorJobKeys = enabledPriorJobs.map(pair => toKeyString(pair.key))
   const prerequisites = dedupePreserveOrder(priorJobKeys)
 
   let gateMap = gatePair.value
