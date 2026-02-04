@@ -126,7 +126,7 @@ PipeCraft-generated workflows require these permissions:
 
 - **contents: write** - For creating tags and pushing changes
 - **pull-requests: write** - For creating pull requests during promotion
-- **actions: write** - For triggering subsequent workflow runs (optional)
+- **actions: write** - For triggering workflow_dispatch on target branches during promotion (required when using autoMerge)
 
 Review the [GitHub Actions security hardening guide](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions) for additional best practices.
 

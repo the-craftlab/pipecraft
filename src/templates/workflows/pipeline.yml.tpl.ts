@@ -11,18 +11,19 @@ import { type PinionContext, renderTemplate, toFile } from '@featherscloud/pinio
 import fs from 'fs'
 import { Document, parseDocument, Scalar, stringify, YAMLMap } from 'yaml'
 import type { PipecraftConfig } from '../../types/index.js'
-import { applyPathOperations, type PathOperationConfig } from '../../utils/ast-path-operations.js'
+import { type PathOperationConfig } from '../../utils/ast-path-operations.js'
 import { logger } from '../../utils/logger.js'
 import { formatIfConditions } from '../yaml-format-utils.js'
 import {
   createChangesJobOperation,
-  createGateJobOperation,
   createHeaderOperations,
   createPrefixedDomainJobOperations,
   createTagPromoteReleaseOperations,
-  createVersionJobOperation
+  createVersionJobOperation,
+  createManagedWorkflowDocument,
+  stringifyManagedWorkflow,
+  applyManagedWorkflowOperations
 } from './shared/index.js'
-import { getDomainJobNames } from './shared/operations-domain-jobs.js'
 
 interface PathBasedPipelineContext extends PinionContext {
   config: PipecraftConfig
@@ -201,13 +202,33 @@ export const generate = (ctx: PathBasedPipelineContext) =>
       const { config, branchFlow } = ctx
       const domains = config?.domains || {}
 
-      // Get job names from domains (supports both prefixes and legacy boolean flags)
-      const { testJobs, deployJobs, remoteTestJobs, allJobsByPrefix } = getDomainJobNames(domains)
+      const fileExists = fs.existsSync(filePath)
+      let existingContent = ''
+      let existingEnv: Record<string, any> | null = null
 
+      if (fileExists) {
+        existingContent = fs.readFileSync(filePath, 'utf8')
+        try {
+          const envDoc = parseDocument(existingContent)
+          const envNode =
+            envDoc && typeof (envDoc as any).get === 'function' ? (envDoc as any).get('env') : null
+          if (envNode && typeof (envNode as any).toJSON === 'function') {
+            existingEnv = (envNode as any).toJSON()
+          }
+        } catch (error) {
+          logger.warn(`⚠️  Failed to parse existing pipeline for runtime defaults: ${error}`)
+        }
+      }
+
+      // Get job names from domains (supports both prefixes and legacy boolean flags)
       // Build operations array - only managed jobs
       const operations: PathOperationConfig[] = [
         // Header (name, run-name, on triggers)
-        ...createHeaderOperations({ branchFlow }),
+        ...createHeaderOperations({
+          branchFlow,
+          nodeVersion: (existingEnv?.NODE_VERSION as string | undefined) ?? undefined,
+          pnpmVersion: (existingEnv?.PNPM_VERSION as string | undefined) ?? undefined
+        }),
 
         // Changes detection (path-based)
         createChangesJobOperation({
@@ -228,32 +249,18 @@ export const generate = (ctx: PathBasedPipelineContext) =>
         // NOTE: Prefixed domain jobs are NOT generated via operations
         // They are generated as text and merged into the custom section below
 
-        // Gate job (runs after ALL prefix-based jobs, gates downstream jobs)
-        createGateJobOperation({
-          testJobNames: testJobs,
-          deployJobNames: deployJobs,
-          allJobsByPrefix // Includes ALL jobs from all prefixes (test, deploy, lint, build, etc.)
-        }),
-
         // Tag, promote, release
         ...createTagPromoteReleaseOperations({
           branchFlow,
-          deployJobNames: [], // No deployment dependencies in new model
-          remoteTestJobNames: [],
-          testJobNames: testJobs, // Pass test jobs for default tag job dependencies
           autoMerge: typeof config.autoMerge === 'object' ? config.autoMerge : {},
           config
         })
       ]
 
-      // Check if file exists
-      const fileExists = fs.existsSync(filePath)
-
       // Extract user-customized section and custom jobs from existing file if it exists
       let userSection: string | null = null
       const customJobsFromExisting: any[] = []
       if (fileExists) {
-        const existingContent = fs.readFileSync(filePath, 'utf8')
         userSection = extractUserSection(existingContent)
         if (userSection) {
           logger.verbose('📋 Found user-customized section between markers')
@@ -318,14 +325,6 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           : '🔄 Force mode: Rebuilding path-based pipeline from scratch'
         logger.verbose(logMessage)
 
-        // Create new document with empty YAML map
-        const doc = parseDocument('{}')
-        // Ensure the root map uses block style (not flow/compact)
-        if (doc.contents && (doc.contents as any).flow !== undefined) {
-          ;(doc.contents as any).flow = false
-        }
-
-        // Add header comment block to document
         const headerComment = `=============================================================================
  PIPECRAFT MANAGED WORKFLOW
 =============================================================================
@@ -349,24 +348,10 @@ export const generate = (ctx: PathBasedPipelineContext) =>
 
  📖 Learn more: https://pipecraft.thecraftlab.dev
 =============================================================================`
-        doc.commentBefore = headerComment
-
-        // NOTE: Custom jobs are NOT added to the document via AST
-        // They are preserved in userSection and merged with generated placeholders
-        // Then inserted as text after version job (see below)
-
-        if (doc.contents) {
-          applyPathOperations(doc.contents as any, operations, doc)
-        }
+        const doc = createManagedWorkflowDocument(headerComment, operations, ctx)
 
         // Stringify to YAML
-        let yamlContent = stringify(doc, {
-          lineWidth: 0,
-          indent: 2,
-          defaultStringType: 'PLAIN',
-          defaultKeyType: 'PLAIN',
-          minContentWidth: 0
-        })
+        let yamlContent = stringifyManagedWorkflow(doc)
 
         // Generate placeholder jobs from prefixes and merge with existing custom section
         const generatedPlaceholders = generatePrefixedJobsText(domains)
@@ -422,13 +407,9 @@ export const generate = (ctx: PathBasedPipelineContext) =>
       }
 
       // Parse existing file for merge mode (no force flag)
-      const existingContent = fs.readFileSync(filePath, 'utf8')
-      const doc = parseDocument(existingContent)
-
-      // Apply operations to update managed jobs
-      if (doc.contents) {
-        applyPathOperations(doc.contents as any, operations, doc)
-      }
+      const freshContent = fs.readFileSync(filePath, 'utf8')
+      const doc = parseDocument(freshContent)
+      applyManagedWorkflowOperations(doc, operations, ctx)
 
       // Stringify to YAML
       let yamlContent = stringify(doc, {

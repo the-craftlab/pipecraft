@@ -10,17 +10,31 @@ import type { PathOperationConfig } from '../../../utils/ast-path-operations.js'
 
 export interface HeaderContext {
   branchFlow: string[]
+  /**
+   * Existing node version from the pipeline, if present.
+   * Falls back to PipeCraft defaults when not provided.
+   */
+  nodeVersion?: string
+  /**
+   * Existing pnpm version from the pipeline, if present.
+   * Falls back to PipeCraft defaults when not provided.
+   */
+  pnpmVersion?: string
 }
 
 /**
  * Create workflow header operations (name, run-name, on triggers)
  */
 export function createHeaderOperations(ctx: HeaderContext): PathOperationConfig[] {
-  const { branchFlow } = ctx
+  const { branchFlow, nodeVersion, pnpmVersion } = ctx
   // Provide sensible defaults if branchFlow is invalid
   const validBranchFlow =
     branchFlow && Array.isArray(branchFlow) && branchFlow.length > 0 ? branchFlow : ['main']
   const branchList = validBranchFlow.join(',')
+  const normalizedNodeVersion =
+    typeof nodeVersion === 'string' && nodeVersion.trim().length > 0 ? nodeVersion.trim() : '24'
+  const normalizedPnpmVersion =
+    typeof pnpmVersion === 'string' && pnpmVersion.trim().length > 0 ? pnpmVersion.trim() : '10'
 
   return [
     // =============================================================================
@@ -31,6 +45,24 @@ export function createHeaderOperations(ctx: HeaderContext): PathOperationConfig[
       operation: 'preserve',
       value: new Scalar('Pipeline'),
       required: true
+    },
+
+    // =============================================================================
+    // PERMISSIONS - Required for workflow operations
+    // =============================================================================
+    // contents: write - For creating tags and pushing changes
+    // pull-requests: write - For creating pull requests during promotion
+    // actions: write - For triggering workflow_dispatch on target branches
+    {
+      path: 'permissions',
+      operation: 'preserve',
+      value: {
+        contents: 'write',
+        'pull-requests': 'write',
+        actions: 'write'
+      },
+      required: true,
+      spaceBefore: true
     },
 
     // =============================================================================
@@ -86,13 +118,13 @@ Runtime versions
     {
       path: 'env.NODE_VERSION',
       operation: 'preserve',
-      value: new Scalar('24'),
+      value: new Scalar(normalizedNodeVersion),
       required: true
     },
     {
       path: 'env.PNPM_VERSION',
       operation: 'preserve',
-      value: new Scalar('10'),
+      value: new Scalar(normalizedPnpmVersion),
       required: true
     },
 

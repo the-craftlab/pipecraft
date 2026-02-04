@@ -7,7 +7,7 @@
  * ## Purpose
  *
  * This action encapsulates all the complexity of running Nx affected tasks:
- * - Sets up package manager caching (pnpm store)
+ * - Bootstraps Nx CLI on-demand via npm/npx
  * - Configures Nx workspace caching
  * - Runs multiple Nx targets with proper comparison base
  * - Reports results as PR comments
@@ -29,7 +29,7 @@ import type { PipecraftConfig } from '../../types/index.js'
 /**
  * Generates the run-nx-affected composite action YAML content.
  */
-/* eslint-disable no-useless-escape */
+
 function runNxAffectedActionTemplate(ctx: PinionContext) {
   return `name: 'Run Nx Affected'
 description: 'Runs Nx affected commands with caching and reporting'
@@ -46,12 +46,8 @@ inputs:
     description: 'Commit SHA to test'
     required: false
     default: \${{ github.sha }}
-  packageManager:
-    description: 'Package manager to use (npm, pnpm, yarn)'
-    required: false
-    default: 'pnpm'
   enableCache:
-    description: 'Enable caching for dependencies and Nx'
+    description: 'Enable caching for Nx'
     required: false
     default: 'true'
   reportResults:
@@ -65,11 +61,7 @@ inputs:
   node-version:
     description: 'Node.js version to use'
     required: false
-    default: '20'
-  pnpm-version:
-    description: 'pnpm version to use'
-    required: false
-    default: '9'
+    default: '24'
   verbose:
     description: 'Enable verbose logging for debugging affected detection'
     required: false
@@ -78,60 +70,58 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: \${{ inputs.commitSha }}
+        fetch-depth: 0
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: \${{ inputs.node-version }}
 
-    - name: Enable Corepack
-      if: inputs.packageManager == 'pnpm'
-      shell: bash
-      run: corepack enable
-
-    - name: Get pnpm store directory
-      if: inputs.packageManager == 'pnpm' && inputs.enableCache == 'true'
-      id: pnpm-cache
+    - name: Determine Nx CLI package
+      id: nx-cli
       shell: bash
       run: |
-        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-
-    - name: Cache Package Manager
-      if: inputs.enableCache == 'true'
-      uses: actions/cache@v4
-      with:
-        path: \${{ inputs.packageManager == 'pnpm' && steps.pnpm-cache.outputs.STORE_PATH || '~/.npm' }}
-        key: \${{ inputs.packageManager }}-\${{ runner.os }}-\${{ hashFiles(inputs.packageManager == 'pnpm' && 'pnpm-lock.yaml' || inputs.packageManager == 'yarn' && 'yarn.lock' || 'package-lock.json') }}
-        restore-keys: |
-          \${{ inputs.packageManager }}-\${{ runner.os }}-
-
-    - name: Install Dependencies
-      shell: bash
-      run: |
-        case "\${{ inputs.packageManager }}" in
-          pnpm)
-            pnpm install --frozen-lockfile || pnpm install
-            ;;
-          yarn)
-            yarn install --frozen-lockfile || yarn install
-            ;;
-          npm)
-            npm ci || npm install
-            ;;
-          *)
-            npm install
-            ;;
-        esac
+        NX_SPEC=""
+        if [ -f "package.json" ]; then
+          NX_SPEC=$(node - <<'NODE'
+const fs = require('fs')
+try {
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+  const spec =
+    (pkg.devDependencies && pkg.devDependencies.nx) ||
+    (pkg.dependencies && pkg.dependencies.nx) ||
+    ''
+  if (typeof spec === 'string') {
+    const cleaned = spec.trim()
+    if (cleaned && !cleaned.startsWith('workspace:') && !cleaned.startsWith('file:')) {
+      process.stdout.write(cleaned)
+    }
+  }
+} catch {
+  // Ignore parse errors and fall back to latest
+}
+NODE
+          )
+        fi
+        if [ -n "$NX_SPEC" ]; then
+          echo "package=nx@$NX_SPEC" >> $GITHUB_OUTPUT
+        else
+          echo "package=nx@latest" >> $GITHUB_OUTPUT
+        fi
 
     - name: Cache Nx
       if: inputs.enableCache == 'true'
       uses: actions/cache@v4
       with:
         path: .nx/cache
-        key: nx-\${{ runner.os }}-\${{ hashFiles(inputs.packageManager == 'pnpm' && 'pnpm-lock.yaml' || inputs.packageManager == 'yarn' && 'yarn.lock' || 'package-lock.json') }}-\${{ github.ref_name }}-\${{ github.run_number }}
+        key: \${{ runner.os }}-nx-\${{ hashFiles('**/nx.json', '**/.nxignore', '**/pnpm-lock.yaml', '**/yarn.lock', '**/package-lock.json', '**/bun.lockb') }}-\${{ github.ref_name }}-\${{ github.run_number }}
         restore-keys: |
-          nx-\${{ runner.os }}-\${{ hashFiles(inputs.packageManager == 'pnpm' && 'pnpm-lock.yaml' || inputs.packageManager == 'yarn' && 'yarn.lock' || 'package-lock.json') }}-\${{ github.ref_name }}-
-          nx-\${{ runner.os }}-\${{ hashFiles(inputs.packageManager == 'pnpm' && 'pnpm-lock.yaml' || inputs.packageManager == 'yarn' && 'yarn.lock' || 'package-lock.json') }}-
-          nx-\${{ runner.os }}-
+          \${{ runner.os }}-nx-\${{ hashFiles('**/nx.json', '**/.nxignore', '**/pnpm-lock.yaml', '**/yarn.lock', '**/package-lock.json', '**/bun.lockb') }}-\${{ github.ref_name }}-
+          \${{ runner.os }}-nx-
 
     - name: Show Nx Comparison Info
       if: inputs.verbose == 'true'
@@ -161,17 +151,12 @@ runs:
 
     - name: Run Nx Affected Targets
       id: nx-run
+      env:
+        NX_PACKAGE: \${{ steps.nx-cli.outputs.package || 'nx@latest' }}
       shell: bash
       run: |
         # Parse targets into array
         IFS=',' read -ra TARGETS <<< "\${{ inputs.targets }}"
-
-        # Get the command prefix based on package manager
-        if [ "\${{ inputs.packageManager }}" = "pnpm" ]; then
-          NX_CMD="pnpm exec nx"
-        else
-          NX_CMD="npx nx"
-        fi
 
         # Build exclude flag if provided (strip spaces for comma-separated list)
         EXCLUDE_FLAG=""
@@ -180,10 +165,14 @@ runs:
           EXCLUDE_FLAG="--exclude=$EXCLUDE_LIST"
         fi
 
+        PACKAGE_SPEC="\${NX_PACKAGE:-nx@latest}"
+        BASE_REF="\${{ inputs.baseRef }}"
+        HEAD_REF="\${{ inputs.commitSha }}"
+
         # Track overall success
         OVERALL_SUCCESS=true
-        RESULTS_JSON="{"
-        FAILED_LOGS_JSON="{"
+        RESULTS_FILE=$(mktemp)
+        FAILED_LOGS_FILE=$(mktemp)
 
         # Run each target
         for target in "\${TARGETS[@]}"; do
@@ -199,34 +188,67 @@ runs:
           LOG_FILE=$(mktemp)
 
           # Run the target and capture result
-          if $NX_CMD affected --target=$target --base=\${{ inputs.baseRef }} --head=\${{ inputs.commitSha }} $EXCLUDE_FLAG 2>&1 | tee "$LOG_FILE"; then
+          if npx --yes --package "$PACKAGE_SPEC" nx affected --target=$target --base=$BASE_REF --head=$HEAD_REF $EXCLUDE_FLAG 2>&1 | tee "$LOG_FILE"; then
             echo "✅ $target passed"
-            RESULTS_JSON+="\"$target\":\"success\","
+            printf '%s\t%s\n' "$target" "success" >> "$RESULTS_FILE"
           else
             echo "❌ $target failed"
-            RESULTS_JSON+="\"$target\":\"failure\","
+            printf '%s\t%s\n' "$target" "failure" >> "$RESULTS_FILE"
             OVERALL_SUCCESS=false
 
             # Extract and store the failure log (last 100 lines, strip ANSI codes, escape for JSON)
             FAILURE_LOG=$(tail -n 100 "$LOG_FILE" | sed 's/\\x1b\\[[0-9;]*m//g' | sed 's/\\\\/\\\\\\\\/g' | sed 's/"/\\\\"/g' | sed ':a;N;$!ba;s/\\n/\\\\n/g')
-            FAILED_LOGS_JSON+="\"$target\":\"$FAILURE_LOG\","
+            printf '%s\t%s\n' "$target" "$FAILURE_LOG" >> "$FAILED_LOGS_FILE"
           fi
 
           rm -f "$LOG_FILE"
         done
 
-        # Close JSON and save to output
-        RESULTS_JSON="\${RESULTS_JSON%,}}"
-        echo "results=$RESULTS_JSON" >> $GITHUB_OUTPUT
+        RESULTS_JSON=$(RESULTS_FILE="$RESULTS_FILE" node - <<'NODE'
+const fs = require('fs')
 
-        FAILED_LOGS_JSON="\${FAILED_LOGS_JSON%,}}"
-        if [ "$FAILED_LOGS_JSON" != "{" ]; then
-          FAILED_LOGS_JSON+="}"
-        fi
-        # Use delimiter for multiline output
-        echo "failed_logs<<EOF" >> $GITHUB_OUTPUT
-        echo "$FAILED_LOGS_JSON" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+const file = process.env.RESULTS_FILE
+const result = {}
+
+if (file && fs.existsSync(file)) {
+  const lines = fs.readFileSync(file, 'utf8').split('\n').filter(Boolean)
+  for (const line of lines) {
+    const [target, ...rest] = line.split('\t')
+    const status = rest.join('\t')
+    if (target) {
+      result[target] = status || 'unknown'
+    }
+  }
+}
+
+process.stdout.write(JSON.stringify(result))
+NODE
+)
+
+        FAILED_LOGS_JSON=$(FAILED_LOGS_FILE="$FAILED_LOGS_FILE" node - <<'NODE'
+const fs = require('fs')
+
+const file = process.env.FAILED_LOGS_FILE
+const result = {}
+
+if (file && fs.existsSync(file)) {
+  const lines = fs.readFileSync(file, 'utf8').split('\n').filter(Boolean)
+  for (const line of lines) {
+    const [target, ...rest] = line.split('\t')
+    if (target && rest.length > 0) {
+      result[target] = rest.join('\t')
+    }
+  }
+}
+
+process.stdout.write(JSON.stringify(result))
+NODE
+)
+
+        rm -f "$RESULTS_FILE" "$FAILED_LOGS_FILE"
+
+        echo "results=$RESULTS_JSON" >> $GITHUB_OUTPUT
+        echo "failed_logs=$FAILED_LOGS_JSON" >> $GITHUB_OUTPUT
 
         # Set overall success
         if [ "$OVERALL_SUCCESS" = "false" ]; then
@@ -241,8 +263,8 @@ runs:
       uses: actions/github-script@v7
       with:
         script: |
-          const results = \${{ steps.nx-run.outputs.results || '{}' }};
-          const failedLogs = \${{ steps.nx-run.outputs.failed_logs || '{}' }};
+          const results = \${{ steps.nx-run.outputs.results && fromJSON(steps.nx-run.outputs.results) || {} }};
+          const failedLogs = \${{ steps.nx-run.outputs.failed_logs && fromJSON(steps.nx-run.outputs.failed_logs) || {} }};
           const targets = '\${{ inputs.targets }}'.split(',').map(t => t.trim());
           const exclude = '\${{ inputs.exclude }}';
 
@@ -328,7 +350,6 @@ runs:
           }
 `
 }
-/* eslint-enable no-useless-escape */
 
 /**
  * Generator entry point for run-nx-affected composite action.

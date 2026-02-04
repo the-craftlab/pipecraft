@@ -35,7 +35,7 @@ import type { PipecraftConfig } from '../../types/index.js'
  *
  * Creates a GitHub Actions composite action that:
  * - Accepts domain configuration as JSON input (not hardcoded)
- * - Dynamically parses domains using jq
+ * - Dynamically parses domains using Node.js (with optional yq fallback for YAML)
  * - Checks for Nx availability in the repository
  * - Uses `nx show projects --affected` for dependency graph analysis
  * - Maps affected projects to domains dynamically
@@ -66,11 +66,7 @@ inputs:
   node-version:
     description: 'Node.js version to use'
     required: false
-    default: '20'
-  pnpm-version:
-    description: 'pnpm version to use (only used if pnpm detected)'
-    required: false
-    default: '9'
+    default: '24'
 
 outputs:
   changes:
@@ -140,20 +136,37 @@ runs:
       with:
         node-version: \${{ inputs.node-version }}
 
-    - name: Install Dependencies
+    - name: Determine Nx CLI package
       if: steps.nx-check.outputs.available == 'true' && inputs.useNx == 'true'
+      id: nx-cli
       shell: bash
       run: |
-        echo "📦 Installing dependencies for Nx..."
-        if [ -f "pnpm-lock.yaml" ]; then
-          corepack enable
-          pnpm install --frozen-lockfile || pnpm install
-        elif [ -f "yarn.lock" ]; then
-          yarn install --frozen-lockfile || yarn install
-        elif [ -f "package-lock.json" ]; then
-          npm ci || npm install
+        NX_SPEC=""
+        if [ -f "package.json" ]; then
+          NX_SPEC=$(node - <<'NODE'
+const fs = require('fs')
+try {
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+  const spec =
+    (pkg.devDependencies && pkg.devDependencies.nx) ||
+    (pkg.dependencies && pkg.dependencies.nx) ||
+    ''
+  if (typeof spec === 'string') {
+    const cleaned = spec.trim()
+    if (cleaned && !cleaned.startsWith('workspace:') && !cleaned.startsWith('file:')) {
+      process.stdout.write(cleaned)
+    }
+  }
+} catch {
+  // ignore JSON parse errors and fall back to latest
+}
+NODE
+          )
+        fi
+        if [ -n "$NX_SPEC" ]; then
+          echo "package=nx@$NX_SPEC" >> $GITHUB_OUTPUT
         else
-          npm install
+          echo "package=nx@latest" >> $GITHUB_OUTPUT
         fi
 
     - name: Detect Changes with Nx (if available)
@@ -165,8 +178,9 @@ runs:
 
         # Get affected projects using Nx
         if command -v npx >/dev/null 2>&1; then
+          NX_PACKAGE="\${{ steps.nx-cli.outputs.package || 'nx@latest' }}"
           # Get list of affected projects (newline-separated)
-          AFFECTED_PROJECTS_RAW=$(npx nx show projects --affected --base=\${{ steps.set-base.outputs.base_branch }} 2>/dev/null || echo "")
+          AFFECTED_PROJECTS_RAW=$(npx --yes --package "$NX_PACKAGE" nx show projects --affected --base=\${{ steps.set-base.outputs.base_branch }} 2>/dev/null || echo "")
 
           # Convert newlines to commas for storage
           AFFECTED_PROJECTS=$(echo "$AFFECTED_PROJECTS_RAW" | tr '\\n' ',' | sed 's/,$//')
@@ -324,12 +338,35 @@ runs:
         echo "$CHANGES_JSON" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
         
-        # Build comma-separated list of affected domains
-        AFFECTED_DOMAINS=$(echo "$CHANGES_JSON" | jq -r 'to_entries | map(select(.value == true) | .key) | join(",")')
+        # Build comma-separated list of affected domains without requiring jq
+        AFFECTED_DOMAINS=$(CHANGES_JSON="$CHANGES_JSON" node - <<'NODE'
+const data = process.env.CHANGES_JSON || '{}'
+let parsed = {}
+try {
+  parsed = JSON.parse(data)
+} catch (error) {
+  console.warn('⚠️  Unable to parse change detection JSON:', error.message)
+}
+const affected = Object.entries(parsed)
+  .filter(([, value]) => value === true)
+  .map(([key]) => key)
+  .join(',')
+process.stdout.write(affected)
+NODE
+)
         echo "affectedDomains=$AFFECTED_DOMAINS" >> $GITHUB_OUTPUT
         
         echo "📋 Change Detection Results:"
-        echo "$CHANGES_JSON" | jq '.'
+        CHANGES_JSON="$CHANGES_JSON" node - <<'NODE'
+const data = process.env.CHANGES_JSON || '{}'
+try {
+  const parsed = JSON.parse(data)
+  console.log(JSON.stringify(parsed, null, 2))
+} catch (error) {
+  console.warn('⚠️  Unable to pretty-print change detection JSON:', error.message)
+  console.log(data)
+}
+NODE
         echo "🎯 Affected domains: $AFFECTED_DOMAINS"
         echo "  nx-available: \${{ steps.nx-check.outputs.available }}"
 `

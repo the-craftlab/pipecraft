@@ -136,17 +136,13 @@ runs:
           "version": "0.0.0-release-it"
         }' > package.json
 
-    - name: Install dependencies
-      shell: bash
-      run: npm install @release-it/conventional-changelog conventional-changelog-angular
-
     - name: Get version
       if: steps.get_version_old.outputs.version == ''
       id: get_version_new
       shell: bash
       run: |
-        # Get version and filter out warnings
-        RAW_OUTPUT=$(npx release-it --ci --release-version 2>&1 || echo "")
+        # Get version and filter out warnings (install release-it & plugin on the fly)
+        RAW_OUTPUT=$(npx --yes --package release-it --package @release-it/conventional-changelog release-it --ci --release-version 2>&1 || echo "")
         # Extract just the version number (last line that looks like a version)
         VERSION=$(echo "$RAW_OUTPUT" | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+' | tail -1 || true)
 

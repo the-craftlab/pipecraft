@@ -13,9 +13,6 @@ import type { PipecraftConfig } from '../../../types/index.js'
 
 export interface TagPromoteContext {
   branchFlow: string[]
-  deployJobNames: string[]
-  remoteTestJobNames: string[]
-  testJobNames?: string[] // Optional test job names for default tag job dependencies
   autoMerge?: Record<string, boolean> // autoMerge settings per branch
   config?: Partial<PipecraftConfig>
 }
@@ -24,7 +21,7 @@ export interface TagPromoteContext {
  * Create tag, promote, and release job operations
  */
 export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathOperationConfig[] {
-  const { branchFlow, deployJobNames, remoteTestJobNames, testJobNames = [], config = {} } = ctx
+  const { branchFlow, config = {} } = ctx
   // Provide sensible defaults if branchFlow is invalid
   const validBranchFlow =
     branchFlow && Array.isArray(branchFlow) && branchFlow.length > 0 ? branchFlow : ['main']
@@ -215,9 +212,13 @@ function buildAtLeastOneSuccessNoFailuresCondition(jobNames: string[]): string {
 /**
  * Helper to build promotable branches condition
  * Returns a condition that checks if current branch is promotable (all except final branch)
+ * For single-branch workflows, returns 'false' to skip the promote job
  */
 function buildPromotableBranchesCondition(branchFlow: string[]): string {
   const promotableBranches = branchFlow.slice(0, -1) // All branches except the last one
+  if (promotableBranches.length === 0) {
+    return 'false' // Single-branch workflow - no promotion needed
+  }
   return promotableBranches.map(branch => `github.ref_name == '${branch}'`).join(' || ')
 }
 
@@ -245,16 +246,18 @@ function buildAutoMergeExpression(
   autoMerge?: Record<string, boolean>
 ): string {
   if (!autoMerge || branchFlow.length === 1) return `'false'`
-  if (branchFlow.length === 2) {
-    const target = branchFlow[1]
-    return `'${autoMerge[target] ? 'true' : 'false'}'`
+
+  const clauses: string[] = []
+  for (let i = 0; i < branchFlow.length - 1; i += 1) {
+    const sourceBranch = branchFlow[i]
+    const targetBranch = branchFlow[i + 1]
+    const isEnabled = autoMerge[targetBranch] ? 'true' : 'false'
+    clauses.push(`(github.ref_name == '${sourceBranch}' && '${isEnabled}')`)
   }
 
-  // For 3+ branches: develop → staging (check staging autoMerge), staging → main (check main autoMerge)
-  // github.ref_name == 'develop' && 'true' || 'false'
-  const stagingTarget = branchFlow[1]
-  const mainTarget = branchFlow[branchFlow.length - 1]
-  return `github.ref_name == '${branchFlow[0]}' && '${
-    autoMerge[stagingTarget] ? 'true' : 'false'
-  }' || '${autoMerge[mainTarget] ? 'true' : 'false'}'`
+  if (clauses.length === 0) {
+    return `'false'`
+  }
+
+  return `${clauses.join(' || ')} || 'false'`
 }
