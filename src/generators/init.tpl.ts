@@ -283,12 +283,7 @@ const generateYamlConfig = (config: any): string => {
     if (config.versioning.changelog !== undefined) {
       lines.push(`  changelog: ${config.versioning.changelog}            # Generate CHANGELOG.md`)
     }
-    if (config.versioning.bumpRules) {
-      lines.push('  bumpRules:')
-      Object.entries(config.versioning.bumpRules).forEach(([key, value]) => {
-        lines.push(`    ${key}: ${value}`)
-      })
-    }
+    // Note: bumpRules are defined in the semver section, not here
     lines.push('')
   }
 
