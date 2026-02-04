@@ -244,20 +244,19 @@ describe('Config Utilities', () => {
       )
     })
 
-    it('should throw error for invalid branchFlow', () => {
+    it('should allow single-branch workflows', () => {
       const config = {
         ciProvider: 'github',
         mergeStrategy: 'fast-forward',
         requireConventionalCommits: true,
-        initialBranch: 'develop',
+        initialBranch: 'main',
         finalBranch: 'main',
-        branchFlow: ['develop'], // Only one branch
+        branchFlow: ['main'], // Single branch workflow
         domains: { api: { paths: ['apps/api/**'], description: 'API' } }
       }
 
-      expect(() => validateConfig(config)).toThrow(
-        'branchFlow must be an array with at least 2 branches'
-      )
+      // Single-branch workflows are now supported (PR #293)
+      expect(() => validateConfig(config)).not.toThrow()
     })
 
     it('should throw error for invalid domains', () => {
