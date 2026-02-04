@@ -1,4 +1,5 @@
-import { Document, Pair, Scalar, YAMLMap, YAMLSeq } from 'yaml'
+import { Document, Scalar, YAMLMap, YAMLSeq } from 'yaml'
+import type { Pair } from 'yaml'
 import { logger } from '../../../utils/logger.js'
 
 const GATE_COMMENT = `

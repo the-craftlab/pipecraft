@@ -10,7 +10,7 @@
  * can reuse the same core structure.
  */
 
-import type { PinionContext } from '@featherscloud/pinion'
+import type { PinionContext, Configuration } from '@featherscloud/pinion'
 import { Document, YAMLMap, parseDocument, stringify } from 'yaml'
 
 import {
@@ -19,8 +19,8 @@ import {
 } from '../../../utils/ast-path-operations.js'
 import { ensureGateJob } from './operations-gate.js'
 
-export interface ManagedWorkflowContext extends PinionContext {
-  pinion?: {
+export interface ManagedWorkflowContext extends Omit<PinionContext, 'pinion'> {
+  pinion?: Configuration & {
     force?: boolean
   }
 }
