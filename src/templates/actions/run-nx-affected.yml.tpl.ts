@@ -23,7 +23,7 @@
 import { type PinionContext, renderTemplate, toFile } from '@featherscloud/pinion'
 import fs from 'fs'
 import { logger } from '../../utils/logger.js'
-import { getActionOutputDir } from '../../utils/action-reference.js'
+import { getActionOutputDir, shouldGenerateActions } from '../../utils/action-reference.js'
 import type { PipecraftConfig } from '../../types/index.js'
 
 /**
@@ -340,6 +340,12 @@ export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig
   Promise.resolve(ctx)
     .then(ctx => {
       const config = ctx.config || {}
+
+      // Skip generation in remote mode - actions come from marketplace
+      if (!shouldGenerateActions(config)) {
+        logger.verbose('Skipping run-nx-affected action generation (using remote actions)')
+        return ctx
+      }
       const outputDir = getActionOutputDir(config)
       const filePath = `${outputDir}/run-nx-affected/action.yml`
       const exists = fs.existsSync(filePath)

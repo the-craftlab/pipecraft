@@ -11,7 +11,7 @@ import { type PinionContext, renderTemplate, toFile } from '@featherscloud/pinio
 import dedent from 'dedent'
 import fs from 'fs'
 import { logger } from '../../utils/logger.js'
-import { getActionOutputDir } from '../../utils/action-reference.js'
+import { getActionOutputDir, shouldGenerateActions } from '../../utils/action-reference.js'
 import type { PipecraftConfig } from '../../types/index.js'
 
 /**
@@ -147,6 +147,12 @@ export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig
     .then(ctx => {
       // Check if file exists to determine merge status
       const config = ctx.config || {}
+
+      // Skip generation in remote mode - actions come from marketplace
+      if (!shouldGenerateActions(config)) {
+        logger.verbose('Skipping manage-branch action generation (using remote actions)')
+        return ctx
+      }
       const outputDir = getActionOutputDir(config)
       const filePath = `${outputDir}/manage-branch/action.yml`
       const exists = fs.existsSync(filePath)
