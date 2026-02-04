@@ -12,11 +12,7 @@ import { type PinionContext, renderTemplate, toFile } from '@featherscloud/pinio
 import fs from 'fs'
 import { parseDocument, Scalar, stringify } from 'yaml'
 import type { PipecraftConfig } from '../../types/index.js'
-import {
-  applyPathOperations,
-  createValueFromString,
-  type PathOperationConfig
-} from '../../utils/ast-path-operations.js'
+import { createValueFromString, type PathOperationConfig } from '../../utils/ast-path-operations.js'
 import { logger } from '../../utils/logger.js'
 import { formatIfConditions } from '../yaml-format-utils.js'
 import {
@@ -24,11 +20,12 @@ import {
   createDomainDeployJobOperations,
   createDomainRemoteTestJobOperations,
   createDomainTestJobOperations,
-  createGateJobOperation,
   createHeaderOperations,
   createTagPromoteReleaseOperations,
   createVersionJobOperation,
-  getDomainJobNames
+  createManagedWorkflowDocument,
+  stringifyManagedWorkflow,
+  applyManagedWorkflowOperations
 } from './shared/index.js'
 
 interface NxPipelineContext extends PinionContext {
@@ -99,9 +96,7 @@ function sanitizeUserSection(
 function createTestNxJobOperation(ctx: NxPipelineContext): PathOperationConfig {
   const { config } = ctx
   const nxConfig = config.nx!
-  const packageManager = config.packageManager || 'npm'
   const enableCache = nxConfig.enableCache !== false
-  const targets = nxConfig.tasks.join(',')
 
   // Build the job steps
   const cacheStep = enableCache
@@ -110,7 +105,7 @@ function createTestNxJobOperation(ctx: NxPipelineContext): PathOperationConfig {
         uses: actions/cache@v4
         with:
           path: .nx/cache
-          key: \${{ runner.os }}-nx-\${{ hashFiles('**/nx.json', '**/.nxignore', '**/package-lock.json', '**/pnpm-lock.yaml', '**/yarn.lock') }}
+          key: \${{ runner.os }}-nx-\${{ hashFiles('**/nx.json', '**/.nxignore', '**/pnpm-lock.yaml', '**/yarn.lock', '**/package-lock.json', '**/bun.lockb') }}
           restore-keys: |
             \${{ runner.os }}-nx-`
     : ''
@@ -120,10 +115,13 @@ function createTestNxJobOperation(ctx: NxPipelineContext): PathOperationConfig {
     .map(
       target => `
       - name: Run nx affected --target=${target}
+        env:
+          NX_PACKAGE: \${{ steps.nx_cli.outputs.package || 'nx@latest' }}
         run: |
-          npx nx affected --target=${target} --base=\${{ inputs.baseRef || '${
-        nxConfig.baseRef || 'origin/main'
-      }' }} || echo "No affected projects"`
+          PACKAGE="\${NX_PACKAGE:-nx@latest}"
+          BASE_REF="\${{ inputs.baseRef || '${nxConfig.baseRef || 'origin/main'}' }}"
+          HEAD_REF="\${{ inputs.commitSha || github.sha }}"
+          npx --yes --package "$PACKAGE" nx affected --target=${target} --base="$BASE_REF" --head="$HEAD_REF" || echo "No affected projects"`
     )
     .join('')
 
@@ -149,23 +147,37 @@ function createTestNxJobOperation(ctx: NxPipelineContext): PathOperationConfig {
         uses: actions/setup-node@v4
         with:
           node-version: \${{ env.NODE_VERSION }}
-      ${
-        packageManager === 'pnpm'
-          ? `
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: \${{ env.PNPM_VERSION }}
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile`
-          : packageManager === 'yarn'
-          ? `
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile`
-          : `
-      - name: Install dependencies
-        run: npm ci`
-      }
+      - name: Determine Nx CLI package
+        id: nx_cli
+        shell: bash
+        run: |
+          NX_SPEC=""
+          if [ -f "package.json" ]; then
+            NX_SPEC=$(node - <<'NODE'
+const fs = require('fs')
+try {
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+  const spec =
+    (pkg.devDependencies && pkg.devDependencies.nx) ||
+    (pkg.dependencies && pkg.dependencies.nx) ||
+    ''
+  if (typeof spec === 'string') {
+    const cleaned = spec.trim()
+    if (cleaned && !cleaned.startsWith('workspace:') && !cleaned.startsWith('file:')) {
+      process.stdout.write(cleaned)
+    }
+  }
+} catch {
+  // Ignore parse errors and fall back to latest
+}
+NODE
+            )
+          fi
+          if [ -n "$NX_SPEC" ]; then
+            echo "package=nx@$NX_SPEC" >> $GITHUB_OUTPUT
+          else
+            echo "package=nx@latest" >> $GITHUB_OUTPUT
+          fi
       ${cacheStep}${taskSteps}
   `)
   }
@@ -182,13 +194,33 @@ export const generate = (ctx: NxPipelineContext) =>
       const domains = config.domains || {}
       const nxConfig = config.nx!
 
-      // Get domain job names for dependency management
-      const { testJobs, deployJobs, remoteTestJobs } = getDomainJobNames(domains)
+      // Check if file exists early so we can reuse runtime defaults
+      const fileExists = fs.existsSync(filePath)
+      let existingContent = ''
+      let existingEnv: Record<string, any> | null = null
+
+      if (fileExists) {
+        existingContent = fs.readFileSync(filePath, 'utf8')
+        try {
+          const envDoc = parseDocument(existingContent)
+          const envNode =
+            envDoc && typeof (envDoc as any).get === 'function' ? (envDoc as any).get('env') : null
+          if (envNode && typeof (envNode as any).toJSON === 'function') {
+            existingEnv = (envNode as any).toJSON()
+          }
+        } catch (error) {
+          logger.warn(`⚠️  Failed to parse existing pipeline for runtime defaults: ${error}`)
+        }
+      }
 
       // Build operations array - only managed jobs
       const operations: PathOperationConfig[] = [
         // Header (name, run-name, on triggers)
-        ...createHeaderOperations({ branchFlow }),
+        ...createHeaderOperations({
+          branchFlow,
+          nodeVersion: (existingEnv?.NODE_VERSION as string | undefined) ?? undefined,
+          pnpmVersion: (existingEnv?.PNPM_VERSION as string | undefined) ?? undefined
+        }),
 
         // Changes detection (Nx-enabled)
         createChangesJobOperation({
@@ -209,31 +241,18 @@ export const generate = (ctx: NxPipelineContext) =>
           config
         }),
 
-        // Gate job (runs after test-nx, gates downstream jobs)
-        createGateJobOperation({
-          testJobNames: ['test-nx'], // Gate on the Nx test job
-          deployJobNames: [] // Could add deploy jobs here if needed
-        }),
-
         // Tag, promote, release
         ...createTagPromoteReleaseOperations({
           branchFlow,
-          deployJobNames: [], // No deployment dependencies in new model
-          remoteTestJobNames: [],
-          testJobNames: ['test-nx'], // For Nx, the single test-nx job is the gate
           autoMerge: typeof config.autoMerge === 'object' ? config.autoMerge : {},
           config
         })
       ]
 
-      // Check if file exists
-      const fileExists = fs.existsSync(filePath)
-
       // Extract user-customized section and custom jobs from existing file if it exists
       let userSection: string | null = null
       const customJobsFromExisting: any[] = []
       if (fileExists) {
-        const existingContent = fs.readFileSync(filePath, 'utf8')
         userSection = sanitizeUserSection(extractUserSection(existingContent), ['test-nx'])
         if (userSection) {
           logger.verbose('📋 Found user-customized section between markers')
@@ -274,14 +293,6 @@ export const generate = (ctx: NxPipelineContext) =>
           : '🔄 Force mode: Rebuilding Nx pipeline from scratch'
         logger.verbose(logMessage)
 
-        // Create new document with empty YAML map
-        const doc = parseDocument('{}')
-        // Ensure the root map uses block style (not flow/compact)
-        if (doc.contents && (doc.contents as any).flow !== undefined) {
-          ;(doc.contents as any).flow = false
-        }
-
-        // Add header comment block to document
         const headerComment = `=============================================================================
  PIPECRAFT MANAGED WORKFLOW
 =============================================================================
@@ -305,19 +316,9 @@ export const generate = (ctx: NxPipelineContext) =>
 
  📖 Learn more: https://pipecraft.thecraftlab.dev
 =============================================================================`
-        doc.commentBefore = headerComment
+        const doc = createManagedWorkflowDocument(headerComment, operations, ctx)
 
-        if (doc.contents) {
-          applyPathOperations(doc.contents as any, operations, doc)
-        }
-
-        let yamlContent = stringify(doc, {
-          lineWidth: 0, // 0 means no line width limit for scalars
-          indent: 2,
-          defaultStringType: 'PLAIN',
-          defaultKeyType: 'PLAIN',
-          minContentWidth: 0
-        })
+        let yamlContent = stringifyManagedWorkflow(doc)
 
         // Insert user section and custom jobs after version job if they exist
         const hasCustomContent = userSection || customJobsFromExisting.length > 0
@@ -396,8 +397,8 @@ export const generate = (ctx: NxPipelineContext) =>
       }
 
       // Parse existing file for merge mode (no force flag)
-      const existingContent = fs.readFileSync(filePath, 'utf8')
-      const doc = parseDocument(existingContent)
+      const freshContent = fs.readFileSync(filePath, 'utf8')
+      const doc = parseDocument(freshContent)
 
       // Get managed jobs (always overwritten)
       const managedJobs = new Set(['changes', 'version', 'tag', 'promote', 'release', 'test-nx'])
@@ -419,10 +420,7 @@ export const generate = (ctx: NxPipelineContext) =>
         ;(existingJobs as any).items = []
       }
 
-      // Apply operations to update managed jobs
-      if (doc.contents) {
-        applyPathOperations(doc.contents as any, operations, doc)
-      }
+      applyManagedWorkflowOperations(doc, operations, ctx)
 
       // Reinsert custom jobs (preserved from existing pipeline)
       if (existingJobs && customJobs.length > 0) {
@@ -432,13 +430,7 @@ export const generate = (ctx: NxPipelineContext) =>
         logger.verbose(`📋 Preserved ${customJobs.length} custom job(s) from existing pipeline`)
       }
 
-      let yamlContent = stringify(doc, {
-        lineWidth: 0,
-        indent: 2,
-        defaultStringType: 'PLAIN',
-        defaultKeyType: 'PLAIN',
-        minContentWidth: 0
-      })
+      let yamlContent = stringifyManagedWorkflow(doc)
 
       // Insert user section after version job if it exists
       if (userSection) {
