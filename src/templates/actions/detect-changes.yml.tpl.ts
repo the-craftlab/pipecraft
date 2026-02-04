@@ -66,7 +66,7 @@ inputs:
   node-version:
     description: 'Node.js version to use'
     required: false
-    default: '24'
+    default: '22'
 
 outputs:
   changes:

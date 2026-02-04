@@ -32,9 +32,9 @@ export function createHeaderOperations(ctx: HeaderContext): PathOperationConfig[
     branchFlow && Array.isArray(branchFlow) && branchFlow.length > 0 ? branchFlow : ['main']
   const branchList = validBranchFlow.join(',')
   const normalizedNodeVersion =
-    typeof nodeVersion === 'string' && nodeVersion.trim().length > 0 ? nodeVersion.trim() : '24'
+    typeof nodeVersion === 'string' && nodeVersion.trim().length > 0 ? nodeVersion.trim() : '22'
   const normalizedPnpmVersion =
-    typeof pnpmVersion === 'string' && pnpmVersion.trim().length > 0 ? pnpmVersion.trim() : '10'
+    typeof pnpmVersion === 'string' && pnpmVersion.trim().length > 0 ? pnpmVersion.trim() : '9'
 
   return [
     // =============================================================================

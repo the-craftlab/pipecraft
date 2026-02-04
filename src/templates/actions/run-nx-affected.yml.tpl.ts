@@ -61,7 +61,7 @@ inputs:
   node-version:
     description: 'Node.js version to use'
     required: false
-    default: '24'
+    default: '22'
   verbose:
     description: 'Enable verbose logging for debugging affected detection'
     required: false
