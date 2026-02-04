@@ -143,25 +143,7 @@ runs:
       run: |
         NX_SPEC=""
         if [ -f "package.json" ]; then
-          NX_SPEC=$(node - <<'NODE'
-const fs = require('fs')
-try {
-  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
-  const spec =
-    (pkg.devDependencies && pkg.devDependencies.nx) ||
-    (pkg.dependencies && pkg.dependencies.nx) ||
-    ''
-  if (typeof spec === 'string') {
-    const cleaned = spec.trim()
-    if (cleaned && !cleaned.startsWith('workspace:') && !cleaned.startsWith('file:')) {
-      process.stdout.write(cleaned)
-    }
-  }
-} catch {
-  // ignore JSON parse errors and fall back to latest
-}
-NODE
-          )
+          NX_SPEC=$(node -e "const fs=require('fs');try{const p=JSON.parse(fs.readFileSync('package.json','utf8'));const s=p.devDependencies?.nx||p.dependencies?.nx||'';if(s&&typeof s==='string'&&!s.startsWith('workspace:')&&!s.startsWith('file:')){process.stdout.write(s.trim())}}catch{}")
         fi
         if [ -n "$NX_SPEC" ]; then
           echo "package=nx@$NX_SPEC" >> $GITHUB_OUTPUT
@@ -339,34 +321,11 @@ NODE
         echo "EOF" >> $GITHUB_OUTPUT
         
         # Build comma-separated list of affected domains without requiring jq
-        AFFECTED_DOMAINS=$(CHANGES_JSON="$CHANGES_JSON" node - <<'NODE'
-const data = process.env.CHANGES_JSON || '{}'
-let parsed = {}
-try {
-  parsed = JSON.parse(data)
-} catch (error) {
-  console.warn('⚠️  Unable to parse change detection JSON:', error.message)
-}
-const affected = Object.entries(parsed)
-  .filter(([, value]) => value === true)
-  .map(([key]) => key)
-  .join(',')
-process.stdout.write(affected)
-NODE
-)
+        AFFECTED_DOMAINS=$(CHANGES_JSON="$CHANGES_JSON" node -e "const d=process.env.CHANGES_JSON||'{}';let p={};try{p=JSON.parse(d)}catch(e){console.warn('Unable to parse JSON:',e.message)}process.stdout.write(Object.entries(p).filter(([,v])=>v===true).map(([k])=>k).join(','))")
         echo "affectedDomains=$AFFECTED_DOMAINS" >> $GITHUB_OUTPUT
         
         echo "📋 Change Detection Results:"
-        CHANGES_JSON="$CHANGES_JSON" node - <<'NODE'
-const data = process.env.CHANGES_JSON || '{}'
-try {
-  const parsed = JSON.parse(data)
-  console.log(JSON.stringify(parsed, null, 2))
-} catch (error) {
-  console.warn('⚠️  Unable to pretty-print change detection JSON:', error.message)
-  console.log(data)
-}
-NODE
+        CHANGES_JSON="$CHANGES_JSON" node -e "const d=process.env.CHANGES_JSON||'{}';try{console.log(JSON.stringify(JSON.parse(d),null,2))}catch(e){console.warn('Unable to pretty-print JSON:',e.message);console.log(d)}"
         echo "🎯 Affected domains: $AFFECTED_DOMAINS"
         echo "  nx-available: \${{ steps.nx-check.outputs.available }}"
 `
