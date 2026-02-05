@@ -156,7 +156,7 @@ jobs:
         id: version
         with:
           baseRef: ${{ inputs.baseRef || 'main' }}
-          commitSha: ${{ inputs.commitSha || github.sha }}
+          version: ${{ inputs.version }}
           node-version: ${{ env.NODE_VERSION }}
     outputs:
       version: ${{ steps.version.outputs.version }}

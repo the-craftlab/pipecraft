@@ -11,6 +11,10 @@ inputs:
     description: 'Node.js version to use'
     required: false
     default: '24'
+  version:
+    description: 'Pre-determined version to use (skips calculation if provided)'
+    required: false
+    default: ''
 
 outputs:
   version:
@@ -52,8 +56,21 @@ runs:
           echo "✅ Already on a branch: $(git branch --show-current)"
         fi
 
+    - name: Check for input version
+      id: check_input_version
+      shell: bash
+      run: |
+        INPUT_VERSION="${{ inputs.version }}"
+        if [ -n "$INPUT_VERSION" ]; then
+          echo "✅ Using provided version: $INPUT_VERSION"
+          echo "version=$INPUT_VERSION" >> $GITHUB_OUTPUT
+        else
+          echo "No input version provided, will calculate from commits"
+        fi
+
     - name: Get existing version tag
       id: get_version_old
+      if: steps.check_input_version.outputs.version == ''
       shell: bash
       run: |
         set -x  # Enable debugging output
@@ -61,11 +78,11 @@ runs:
         git rev-parse HEAD
         COMMIT_HASH=$(git rev-parse HEAD)
         echo "Current commit hash: $COMMIT_HASH"
-        
+
         # Check for tags on the current commit
         TAG=$(git tag --points-at $COMMIT_HASH | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true)
         echo "Tags found: $TAG"
-        
+
         if [ -z "$TAG" ]; then
           echo "No existing tag found on the current commit"
         else
@@ -86,7 +103,7 @@ runs:
       run: npm install @release-it/conventional-changelog conventional-changelog-angular
 
     - name: Get version
-      if: steps.get_version_old.outputs.version == ''
+      if: steps.check_input_version.outputs.version == '' && steps.get_version_old.outputs.version == ''
       id: get_version_new
       shell: bash
       run: |
@@ -109,7 +126,10 @@ runs:
       id: set_version
       shell: bash
       run: |
-        if [ -n "${{ steps.get_version_old.outputs.version }}" ]; then
+        if [ -n "${{ steps.check_input_version.outputs.version }}" ]; then
+          echo "Using input version: ${{ steps.check_input_version.outputs.version }}"
+          echo "version=${{ steps.check_input_version.outputs.version }}" >> $GITHUB_OUTPUT
+        elif [ -n "${{ steps.get_version_old.outputs.version }}" ]; then
           echo "Using old version: ${{ steps.get_version_old.outputs.version }}"
           echo "version=${{ steps.get_version_old.outputs.version }}" >> $GITHUB_OUTPUT
         elif [ -n "${{ steps.get_version_new.outputs.version }}" ]; then
