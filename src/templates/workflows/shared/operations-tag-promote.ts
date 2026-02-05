@@ -165,6 +165,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
       - uses: ${releaseActionRef}
         with:
           version: \${{ needs.version.outputs.version }}
+          commitSha: \${{ inputs.commitSha }}
   `)
     }
   ]

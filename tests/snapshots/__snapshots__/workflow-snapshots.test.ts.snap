@@ -46,7 +46,7 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
     # Calculates the next semantic version based on conventional commits.
     # Only runs on push events (skipped on pull requests).
 
-      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -70,7 +70,7 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
     #=============================================================================
     # Creates a release for the version.
 
-      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/create-release, with: { version: "\${{ needs.version.outputs.version }}" } } ] }
+      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/create-release, with: { version: "\${{ needs.version.outputs.version }}", commitSha: "\${{ inputs.commitSha }}" } } ] }
     }
 }
 "
@@ -144,7 +144,7 @@ exports[`Workflow Snapshots > Config: multi-domain > should match snapshot 1`] =
     # Calculates the next semantic version based on conventional commits.
     # Only runs on push events (skipped on pull requests).
 
-      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -168,7 +168,7 @@ exports[`Workflow Snapshots > Config: multi-domain > should match snapshot 1`] =
     #=============================================================================
     # Creates a release for the version.
 
-      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/create-release, with: { version: "\${{ needs.version.outputs.version }}" } } ] }
+      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/create-release, with: { version: "\${{ needs.version.outputs.version }}", commitSha: "\${{ inputs.commitSha }}" } } ] }
     }
 }
 "
@@ -232,7 +232,7 @@ exports[`Workflow Snapshots > Config: remote-actions > should match snapshot 1`]
     # Calculates the next semantic version based on conventional commits.
     # Only runs on push events (skipped on pull requests).
 
-      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: the-craftlab/pipecraft/actions/calculate-version@v1, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: the-craftlab/pipecraft/actions/calculate-version@v1, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -256,7 +256,7 @@ exports[`Workflow Snapshots > Config: remote-actions > should match snapshot 1`]
     #=============================================================================
     # Creates a release for the version.
 
-      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: the-craftlab/pipecraft/actions/create-release@v1, with: { version: "\${{ needs.version.outputs.version }}" } } ] }
+      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: the-craftlab/pipecraft/actions/create-release@v1, with: { version: "\${{ needs.version.outputs.version }}", commitSha: "\${{ inputs.commitSha }}" } } ] }
     }
 }
 "
@@ -316,7 +316,7 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
     # Calculates the next semantic version based on conventional commits.
     # Only runs on push events (skipped on pull requests).
 
-      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -340,7 +340,7 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
     #=============================================================================
     # Creates a release for the version.
 
-      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/create-release, with: { version: "\${{ needs.version.outputs.version }}" } } ] }
+      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/create-release, with: { version: "\${{ needs.version.outputs.version }}", commitSha: "\${{ inputs.commitSha }}" } } ] }
     }
 }
 "
@@ -408,7 +408,7 @@ exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] =
     # Calculates the next semantic version based on conventional commits.
     # Only runs on push events (skipped on pull requests).
 
-      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -432,7 +432,7 @@ exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] =
     #=============================================================================
     # Creates a release for the version.
 
-      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/create-release, with: { version: "\${{ needs.version.outputs.version }}" } } ] }
+      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/create-release, with: { version: "\${{ needs.version.outputs.version }}", commitSha: "\${{ inputs.commitSha }}" } } ] }
     }
 }
 "
@@ -484,7 +484,7 @@ exports[`Workflow Snapshots > Config: with-auto-merge > should match snapshot 1`
     # Calculates the next semantic version based on conventional commits.
     # Only runs on push events (skipped on pull requests).
 
-      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+      version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -508,7 +508,7 @@ exports[`Workflow Snapshots > Config: with-auto-merge > should match snapshot 1`
     #=============================================================================
     # Creates a release for the version.
 
-      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/create-release, with: { version: "\${{ needs.version.outputs.version }}" } } ] }
+      release: { needs: [ tag, version ], if: "\${{ always() && github.ref_name == 'main' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/create-release, with: { version: "\${{ needs.version.outputs.version }}", commitSha: "\${{ inputs.commitSha }}" } } ] }
     }
 }
 "

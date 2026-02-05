@@ -135,4 +135,4 @@ If you can't resolve the issue, open an issue on GitHub with:
 - The full error message
 - Steps to reproduce the problem
 
-We'll help you figure it out: [github.com/pipecraft-lab/pipecraft/issues](https://github.com/pipecraft-lab/pipecraft/issues)
+We'll help you figure it out: [github.com/the-craftlab/pipecraft/issues](https://github.com/the-craftlab/pipecraft/issues)

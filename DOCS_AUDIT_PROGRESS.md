@@ -80,7 +80,7 @@ Need to check these files for overly generous claims:
 
 - **Default mode**: `local` generates to `.github/actions/` and uses `./.github/actions/action-name`
 - **Source mode**: Generates to `actions/` and uses `./actions/action-name` (PipeCraft's own repo)
-- **Remote mode**: No local actions, uses `pipecraft-lab/pipecraft/actions/action-name@version`
+- **Remote mode**: No local actions, uses `the-craftlab/pipecraft/actions/action-name@version`
 
 Most docs showing `./actions/` are either:
 

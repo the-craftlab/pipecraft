@@ -551,8 +551,8 @@ npm run test:coverage
 
 - [Vitest Documentation](https://vitest.dev/)
 - [PipeCraft Architecture](/docs/architecture)
-- [Test Structure](https://github.com/pipecraft-lab/pipecraft/tree/main/tests)
-- [Contributing Guide](https://github.com/pipecraft-lab/pipecraft/blob/main/CONTRIBUTING.md)
+- [Test Structure](https://github.com/the-craftlab/pipecraft/tree/main/tests)
+- [Contributing Guide](https://github.com/the-craftlab/pipecraft/blob/main/CONTRIBUTING.md)
 
 ## Questions?
 

@@ -578,8 +578,8 @@ This option is ignored when `actionSourceMode` is `'local'` or `'source'`.
 The generated workflows will reference actions like:
 
 ```yaml
-- uses: pipecraft-lab/pipecraft/actions/detect-changes@v1
-- uses: pipecraft-lab/pipecraft/actions/calculate-version@v1
+- uses: the-craftlab/pipecraft/actions/detect-changes@v1
+- uses: the-craftlab/pipecraft/actions/calculate-version@v1
 ```
 
 ## Validation
