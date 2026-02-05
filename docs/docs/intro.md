@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-{/_ Pipeline validation test - triggers docs domain _/}
+<!-- Pipeline validation test - triggers docs domain -->
 
 # Getting Started
 
