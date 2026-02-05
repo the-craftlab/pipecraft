@@ -68,7 +68,8 @@
     "examples:deactivate": "node tests/scripts/deactivate-example-repos.mjs",
     "sync-actions": "tsx scripts/sync-actions.ts",
     "sync-actions:check": "tsx scripts/sync-actions.ts --check",
-    "sync-actions:verify": "tsx scripts/sync-actions.ts --verify"
+    "sync-actions:verify": "tsx scripts/sync-actions.ts --verify",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
@@ -89,7 +90,9 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
+    "husky": "^9.1.7",
     "inquirer": "^12.10.0",
+    "lint-staged": "^16.2.7",
     "prettier": "^2.8.8",
     "release-it": "^18.1.2",
     "tsx": "^4.20.6",
@@ -104,5 +107,13 @@
     "cosmiconfig": "^9.0.0",
     "dedent": "^1.7.0",
     "yaml": "^2.8.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --max-warnings=0"
+    ],
+    "*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "prettier --check"
+    ]
   }
 }
