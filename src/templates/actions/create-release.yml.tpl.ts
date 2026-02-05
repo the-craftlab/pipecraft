@@ -113,9 +113,10 @@ const releaseActionTemplate = (ctx: any) => {
             if [ -f ".github/workflows/$PUBLISH_WORKFLOW" ]; then
               echo "🔄 Triggering $PUBLISH_WORKFLOW for $VERSION"
 
-              # Trigger the publish workflow with the release tag
+              # Trigger the publish workflow with the release tag on main branch
               # This is necessary because GITHUB_TOKEN release creation doesn't trigger workflows
-              if gh workflow run "$PUBLISH_WORKFLOW" --field tag="$VERSION" 2>&1; then
+              # Explicitly use --ref main to ensure it runs on main, not the default branch (develop)
+              if gh workflow run "$PUBLISH_WORKFLOW" --ref main --field tag="$VERSION" 2>&1; then
                 echo "✅ Publish workflow triggered for $VERSION"
               else
                 echo "⚠️  Failed to trigger publish workflow, but continuing"

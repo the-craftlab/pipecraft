@@ -14,11 +14,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/pipecraft-lab/pipecraft.git"
+    "url": "https://github.com/the-craftlab/pipecraft.git"
   },
   "homepage": "https://pipecraft.thecraftlab.dev",
   "bugs": {
-    "url": "https://github.com/pipecraft-lab/pipecraft/issues"
+    "url": "https://github.com/the-craftlab/pipecraft/issues"
   },
   "keywords": [
     "ci-cd",
