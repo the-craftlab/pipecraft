@@ -259,6 +259,37 @@ For questions and discussions, visit [GitHub Discussions](https://github.com/the
 
 To report bugs or request features, open an issue on [GitHub Issues](https://github.com/the-craftlab/pipecraft/issues).
 
+## AI Assistant Integration
+
+Pipecraft includes AI skills for Claude Code, Cursor, GitHub Copilot, and other coding assistants.
+
+### Install the Skill
+
+```bash
+# Via npm (Claude Code + Cursor)
+npm install -g @pipecraft/claude-skill
+
+# Via OpenSkills (universal)
+npx openskills install the-craftlab/pipecraft
+```
+
+### Manual Setup
+
+| Tool | Configuration File |
+|------|-------------------|
+| Claude Code | `.claude/skills/pipecraft/SKILL.md` |
+| Cursor | `.cursorrules` (included in repo) |
+| GitHub Copilot | `.github/copilot-instructions.md` (included in repo) |
+
+### What the Skill Provides
+
+- Set up Pipecraft from scratch
+- Configure domains and branch flows
+- Troubleshoot configuration issues
+- Understand generated workflow structure
+
+See [PIPECRAFT_AI_GUIDE.md](PIPECRAFT_AI_GUIDE.md) for the full reference, or use `/pipecraft` in Claude Code.
+
 ## Contributing
 
 We welcome contributions! See the [Contributing guide](https://pipecraft.thecraftlab.dev/docs/contributing) for:

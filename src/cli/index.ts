@@ -9,8 +9,8 @@
  *
  * - **init**: Initialize PipeCraft configuration interactively or with flags
  * - **generate**: Generate GitHub Actions workflows from configuration
- * - **validate**: Validate existing workflows and configuration
- * - **verify**: Verify pipeline structure and job order
+ * - **validate**: Validate configuration file schema
+ * - **doctor**: Run comprehensive diagnostic health checks
  * - **setup**: Configure GitHub repository permissions and settings
  * - **version**: Display version information
  *
@@ -27,10 +27,16 @@
  * - Idempotent regeneration (only when config/templates change)
  *
  * ### validate
- * Validates workflow YAML syntax and structure, checks for common issues.
+ * Quick validation of configuration file schema.
  *
- * ### verify
- * Verifies pipeline job order and dependencies are correct.
+ * ### doctor
+ * Comprehensive diagnostic health check including:
+ * - Configuration validation
+ * - GitHub workflow permissions
+ * - Branch existence on remote
+ * - Generated file verification
+ * - Workflow semantic validation
+ * - Domain path validation
  *
  * ### setup
  * Configures GitHub repository:
@@ -73,7 +79,6 @@
 
 import { prompt, runModule } from '@featherscloud/pinion'
 import { Command } from 'commander'
-import { cosmiconfigSync } from 'cosmiconfig'
 import { readFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
@@ -124,6 +129,7 @@ program
   .option('-f, --force', 'overwrite existing config file')
   .option('-i, --interactive', 'run interactive setup wizard')
   .option('--with-versioning', 'include version management setup')
+  .option('--with-skill', 'install AI coding assistant skills')
   .option('--ci-provider <provider>', 'CI provider (github|gitlab)', 'github')
   .option('--merge-strategy <strategy>', 'merge strategy (fast-forward|merge)', 'fast-forward')
   .option('--initial-branch <branch>', 'initial development branch', 'develop')
@@ -162,9 +168,26 @@ program
         console.log('✅ Version management setup completed!')
       }
 
+      // Install AI skills if requested
+      if (options.withSkill) {
+        const { installSkills } = await import('../utils/skill-installer.js')
+        console.log('\n🔧 Installing AI coding assistant skills...')
+        const results = installSkills({ global: true })
+        const installed = results.filter(r => r.success && !r.skipped)
+        if (installed.length > 0) {
+          console.log('✅ Skills installed for:', installed.map(r => r.target).join(', '))
+        }
+      }
+
       console.log('✅ Configuration initialized successfully!')
-    } catch (error: any) {
-      console.error('❌ Failed to initialize configuration:', error.message)
+
+      // Hint about skill installation if not already done
+      if (!options.withSkill) {
+        console.log('\n💡 Tip: Run `pipecraft skill` to install AI assistant skills (Claude, Cursor, etc.)')
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error('❌ Failed to initialize configuration:', message)
       process.exit(1)
     }
   })
@@ -274,25 +297,6 @@ program
     }
   })
 
-// Validate command - Validate configuration
-program
-  .command('validate')
-  .description('Validate configuration file')
-  .action(async options => {
-    try {
-      const globalOptions = program.opts()
-      const configPath = globalOptions.config
-
-      const config = loadConfig(configPath)
-      validateConfig(config)
-
-      console.log('✅ Configuration is valid!')
-    } catch (error: any) {
-      console.error('❌ Configuration validation failed:', error.message)
-      process.exit(1)
-    }
-  })
-
 // Get-config command - Get configuration value
 program
   .command('get-config')
@@ -342,42 +346,44 @@ program
     }
   })
 
-// Verify command - Check if setup is correct
+// Validate command - Validate configuration file (quick schema check)
 program
-  .command('verify')
-  .description('Verify that pipecraft is properly set up')
+  .command('validate')
+  .description('Validate configuration file')
   .action(async () => {
     try {
-      const explorer = cosmiconfigSync('trunkflow')
-      const result = explorer.search()
+      const globalOptions = program.opts()
+      const configPath = globalOptions.config
 
-      if (!result) {
-        console.log('⚠️  No configuration file found. Run "pipecraft init" to get started.')
+      const config = loadConfig(configPath)
+      validateConfig(config)
+
+      console.log('✅ Configuration is valid!')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error('❌ Configuration validation failed:', message)
+      process.exit(1)
+    }
+  })
+
+// Doctor command - Comprehensive health check
+program
+  .command('doctor')
+  .description('Run diagnostic checks on your Pipecraft setup')
+  .action(async () => {
+    try {
+      const { runDoctor, formatDoctorOutput } = await import('../utils/doctor.js')
+
+      const result = await runDoctor()
+      console.log(formatDoctorOutput(result))
+
+      // Exit with error code if there are errors
+      if (result.errorCount > 0) {
         process.exit(1)
       }
-
-      console.log(`✅ Found configuration at: ${result.filepath}`)
-
-      const config = result.config
-      validateConfig(config)
-      console.log('✅ Configuration is valid!')
-
-      // Check if workflows exist
-      const fs = await import('fs')
-      const path = await import('path')
-
-      if (config.ciProvider === 'github') {
-        const workflowPath = path.join(process.cwd(), '.github/workflows/pipeline.yml')
-        if (fs.existsSync(workflowPath)) {
-          console.log('✅ GitHub Actions workflows exist!')
-        } else {
-          console.log(
-            '⚠️  GitHub Actions workflows not found. Run "pipecraft generate" to create them.'
-          )
-        }
-      }
-    } catch (error: any) {
-      console.error('❌ Verification failed:', error.message)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error('❌ Doctor command failed:', message)
       process.exit(1)
     }
   })
@@ -524,6 +530,122 @@ program
     }
   })
 
+// Skill command - Install AI coding assistant skills
+program
+  .command('skill')
+  .description('Install Pipecraft skills for AI coding assistants (Claude Code, Cursor, etc.)')
+  .option('--install', 'Install skills (default action)')
+  .option('--uninstall', 'Remove installed skills')
+  .option('--list', 'List available targets and their status')
+  .option('--global', 'Install to global/user directory (default)')
+  .option('--local', 'Install to current project directory')
+  .option('--force', 'Install even if target tool not detected')
+  .option(
+    '--target <targets>',
+    'Specific targets to install (comma-separated: claude-code,cursor,copilot,windsurf)'
+  )
+  .action(async options => {
+    try {
+      const { installSkills, uninstallSkills, listSkillTargets } = await import(
+        '../utils/skill-installer.js'
+      )
+
+      // List mode
+      if (options.list) {
+        const targets = listSkillTargets()
+        console.log('\n📋 AI Coding Assistant Skill Targets:\n')
+
+        for (const target of targets) {
+          const status = target.installed
+            ? target.hasSkill
+              ? '✅ Installed'
+              : '⚠️  Detected (no skill)'
+            : '⬚  Not detected'
+          console.log(`   ${status}  ${target.displayName}`)
+          if (target.installed) {
+            console.log(`             ${target.globalPath}`)
+          }
+        }
+
+        console.log('\nRun `pipecraft skill --install` to install skills.')
+        console.log('')
+        return
+      }
+
+      // Uninstall mode
+      if (options.uninstall) {
+        console.log('\n🗑️  Removing Pipecraft skills...\n')
+
+        const results = uninstallSkills({
+          global: !options.local,
+          local: options.local
+        })
+
+        const removed = results.filter(r => r.success)
+        if (removed.length > 0) {
+          console.log('Removed from:')
+          for (const r of removed) {
+            console.log(`   ✅ ${r.target}`)
+          }
+        } else {
+          console.log('No skills found to remove.')
+        }
+        console.log('')
+        return
+      }
+
+      // Install mode (default)
+      console.log('\n🔧 Installing Pipecraft skills for AI coding assistants...\n')
+
+      const targetList = options.target?.split(',').map((t: string) => t.trim())
+
+      const results = installSkills({
+        global: !options.local,
+        local: options.local,
+        targets: targetList,
+        force: options.force
+      })
+
+      const installed = results.filter(r => r.success && !r.skipped)
+      const skipped = results.filter(r => r.skipped)
+      const failed = results.filter(r => !r.success && !r.skipped)
+
+      if (installed.length > 0) {
+        console.log('✅ Installed to:')
+        for (const r of installed) {
+          console.log(`   ${r.target}: ${r.path}`)
+        }
+      }
+
+      if (skipped.length > 0) {
+        console.log('\n⏭️  Skipped (tool not detected):')
+        for (const r of skipped) {
+          console.log(`   ${r.target}`)
+        }
+        console.log('   Use --force to install anyway')
+      }
+
+      if (failed.length > 0) {
+        console.log('\n❌ Failed:')
+        for (const r of failed) {
+          console.log(`   ${r.target}: ${r.error}`)
+        }
+      }
+
+      if (installed.length > 0) {
+        console.log('\n📝 Usage:')
+        console.log('   Claude Code: Use /pipecraft or ask about Pipecraft setup')
+        console.log('   Cursor: The skill activates automatically when relevant')
+      }
+
+      console.log('')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error('❌ Skill command failed:', message)
+      process.exit(1)
+    }
+  })
+
 // Parse command line arguments
 program.parse()
 
@@ -531,10 +653,3 @@ program.parse()
 if (!process.argv.slice(2).length) {
   program.outputHelp()
 }
-// Test comment for deploy job validation
-// Final test for deploy-core job
-// Test commit to trigger deploy-core job - Wed Oct 15 13:47:31 EDT 2025
-// Test commit to trigger deploy-core job - Wed Oct 15 13:51:31 EDT 2025
-
-// test commit # on Wed Oct 15 14:07:07 EDT 2025
-// test commit # on Wed Oct 15 15:12:47 EDT 2025
