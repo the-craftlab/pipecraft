@@ -165,7 +165,8 @@ jobs:
 
   lint:
     needs: changes
-    if: ${{ needs.changes.outputs.core == 'true' || needs.changes.outputs.cicd == 'true' }}
+    # Skip on promoted builds (inputs.version set) - already tested on develop
+    if: ${{ !inputs.version && (needs.changes.outputs.core == 'true' || needs.changes.outputs.cicd == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -180,7 +181,8 @@ jobs:
 
   test-cicd:
     needs: changes
-    if: ${{ needs.changes.outputs.cicd == 'true' }}
+    # Skip on promoted builds (inputs.version set) - already tested on develop
+    if: ${{ !inputs.version && needs.changes.outputs.cicd == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -204,7 +206,8 @@ jobs:
 
   test-core:
     needs: changes
-    if: ${{ needs.changes.outputs.core == 'true' }}
+    # Skip on promoted builds (inputs.version set) - already tested on develop
+    if: ${{ !inputs.version && needs.changes.outputs.core == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
