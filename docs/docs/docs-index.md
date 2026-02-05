@@ -132,15 +132,15 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
 | Document                                                                  | Purpose                          | Audience            |
 | ------------------------------------------------------------------------- | -------------------------------- | ------------------- |
 | [Main README](https://github.com/pipecraft-lab/pipecraft#readme)          | Installation, quick start, usage | All users           |
-| [Current Trunk Flow](/docs/flows/trunk-flow)                                  | Current implementation details   | Users, contributors |
-| [Error Handling](error-handling.md)                                     | Troubleshooting guide            | Users               |
+| [Current Trunk Flow](/docs/flows/trunk-flow)                              | Current implementation details   | Users, contributors |
+| [Error Handling](error-handling.md)                                       | Troubleshooting guide            | Users               |
 | [Examples](https://github.com/pipecraft-lab/pipecraft/tree/main/examples) | Configuration examples           | Users               |
 
 ### Technical Documentation (Contributor-Facing)
 
 | Document                                                                                                  | Purpose                     | Audience              |
 | --------------------------------------------------------------------------------------------------------- | --------------------------- | --------------------- |
-| [Architecture](architecture.md)                                                                         | System design               | Contributors          |
+| [Architecture](architecture.md)                                                                           | System design               | Contributors          |
 | [AST Operations](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/AST_OPERATIONS.md)             | YAML manipulation internals | Advanced contributors |
 | [Test Documentation](https://github.com/pipecraft-lab/pipecraft/blob/main/tests/README.md)                | Testing guide               | Contributors          |
 | [Repository Cleanup Plan](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/REPO_CLEANUP_PLAN.md) | Repo organization           | Contributors          |
