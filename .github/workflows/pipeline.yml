@@ -433,13 +433,14 @@ jobs:
   # Promotes code from develop to staging or main via PR.
 
   promote:
-    needs: [ version, tag ]
+    needs: [ version, gate, tag ]
     if: ${{
         always() &&
         (github.event_name == 'push' ||
         github.event_name == 'workflow_dispatch') &&
         needs.version.result == 'success' &&
         needs.version.outputs.version != '' &&
+        needs.gate.result == 'success' &&
         (needs.tag.result == 'success' ||
         needs.tag.result == 'skipped') &&
         (github.ref_name == 'develop' ||
