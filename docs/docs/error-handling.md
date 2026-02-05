@@ -781,7 +781,7 @@ If you encounter an error not covered in this guide:
 
 ## Related Documentation
 
-- [Architecture](architecture) - System design and components
-- [Current Trunk Flow](flows/trunk-flow) - Implementation details
+- [Architecture](/docs/architecture) - System design and components
+- [Current Trunk Flow](/docs/flows/trunk-flow) - Implementation details
 - [Getting Started](intro) - User guide and examples
-- [Testing Guide](testing-guide) - Testing guidelines
+- [Testing Guide](/docs/testing-guide) - Testing guidelines
