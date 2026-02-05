@@ -85,7 +85,6 @@ ${domainsYaml}
           domains-config: \${{ env.DOMAINS }}
           useNx: '${useNx ? 'true' : 'false'}'
           node-version: \${{ env.NODE_VERSION }}
-          pnpm-version: \${{ env.PNPM_VERSION }}
     outputs:
 ${outputsSection}
       changes: \${{ steps.detect.outputs.changes }}

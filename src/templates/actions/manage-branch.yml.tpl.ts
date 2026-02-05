@@ -11,7 +11,7 @@ import { type PinionContext, renderTemplate, toFile } from '@featherscloud/pinio
 import dedent from 'dedent'
 import fs from 'fs'
 import { logger } from '../../utils/logger.js'
-import { getActionOutputDir } from '../../utils/action-reference.js'
+import { getActionOutputDir, shouldGenerateActions } from '../../utils/action-reference.js'
 import type { PipecraftConfig } from '../../types/index.js'
 
 /**
@@ -143,20 +143,19 @@ const branchActionTemplate = (ctx: any) => {
  * @returns {Promise<PinionContext>} Updated context after file generation
  */
 export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig> }) =>
-  Promise.resolve(ctx)
-    .then(ctx => {
-      // Check if file exists to determine merge status
-      const config = ctx.config || {}
-      const outputDir = getActionOutputDir(config)
-      const filePath = `${outputDir}/manage-branch/action.yml`
-      const exists = fs.existsSync(filePath)
-      const status = exists ? '🔄 Merged with existing' : '📝 Created new'
-      logger.verbose(`${status} ${filePath}`)
-      return { ...ctx, actionOutputPath: filePath }
-    })
-    .then(ctx =>
-      renderTemplate(
-        branchActionTemplate,
-        toFile(ctx.actionOutputPath || 'actions/manage-branch/action.yml')
-      )(ctx)
-    )
+  Promise.resolve(ctx).then(ctx => {
+    const config = ctx.config || {}
+
+    if (!shouldGenerateActions(config)) {
+      logger.verbose('Skipping manage-branch action generation (using remote actions)')
+      return ctx
+    }
+
+    const outputDir = getActionOutputDir(config)
+    const filePath = `${outputDir}/manage-branch/action.yml`
+    const exists = fs.existsSync(filePath)
+    const status = exists ? '🔄 Merged with existing' : '📝 Created new'
+    logger.verbose(`${status} ${filePath}`)
+
+    return renderTemplate(branchActionTemplate, toFile(filePath))(ctx)
+  })

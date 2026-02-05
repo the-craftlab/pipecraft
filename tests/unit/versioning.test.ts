@@ -1,9 +1,11 @@
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs'
-import { join } from 'path'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import type { PipecraftConfig } from '../../src/types'
 import { VersionManager } from '../../src/utils/versioning'
-import { FIXTURES_DIR, TEST_DIR } from '../setup'
+import { cleanupTestWorkspace, createPipecraftWorkspace, inWorkspace } from '../helpers/workspace'
+import { FIXTURES_DIR } from '../setup'
 
 // Mock execSync
 vi.mock('child_process', () => ({
@@ -16,14 +18,6 @@ describe('VersionManager', () => {
   let mockExecSync: any
 
   beforeEach(async () => {
-    // Clean up version management files from previous tests
-    const filesToClean = ['.release-it.cjs', 'commitlint.config.js', '.husky']
-    filesToClean.forEach(file => {
-      if (existsSync(join(TEST_DIR, file))) {
-        rmSync(join(TEST_DIR, file), { recursive: true, force: true })
-      }
-    })
-
     // Load test config
     const configPath = join(FIXTURES_DIR, 'basic-config.json')
     const configContent = readFileSync(configPath, 'utf8')
@@ -196,8 +190,18 @@ describe('VersionManager', () => {
   })
 
   describe('setupVersionManagement', () => {
-    it.skip('should create version management files when enabled', () => {
-      // Skipped: Working directory race condition - writes to cwd instead of TEST_DIR
+    let workspace: string
+
+    afterEach(() => {
+      if (workspace) {
+        cleanupTestWorkspace(workspace)
+      }
+    })
+
+    it('should create version management files when enabled', async () => {
+      // Create isolated workspace for this test
+      workspace = createPipecraftWorkspace('versioning-test')
+
       config.versioning = {
         enabled: true,
         releaseItConfig: '.release-it.cjs',
@@ -213,15 +217,21 @@ describe('VersionManager', () => {
       // Mock execSync for husky install
       mockExecSync.mockReturnValue('')
 
-      manager.setupVersionManagement()
+      // Run setupVersionManagement in the isolated workspace context
+      await inWorkspace(workspace, () => {
+        manager.setupVersionManagement()
+      })
 
-      // Check if files were created
-      expect(existsSync(join(TEST_DIR, '.release-it.cjs'))).toBe(true)
-      expect(existsSync(join(TEST_DIR, 'commitlint.config.js'))).toBe(true)
-      expect(existsSync(join(TEST_DIR, '.husky/commit-msg'))).toBe(true)
+      // Check if files were created in the workspace
+      expect(existsSync(join(workspace, '.release-it.cjs'))).toBe(true)
+      expect(existsSync(join(workspace, 'commitlint.config.js'))).toBe(true)
+      expect(existsSync(join(workspace, '.husky/commit-msg'))).toBe(true)
     })
 
-    it('should not create files when versioning is disabled', () => {
+    it('should not create files when versioning is disabled', async () => {
+      // Create isolated workspace for this test
+      workspace = createPipecraftWorkspace('versioning-test-disabled')
+
       config.versioning = {
         enabled: false,
         releaseItConfig: '.release-it.cjs',
@@ -234,11 +244,14 @@ describe('VersionManager', () => {
 
       const manager = new VersionManager(config)
 
-      manager.setupVersionManagement()
+      // Run setupVersionManagement in the isolated workspace context
+      await inWorkspace(workspace, () => {
+        manager.setupVersionManagement()
+      })
 
-      // Check if files were not created
-      expect(existsSync(join(TEST_DIR, '.release-it.cjs'))).toBe(false)
-      expect(existsSync(join(TEST_DIR, 'commitlint.config.js'))).toBe(false)
+      // Check if files were not created in the workspace
+      expect(existsSync(join(workspace, '.release-it.cjs'))).toBe(false)
+      expect(existsSync(join(workspace, 'commitlint.config.js'))).toBe(false)
     })
   })
 })

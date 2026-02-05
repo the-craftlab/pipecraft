@@ -965,10 +965,10 @@ PipeCraft provides comprehensive documentation for different aspects of the proj
 
 ### Core Documentation
 
-- **[Architecture](./architecture)** - System architecture overview, design patterns, and component interactions
-- **[Current Trunk Flow](./flows/trunk-flow)** - Current implemented trunk-based development workflow
-- **[Error Handling](./error-handling)** - Error handling strategies and common error scenarios
-- **[Testing Guide](./testing-guide)** - Complete testing guide with examples and best practices
+- **[Architecture](/docs/architecture)** - System architecture overview, design patterns, and component interactions
+- **[Current Trunk Flow](/docs/flows/trunk-flow)** - Current implemented trunk-based development workflow
+- **[Error Handling](/docs/error-handling)** - Error handling strategies and common error scenarios
+- **[Testing Guide](/docs/testing-guide)** - Complete testing guide with examples and best practices
 
 ### Development Documentation
 
@@ -1001,7 +1001,7 @@ This release focuses on a **solid, working trunk-based development workflow** fo
 ✅ **Pre-flight checks** for smooth setup  
 ✅ **Comprehensive documentation** and testing
 
-See [Current Trunk Flow](./flows/trunk-flow) for details on what's implemented.
+See [Current Trunk Flow](/docs/flows/trunk-flow) for details on what's implemented.
 
 ### Planned Features
 

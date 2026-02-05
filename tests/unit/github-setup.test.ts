@@ -470,25 +470,25 @@ describe('GitHub Setup', () => {
 
   describe('Repository Settings', () => {
     describe('shouldEnableAutoMerge()', () => {
-      it('should return true when autoMerge is boolean true', () => {
+      it('should return true when autoPromote is boolean true', () => {
         mockLoadConfig.mockReturnValue({
-          autoMerge: true
+          autoPromote: true
         })
 
         expect(shouldEnableAutoMerge()).toBe(true)
       })
 
-      it('should return false when autoMerge is boolean false', () => {
+      it('should return false when autoPromote is boolean false', () => {
         mockLoadConfig.mockReturnValue({
-          autoMerge: false
+          autoPromote: false
         })
 
         expect(shouldEnableAutoMerge()).toBe(false)
       })
 
-      it('should return true when any branch has autoMerge enabled', () => {
+      it('should return true when any branch has autoPromote enabled', () => {
         mockLoadConfig.mockReturnValue({
-          autoMerge: {
+          autoPromote: {
             staging: true,
             main: false
           }
@@ -497,9 +497,9 @@ describe('GitHub Setup', () => {
         expect(shouldEnableAutoMerge()).toBe(true)
       })
 
-      it('should return false when no branches have autoMerge enabled', () => {
+      it('should return false when no branches have autoPromote enabled', () => {
         mockLoadConfig.mockReturnValue({
-          autoMerge: {
+          autoPromote: {
             staging: false,
             main: false
           }
@@ -508,7 +508,7 @@ describe('GitHub Setup', () => {
         expect(shouldEnableAutoMerge()).toBe(false)
       })
 
-      it('should return false when autoMerge is not configured', () => {
+      it('should return false when autoPromote is not configured', () => {
         mockLoadConfig.mockReturnValue({
           branchFlow: ['develop', 'main']
         })
@@ -528,7 +528,7 @@ describe('GitHub Setup', () => {
     describe('getRecommendedRepositorySettings()', () => {
       it('should return recommended settings with auto-merge enabled when configured', () => {
         mockLoadConfig.mockReturnValue({
-          autoMerge: {
+          autoPromote: {
             staging: true,
             main: true
           }
@@ -763,7 +763,7 @@ describe('GitHub Setup', () => {
       // Mock config with auto-merge for staging and main
       mockLoadConfig.mockReturnValue({
         branchFlow: ['develop', 'staging', 'main'],
-        autoMerge: {
+        autoPromote: {
           staging: true,
           main: true
         }
@@ -816,7 +816,7 @@ describe('GitHub Setup', () => {
       // Mock config without auto-merge
       mockLoadConfig.mockReturnValue({
         branchFlow: ['develop', 'main']
-        // No autoMerge field
+        // No autoPromote field
       })
 
       const recommended = getRecommendedRepositorySettings()
@@ -841,7 +841,7 @@ describe('GitHub Setup', () => {
 
     it('should handle already configured repository', async () => {
       mockLoadConfig.mockReturnValue({
-        autoMerge: { staging: true, main: true }
+        autoPromote: { staging: true, main: true }
       })
 
       const recommended = getRecommendedRepositorySettings()
@@ -1117,7 +1117,7 @@ describe('GitHub Setup', () => {
         // Mock config for branch display
         mockLoadConfig.mockReturnValue({
           branchFlow: ['develop', 'staging', 'main'],
-          autoMerge: {
+          autoPromote: {
             staging: true,
             main: true
           }

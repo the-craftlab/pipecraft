@@ -43,7 +43,7 @@
 import { type PinionContext, renderTemplate, toFile } from '@featherscloud/pinion'
 import fs from 'fs'
 import { logger } from '../../utils/logger.js'
-import { getActionOutputDir } from '../../utils/action-reference.js'
+import { getActionOutputDir, shouldGenerateActions } from '../../utils/action-reference.js'
 import type { PipecraftConfig } from '../../types/index.js'
 
 /**
@@ -65,7 +65,7 @@ inputs:
   node-version:
     description: 'Node.js version to use'
     required: false
-    default: '24'
+    default: '22'
 
 outputs:
   version:
@@ -136,17 +136,13 @@ runs:
           "version": "0.0.0-release-it"
         }' > package.json
 
-    - name: Install dependencies
-      shell: bash
-      run: npm install @release-it/conventional-changelog conventional-changelog-angular
-
     - name: Get version
       if: steps.get_version_old.outputs.version == ''
       id: get_version_new
       shell: bash
       run: |
-        # Get version and filter out warnings
-        RAW_OUTPUT=$(npx release-it --ci --release-version 2>&1 || echo "")
+        # Get version and filter out warnings (install release-it & plugin on the fly)
+        RAW_OUTPUT=$(npx --yes --package release-it --package @release-it/conventional-changelog release-it --ci --release-version 2>&1 || echo "")
         # Extract just the version number (last line that looks like a version)
         VERSION=$(echo "$RAW_OUTPUT" | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+' | tail -1 || true)
 
@@ -188,20 +184,21 @@ runs:
  * @returns {Promise<PinionContext>} Updated context after file generation
  */
 export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig> }) =>
-  Promise.resolve(ctx)
-    .then(ctx => {
-      // Determine output directory based on actionSourceMode
-      const config = ctx.config || {}
-      const outputDir = getActionOutputDir(config)
-      const filePath = `${outputDir}/calculate-version/action.yml`
-      const exists = fs.existsSync(filePath)
-      const status = exists ? '🔄 Merged with existing' : '📝 Created new'
-      logger.verbose(`${status} ${filePath}`)
-      return { ...ctx, actionOutputPath: filePath }
-    })
-    .then(ctx =>
-      renderTemplate(
-        versionActionTemplate,
-        toFile(ctx.actionOutputPath || 'actions/calculate-version/action.yml')
-      )(ctx)
-    )
+  Promise.resolve(ctx).then(ctx => {
+    // Determine output directory based on actionSourceMode
+    const config = ctx.config || {}
+
+    // Skip generation in remote mode - actions come from marketplace
+    if (!shouldGenerateActions(config)) {
+      logger.verbose('Skipping calculate-version action generation (using remote actions)')
+      return ctx
+    }
+
+    const outputDir = getActionOutputDir(config)
+    const filePath = `${outputDir}/calculate-version/action.yml`
+    const exists = fs.existsSync(filePath)
+    const status = exists ? '🔄 Merged with existing' : '📝 Created new'
+    logger.verbose(`${status} ${filePath}`)
+
+    return renderTemplate(versionActionTemplate, toFile(filePath))(ctx)
+  })

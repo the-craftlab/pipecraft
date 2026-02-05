@@ -31,13 +31,13 @@
  * 2. **Per-PR Activation**:
  *    - Must be explicitly enabled on each PR (via button, CLI, or API)
  *    - Pipecraft workflows automatically enable it for configured branches
- *    - Configured per-branch in .pipecraftrc autoMerge setting
+ *    - Configured per-branch in .pipecraftrc autoPromote setting
  *
  * Example config:
  * ```json
  * {
  *   "branchFlow": ["develop", "staging", "main"],
- *   "autoMerge": {
+ *   "autoPromote": {
  *     "staging": true,  // Auto-merge PRs to staging
  *     "main": true      // Auto-merge PRs to main
  *   }
@@ -713,28 +713,28 @@ export async function promptMergeCommitChanges(
  * Check if auto-merge should be enabled based on .pipecraftrc config.
  *
  * Auto-merge should be enabled at the repository level if ANY branch
- * has autoMerge configured in the config file.
+ * has autoPromote configured in the config file.
  */
 export function shouldEnableAutoMerge(): boolean {
   try {
     const config = loadConfig() as PipecraftConfig
 
-    if (!config.autoMerge) {
+    if (!config.autoPromote) {
       return false
     }
 
-    if (typeof config.autoMerge === 'boolean') {
-      return config.autoMerge
+    if (typeof config.autoPromote === 'boolean') {
+      return config.autoPromote
     }
 
-    if (typeof config.autoMerge === 'object') {
+    if (typeof config.autoPromote === 'object') {
       // Check if any branch has auto-merge enabled
-      return Object.values(config.autoMerge).some(enabled => enabled === true)
+      return Object.values(config.autoPromote).some(enabled => enabled === true)
     }
 
     return false
   } catch (error) {
-    // No config file or autoMerge not configured
+    // No config file or autoPromote not configured
     return false
   }
 }
@@ -743,7 +743,7 @@ export function shouldEnableAutoMerge(): boolean {
  * Get Pipecraft's recommended repository settings.
  *
  * These are the settings that work best with Pipecraft workflows:
- * - Allow auto-merge: ON if any branch has autoMerge in config, OFF otherwise
+ * - Allow auto-merge: ON if any branch has autoPromote in config, OFF otherwise
  * - Always suggest updating PR branches: ON
  * - Allow merge commits: OFF
  * - Allow rebase merging: OFF
@@ -919,21 +919,21 @@ export function displaySettingsComparison(
   if (current.allow_auto_merge || recommended.allow_auto_merge) {
     try {
       const config = loadConfig() as PipecraftConfig
-      if (config.autoMerge) {
+      if (config.autoPromote) {
         console.log('\n📋 Auto-Merge Branch Configuration:')
         console.log('   ℹ️  Repository-level allow_auto_merge must be ON for these to work\n')
 
-        if (typeof config.autoMerge === 'boolean') {
-          if (config.autoMerge) {
+        if (typeof config.autoPromote === 'boolean') {
+          if (config.autoPromote) {
             console.log('   • All branches: Auto-merge ENABLED ✅')
           } else {
             console.log('   • All branches: Auto-merge DISABLED')
           }
-        } else if (typeof config.autoMerge === 'object') {
+        } else if (typeof config.autoPromote === 'object') {
           const branches = config.branchFlow || []
-          const autoMergeConfig = config.autoMerge as Record<string, boolean>
+          const autoPromoteConfig = config.autoPromote as Record<string, boolean>
           branches.forEach(branch => {
-            const enabled = autoMergeConfig[branch]
+            const enabled = autoPromoteConfig[branch]
             if (enabled === true) {
               console.log(`   • ${branch}:`)
               console.log(`       Status: Auto-merge ENABLED ✅`)
@@ -1112,7 +1112,7 @@ export async function configureBranchProtection(
 ): Promise<void> {
   console.log('\n🔍 Checking auto-merge configuration...')
 
-  // Load config to get autoMerge settings
+  // Load config to get autoPromote settings
   let config: PipecraftConfig
   try {
     config = loadConfig() as PipecraftConfig
@@ -1121,8 +1121,8 @@ export async function configureBranchProtection(
     return
   }
 
-  if (!config.autoMerge || !config.branchFlow) {
-    console.log('ℹ️  No autoMerge configuration found - skipping branch protection setup')
+  if (!config.autoPromote || !config.branchFlow) {
+    console.log('ℹ️  No autoPromote configuration found - skipping branch protection setup')
     return
   }
 
@@ -1130,17 +1130,17 @@ export async function configureBranchProtection(
   // This function only configures branch protection for the branches that need it
 
   // Determine which branches need auto-merge
-  const autoMergeConfig = config.autoMerge
+  const autoPromoteConfig = config.autoPromote
   const branchesNeedingProtection: string[] = []
 
-  if (typeof autoMergeConfig === 'boolean') {
+  if (typeof autoPromoteConfig === 'boolean') {
     // If true for all, protect all intermediate branches
-    if (autoMergeConfig && config.branchFlow.length > 1) {
+    if (autoPromoteConfig && config.branchFlow.length > 1) {
       branchesNeedingProtection.push(...config.branchFlow.slice(1, -1))
     }
-  } else if (typeof autoMergeConfig === 'object') {
-    // Check which branches have autoMerge enabled
-    for (const [branch, enabled] of Object.entries(autoMergeConfig)) {
+  } else if (typeof autoPromoteConfig === 'object') {
+    // Check which branches have autoPromote enabled
+    for (const [branch, enabled] of Object.entries(autoPromoteConfig)) {
       if (enabled === true) {
         branchesNeedingProtection.push(branch)
       }
@@ -1180,7 +1180,7 @@ export async function configureBranchProtection(
           } else {
             console.log(`⚠️  Skipped ${branch}:`)
             console.log(`     • Auto-merge will not work without branch protection`)
-            console.log(`     • Run 'pipecraft setup-github' again to enable it`)
+            console.log(`     • Run 'pipecraft setup-github --apply' to enable it`)
           }
         }
       } else {
@@ -1257,7 +1257,7 @@ export async function setupGitHubPermissions(autoApply: boolean = false): Promis
       console.log('\n📍 To update manually:')
       console.log(`   1. Visit: ${repoInfo.owner}/${repoInfo.repo}/settings/actions`)
       console.log(`   2. Enable write permissions and PR creation`)
-      console.log(`   3. Or run 'pipecraft setup-github' again to auto-apply`)
+      console.log(`   3. Or run 'pipecraft setup-github --apply' to auto-apply`)
       // Still continue to check branch protection
       permissionsAlreadyCorrect = true
     }
@@ -1311,7 +1311,7 @@ export async function setupGitHubPermissions(autoApply: boolean = false): Promis
         console.log('\n📍 To update manually:')
         console.log(`   1. Visit: ${repoInfo.owner}/${repoInfo.repo}/settings`)
         console.log(`   2. Apply the recommended changes listed above`)
-        console.log(`   3. Or run 'pipecraft setup-github' again to auto-apply`)
+        console.log(`   3. Or run 'pipecraft setup-github --apply' to auto-apply`)
       }
     }
   } catch (error: any) {

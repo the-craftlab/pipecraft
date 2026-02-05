@@ -1,96 +1,146 @@
-/**
- * Gate Job Operation
- *
- * Creates a gate job that enforces "at least one success AND no failures" pattern
- * for all test jobs. This provides a single point of control for gating downstream
- * jobs like tag, promote, and deploy.
- */
+import { Document, Pair, Scalar, YAMLMap, YAMLSeq } from 'yaml'
+import { logger } from '../../../utils/logger.js'
 
-import {
-  createValueFromString,
-  type PathOperationConfig
-} from '../../../utils/ast-path-operations.js'
-
-export interface GateJobContext {
-  testJobNames: string[]
-  deployJobNames?: string[]
-  /**
-   * All jobs by prefix (from getDomainJobNames)
-   * Allows gating on any custom prefix jobs (e.g., lint, build, etc.)
-   */
-  allJobsByPrefix?: Record<string, string[]>
-}
-
-/**
- * Create a gate job operation that runs after all test jobs
- *
- * The gate job:
- * - Runs on ALL events (PRs, push to any branch)
- * - Depends on all test jobs
- * - Uses "at least one success AND no failures" pattern
- * - Provides a single gate point for downstream jobs (tag, deploy, etc.)
- * - Always runs (even if tests are skipped) using always()
- *
- * @param ctx - Context containing test job names
- * @returns Path operation config for the gate job
- */
-export function createGateJobOperation(ctx: GateJobContext): PathOperationConfig {
-  const { testJobNames, deployJobNames = [], allJobsByPrefix = {} } = ctx
-
-  // Collect all jobs from all prefixes
-  const allPrefixJobs = Object.values(allJobsByPrefix).flat()
-
-  // Combine test jobs, deploy jobs, and all prefix-based jobs
-  // Use Set to deduplicate (test/deploy jobs might also be in allJobsByPrefix)
-  const allGateJobs = Array.from(new Set([...testJobNames, ...deployJobNames, ...allPrefixJobs]))
-
-  if (allGateJobs.length === 0) {
-    // No jobs to gate - return a minimal gate that always succeeds
-    return {
-      path: 'jobs.gate',
-      operation: 'overwrite',
-      spaceBefore: true,
-      commentBefore: `
+const GATE_COMMENT = `
 =============================================================================
  GATE (⚠️  Managed by Pipecraft - do not modify)
 =============================================================================
- Gate job that ensures tests pass before allowing tag/promote/deploy.
- Uses pattern: at least ONE success AND NO failures (skipped is OK).
-`,
-      value: createValueFromString(`
-    needs: [ version ]
-    if: \${{ always() && needs.version.result == 'success' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Gate passed
-        run: echo "No test jobs configured - gate passes"
-  `)
+ Gate job that ensures prior jobs succeed before allowing tag/promote/release.
+ Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+` as const
+
+const DEFAULT_GATE_STEP_RUN =
+  'echo "All prerequisite jobs succeeded or were skipped - gate allows progression"'
+
+function toKeyString(key: any): string {
+  if (key instanceof Scalar) {
+    return typeof key.value === 'string' ? key.value : String(key.value)
+  }
+
+  return String(key)
+}
+
+function buildNeedsSequence(jobNames: string[]): YAMLSeq {
+  const seq = new YAMLSeq()
+  seq.items = jobNames.map(name => new Scalar(name))
+  return seq
+}
+
+function buildIfExpression(jobNames: string[]): Scalar {
+  const clauses = jobNames.map(
+    name => `(needs['${name}'].result == 'success' || needs['${name}'].result == 'skipped')`
+  )
+  const expression = clauses.length > 0 ? `always() && ${clauses.join(' && ')}` : 'always()'
+  const scalar = new Scalar(`\${{ ${expression} }}`)
+  scalar.type = Scalar.QUOTE_DOUBLE
+  return scalar
+}
+
+function ensureDefaultRunsAndSteps(gateMap: YAMLMap) {
+  if (!gateMap.has('runs-on')) {
+    gateMap.set('runs-on', new Scalar('ubuntu-latest'))
+  }
+
+  if (!gateMap.has('steps')) {
+    const stepsSeq = new YAMLSeq()
+    const stepMap = new YAMLMap()
+    stepMap.set('name', new Scalar('Gate passed'))
+    stepMap.set('run', new Scalar(DEFAULT_GATE_STEP_RUN))
+    stepsSeq.items = [stepMap]
+    gateMap.set('steps', stepsSeq)
+  }
+}
+
+function dedupePreserveOrder(values: string[]): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+
+  for (const value of values) {
+    if (!seen.has(value)) {
+      seen.add(value)
+      result.push(value)
     }
   }
 
-  // Build the "at least one success AND no failures" condition
-  const noFailures = allGateJobs.map(job => `needs.${job}.result != 'failure'`).join(' && ')
-  const atLeastOneSuccess = allGateJobs.map(job => `needs.${job}.result == 'success'`).join(' || ')
-  const gateCondition = `always() && needs.version.result == 'success' && (${noFailures}) && (${atLeastOneSuccess})`
+  return result
+}
 
-  return {
-    path: 'jobs.gate',
-    operation: 'overwrite',
-    spaceBefore: true,
-    commentBefore: `
-=============================================================================
- GATE (⚠️  Managed by Pipecraft - do not modify)
-=============================================================================
- Gate job that ensures tests pass before allowing tag/promote/deploy.
- Uses pattern: at least ONE success AND NO failures (skipped is OK).
-`,
-    value: createValueFromString(`
-    needs: [ version, ${allGateJobs.join(', ')} ]
-    if: \${{ ${gateCondition} }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Gate passed
-        run: echo "All tests passed - gate allows progression"
-  `)
+export interface EnsureGateOptions {
+  force: boolean
+}
+
+export function ensureGateJob(doc: Document.Parsed, options: EnsureGateOptions) {
+  const { force } = options
+  const root = doc.contents
+
+  if (!(root instanceof YAMLMap)) {
+    logger.warn('⚠️  Unable to update gate job - root YAML node is not a map')
+    return
+  }
+
+  let jobsNode = root.get('jobs') as YAMLMap | undefined
+
+  if (!(jobsNode instanceof YAMLMap)) {
+    jobsNode = new YAMLMap()
+    const jobsPair = new Pair(new Scalar('jobs'), jobsNode)
+    ;(root.items as any[]).push(jobsPair)
+  }
+
+  const items = jobsNode.items as Pair[]
+  const gateIndex = items.findIndex(pair => toKeyString(pair.key) === 'gate')
+  const tagIndex = items.findIndex(pair => toKeyString(pair.key) === 'tag')
+
+  let gatePair: Pair
+  const gateExisted = gateIndex !== -1
+
+  if (gateExisted) {
+    gatePair = items[gateIndex]
+  } else {
+    const insertionIndex = tagIndex !== -1 ? tagIndex : items.length
+    gatePair = new Pair(new Scalar('gate'), new YAMLMap())
+    ;(gatePair as any).spaceBefore = true
+    ;(gatePair as any).commentBefore = GATE_COMMENT.trimEnd()
+    items.splice(insertionIndex, 0, gatePair)
+  }
+
+  const currentIndex = items.indexOf(gatePair)
+  const priorJobs = items.slice(0, currentIndex)
+
+  // Filter out disabled jobs (those with if: false or if: ${{ false }})
+  const enabledPriorJobs = priorJobs.filter(pair => {
+    const jobMap = pair.value
+    if (!(jobMap instanceof YAMLMap)) return false
+
+    const ifCondition = jobMap.get('if')
+    if (!ifCondition) return true // No condition means enabled
+
+    // Check if explicitly disabled
+    const ifValue =
+      ifCondition instanceof Scalar ? String(ifCondition.value).trim() : String(ifCondition).trim()
+    return ifValue !== 'false' && ifValue !== '${{ false }}'
+  })
+
+  const priorJobKeys = enabledPriorJobs.map(pair => toKeyString(pair.key))
+  const prerequisites = dedupePreserveOrder(priorJobKeys)
+
+  let gateMap = gatePair.value
+  if (!(gateMap instanceof YAMLMap)) {
+    gateMap = new YAMLMap()
+    gatePair.value = gateMap
+  }
+
+  if (!(gatePair as any).commentBefore) {
+    ;(gatePair as any).commentBefore = GATE_COMMENT.trimEnd()
+  }
+
+  if (!gateExisted) {
+    ensureDefaultRunsAndSteps(gateMap as YAMLMap)
+  }
+
+  const shouldUpdateControlFields = force || !gateExisted
+
+  if (shouldUpdateControlFields) {
+    ;(gateMap as YAMLMap).set('needs', buildNeedsSequence(prerequisites))
+    ;(gateMap as YAMLMap).set('if', buildIfExpression(prerequisites))
   }
 }

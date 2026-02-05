@@ -414,14 +414,14 @@ describe('Messaging System', () => {
       expect(summary.warnings[0]).toContain('2 settings can be optimized')
     })
 
-    it('should combine all items from permissions, settings, and autoMerge', () => {
+    it('should combine all items from permissions, settings, and autoPromote', () => {
       const permissions: StatusItem[] = [
         { category: 'Permissions', name: 'P1', current: 'ok', status: 'correct', action: 'None' }
       ]
       const settings: StatusItem[] = [
         { category: 'Settings', name: 'S1', current: 'ok', status: 'correct', action: 'None' }
       ]
-      const autoMerge: StatusItem[] = [
+      const autoPromote: StatusItem[] = [
         { category: 'Auto-merge', name: 'A1', current: 'ok', status: 'correct', action: 'None' }
       ]
 
@@ -434,13 +434,13 @@ describe('Messaging System', () => {
         'my-org/my-repo',
         permissions,
         settings,
-        autoMerge,
+        autoPromote,
         context
       )
 
       expect(summary.permissions).toHaveLength(1)
       expect(summary.settings).toHaveLength(1)
-      expect(summary.autoMerge).toHaveLength(1)
+      expect(summary.autoPromote).toHaveLength(1)
     })
   })
 

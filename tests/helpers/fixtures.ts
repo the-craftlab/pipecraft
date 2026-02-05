@@ -77,7 +77,7 @@ export function createTrunkFlowConfig(overrides: Partial<PipecraftConfig> = {}):
     initialBranch: 'develop',
     finalBranch: 'main',
     branchFlow: ['develop', 'staging', 'main'],
-    autoMerge: {
+    autoPromote: {
       staging: true,
       main: false
     },

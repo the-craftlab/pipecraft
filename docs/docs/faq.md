@@ -376,7 +376,7 @@ Fix reported issues and try generating again.
    ```
 4. **Check change detection output**: Look at the `changes` job output
 
-See the [Troubleshooting guide](./troubleshooting.md) for detailed debugging steps.
+See the [Troubleshooting guide](troubleshooting.md) for detailed debugging steps.
 
 ---
 
@@ -390,7 +390,7 @@ PipeCraft workflows require:
 - **pull-requests: write** - For branch promotion PRs
 - **actions: read** (optional) - For triggering subsequent workflows
 
-These are standard for CI/CD automation. Review the [Security guide](./security.md) for details.
+These are standard for CI/CD automation. Review the [Security guide](security.md) for details.
 
 ### Can I use GitHub self-hosted runners?
 
@@ -582,7 +582,7 @@ Your customizations will be preserved during regeneration.
 
 ### How can I contribute?
 
-We welcome contributions! See the [Contributing guide](./contributing.md) for:
+We welcome contributions! See the [Contributing guide](contributing.md) for:
 
 - Development setup
 - Code architecture

@@ -218,8 +218,9 @@ program
       logger.verbose(`📖 Reading config from: ${configPath}`)
       logger.verbose(`📖 Reading pipeline from: ${pipelinePath}`)
 
-      // Load configuration
+      // Load and validate configuration
       const config = loadConfig(configPath) as PipecraftConfig
+      validateConfig(config)
 
       if (globalOptions.dryRun) {
         logger.info('🔍 Dry run mode - would generate workflows')
@@ -295,7 +296,7 @@ program
 program
   .command('get-config')
   .description('Get a configuration value by key path (supports JSON, YAML, JS, etc.)')
-  .argument('<key>', 'key path to retrieve (e.g., "branchFlow" or "autoMerge.staging")')
+  .argument('<key>', 'key path to retrieve (e.g., "branchFlow" or "autoPromote.staging")')
   .option('--format <format>', 'output format: json, space-separated, or raw', 'raw')
   .action(async (key, options) => {
     try {
@@ -305,7 +306,7 @@ program
       const config = loadConfig(configPath)
       validateConfig(config)
 
-      // Parse nested key path (e.g., "autoMerge.staging")
+      // Parse nested key path (e.g., "autoPromote.staging")
       const getValue = (obj: any, path: string): any => {
         return path.split('.').reduce((current, key) => {
           return current?.[key]
