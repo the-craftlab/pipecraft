@@ -42,8 +42,7 @@ const ACTION_TEMPLATES = [
   { name: 'create-tag', path: 'actions/create-tag/action.yml' },
   { name: 'detect-changes', path: 'actions/detect-changes/action.yml' },
   { name: 'manage-branch', path: 'actions/manage-branch/action.yml' },
-  { name: 'promote-branch', path: 'actions/promote-branch/action.yml' },
-  { name: 'run-nx-affected', path: 'actions/run-nx-affected/action.yml', optional: true }
+  { name: 'promote-branch', path: 'actions/promote-branch/action.yml' }
 ]
 
 /**
@@ -69,7 +68,7 @@ function generateActionsFromTemplates(): void {
       strategy: 'path-based',
       domains: { api: ['api/**'], web: ['web/**'] },
       branchFlow: ['develop', 'main'],
-      autoMerge: { main: false }
+      autoPromote: { main: false }
     }
 
     fs.writeFileSync(

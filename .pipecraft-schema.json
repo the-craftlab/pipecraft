@@ -1,0 +1,294 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pipecraft.thecraftlab.dev/schema.json",
+  "title": "PipeCraft Configuration",
+  "description": "Configuration schema for PipeCraft CI/CD workflow generator. Supports trunk-based development with domain-based change detection, semantic versioning, and branch promotion.",
+  "type": "object",
+  "required": [
+    "ciProvider",
+    "mergeStrategy",
+    "requireConventionalCommits",
+    "initialBranch",
+    "finalBranch",
+    "branchFlow",
+    "semver",
+    "domains"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference for editor validation"
+    },
+    "ciProvider": {
+      "type": "string",
+      "enum": ["github", "gitlab"],
+      "description": "CI/CD provider platform. Currently 'github' is fully supported, 'gitlab' support is planned."
+    },
+    "mergeStrategy": {
+      "type": "string",
+      "enum": ["fast-forward", "merge"],
+      "description": "Git merge strategy for branch promotions. 'fast-forward' requires linear history, 'merge' creates merge commits."
+    },
+    "requireConventionalCommits": {
+      "type": "boolean",
+      "description": "Whether to enforce conventional commit message format (https://www.conventionalcommits.org/)."
+    },
+    "initialBranch": {
+      "type": "string",
+      "description": "The first branch in the promotion flow (typically 'develop' or 'dev'). Must be first in branchFlow.",
+      "examples": ["develop", "dev"]
+    },
+    "finalBranch": {
+      "type": "string",
+      "description": "The final production branch (typically 'main' or 'master'). Must be last in branchFlow.",
+      "examples": ["main", "master"]
+    },
+    "branchFlow": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "Ordered list of branches in the promotion flow from initial to final. Must start with initialBranch and end with finalBranch.",
+      "examples": [
+        ["develop", "main"],
+        ["develop", "staging", "main"]
+      ]
+    },
+    "autoPromote": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "default": false,
+      "description": "Auto-promote configuration for branch promotions. When enabled, code is automatically promoted (fast-forwarded) to the next branch after checks pass. When disabled, a PR is created for manual review.",
+      "examples": [true, { "staging": true, "main": false }]
+    },
+    "mergeMethod": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["auto", "merge", "squash", "rebase"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["auto", "merge", "squash", "rebase"]
+          }
+        }
+      ],
+      "default": "auto",
+      "description": "Git merge method for auto-merge operations. Can be set globally or per-branch."
+    },
+    "semver": {
+      "type": "object",
+      "required": ["bumpRules"],
+      "properties": {
+        "bumpRules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["major", "minor", "patch", "ignore"]
+          },
+          "description": "Mapping of commit types to semver bump levels.",
+          "examples": [
+            {
+              "feat": "minor",
+              "fix": "patch",
+              "breaking": "major",
+              "chore": "patch"
+            }
+          ]
+        }
+      },
+      "description": "Semantic versioning configuration. Maps conventional commit types to version bump levels."
+    },
+    "domains": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/DomainConfig"
+      },
+      "minProperties": 1,
+      "description": "Domain definitions for monorepo path-based change detection. Each domain represents a logical part of the codebase.",
+      "examples": [
+        {
+          "api": {
+            "paths": ["apps/api/**"],
+            "description": "API service"
+          },
+          "web": {
+            "paths": ["apps/web/**"],
+            "description": "Web application"
+          }
+        }
+      ]
+    },
+    "packageManager": {
+      "type": "string",
+      "enum": ["npm", "yarn", "pnpm"],
+      "deprecated": true,
+      "description": "DEPRECATED: This field is no longer used. PipeCraft now supports language-agnostic workflows."
+    },
+    "actionSourceMode": {
+      "type": "string",
+      "enum": ["local", "remote", "source"],
+      "default": "local",
+      "description": "How workflows should reference PipeCraft actions. 'local' copies actions to .github/actions/, 'remote' references published marketplace actions."
+    },
+    "actionVersion": {
+      "type": "string",
+      "default": "v1",
+      "description": "Version/tag to use when actionSourceMode is 'remote'. Pins workflows to a specific action version.",
+      "examples": ["v1", "v1.2.3", "main"]
+    },
+    "rebuild": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether idempotency checking is enabled."
+        },
+        "skipIfUnchanged": {
+          "type": "boolean",
+          "description": "Skip regeneration if config hash hasn't changed."
+        },
+        "forceRegenerate": {
+          "type": "boolean",
+          "description": "Force regeneration even if hash matches."
+        },
+        "watchMode": {
+          "type": "boolean",
+          "description": "Enable watch mode for automatic regeneration on config changes."
+        },
+        "hashAlgorithm": {
+          "type": "string",
+          "enum": ["md5", "sha1", "sha256"],
+          "description": "Hashing algorithm for detecting config changes."
+        },
+        "cacheFile": {
+          "type": "string",
+          "description": "Path to cache file storing previous config hash."
+        },
+        "ignorePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Patterns to ignore when calculating config hash."
+        }
+      },
+      "description": "Idempotency and rebuild configuration."
+    },
+    "versioning": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether version management is enabled."
+        },
+        "releaseItConfig": {
+          "type": "string",
+          "description": "Path to release-it configuration file."
+        },
+        "conventionalCommits": {
+          "type": "boolean",
+          "description": "Use conventional commits for version calculation."
+        },
+        "autoTag": {
+          "type": "boolean",
+          "description": "Automatically create git tags for new versions."
+        },
+        "autoPush": {
+          "type": "boolean",
+          "description": "Automatically push tags to remote after creation."
+        },
+        "changelog": {
+          "type": "boolean",
+          "description": "Generate CHANGELOG.md from conventional commits."
+        },
+        "bumpRules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "deprecated": true,
+          "description": "DEPRECATED: Use semver.bumpRules instead. This field is ignored if semver.bumpRules is present."
+        }
+      },
+      "description": "Version management configuration using release-it."
+    },
+    "autoMerge": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "deprecated": true,
+      "description": "DEPRECATED: Use autoPromote instead. This is an alias for backwards compatibility."
+    }
+  },
+  "definitions": {
+    "DomainConfig": {
+      "type": "object",
+      "required": ["paths", "description"],
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Glob patterns matching files in this domain. Changes to these paths will trigger domain-specific jobs.",
+          "examples": [["apps/api/**", "libs/shared/**"]]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the domain's purpose."
+        },
+        "prefixes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Job prefixes to generate for this domain (e.g., ['test', 'deploy', 'lint']).",
+          "examples": [
+            ["test", "deploy"],
+            ["lint", "build", "test", "deploy", "e2e"]
+          ]
+        },
+        "testable": {
+          "type": "boolean",
+          "default": false,
+          "deprecated": true,
+          "description": "DEPRECATED: Use prefixes: ['test'] instead."
+        },
+        "deployable": {
+          "type": "boolean",
+          "default": false,
+          "deprecated": true,
+          "description": "DEPRECATED: Use prefixes: ['deploy'] instead."
+        },
+        "remoteTestable": {
+          "type": "boolean",
+          "default": false,
+          "deprecated": true,
+          "description": "DEPRECATED: Use prefixes: ['remote-test'] instead."
+        }
+      }
+    }
+  }
+}

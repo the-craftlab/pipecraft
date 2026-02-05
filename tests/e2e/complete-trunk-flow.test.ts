@@ -114,11 +114,14 @@ describe('Complete Trunk Flow E2E', () => {
         const config = {
           ciProvider: 'github',
           mergeStrategy: 'fast-forward',
+          requireConventionalCommits: true,
+          initialBranch: 'develop',
+          finalBranch: 'main',
           branchFlow: ['develop', 'main'],
           domains: {
-            api: { paths: ['apps/api/**'] },
-            web: { paths: ['apps/web/**'] },
-            shared: { paths: ['libs/**'] }
+            api: { paths: ['apps/api/**'], description: 'API' },
+            web: { paths: ['apps/web/**'], description: 'Web' },
+            shared: { paths: ['libs/**'], description: 'Shared' }
           }
         }
         writeFileSync('.pipecraftrc', JSON.stringify(config, null, 2))
@@ -163,10 +166,11 @@ describe('Complete Trunk Flow E2E', () => {
         const config = {
           ciProvider: 'github',
           mergeStrategy: 'fast-forward',
+          requireConventionalCommits: true,
           branchFlow: ['develop', 'main'],
           initialBranch: 'develop',
           finalBranch: 'main',
-          domains: { api: { paths: ['src/**'] } }
+          domains: { api: { paths: ['src/**'], description: 'API' } }
         }
         writeFileSync('.pipecraftrc', JSON.stringify(config, null, 2))
 
@@ -200,10 +204,11 @@ describe('Complete Trunk Flow E2E', () => {
         const config = {
           ciProvider: 'github',
           mergeStrategy: 'fast-forward',
+          requireConventionalCommits: true,
           branchFlow: ['develop', 'staging', 'main'],
           initialBranch: 'develop',
           finalBranch: 'main',
-          domains: { api: { paths: ['src/**'] } }
+          domains: { api: { paths: ['src/**'], description: 'API' } }
         }
         writeFileSync('.pipecraftrc', JSON.stringify(config, null, 2))
 
@@ -236,8 +241,11 @@ describe('Complete Trunk Flow E2E', () => {
         const config = {
           ciProvider: 'github',
           mergeStrategy: 'fast-forward',
+          requireConventionalCommits: true,
+          initialBranch: 'develop',
+          finalBranch: 'main',
           branchFlow: ['develop', 'main'],
-          domains: { api: { paths: ['src/**'] } }
+          domains: { api: { paths: ['src/**'], description: 'API' } }
         }
         writeFileSync('.pipecraftrc', JSON.stringify(config, null, 2))
 
