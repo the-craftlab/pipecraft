@@ -233,7 +233,6 @@ export const generate = (ctx: PathBasedPipelineContext) =>
         // Changes detection (path-based)
         createChangesJobOperation({
           domains,
-          useNx: false,
           baseRef: config.finalBranch,
           config
         }),
@@ -241,7 +240,6 @@ export const generate = (ctx: PathBasedPipelineContext) =>
         // Version calculation (simplified - only depends on changes)
         createVersionJobOperation({
           testJobNames: [], // No test job dependencies in new model
-          nxEnabled: false,
           baseRef: config.finalBranch,
           config
         }),

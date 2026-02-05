@@ -105,7 +105,6 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
       - uses: ${tagActionRef}
         with:
           version: \${{ needs.version.outputs.version }}
-          commitSha: \${{ inputs.commitSha || github.sha }}
   `)
     },
 
@@ -156,7 +155,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
     needs: [ tag, version ]
     if: \${{ always() && github.ref_name == '${
       validBranchFlow[validBranchFlow.length - 1]
-    }' && needs.version.result == 'success' && needs.version.outputs.version != '' && needs.tag.result == 'success' }}
+    }' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -166,7 +165,6 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
       - uses: ${releaseActionRef}
         with:
           version: \${{ needs.version.outputs.version }}
-          commitSha: \${{ inputs.commitSha || github.sha }}
   `)
     }
   ]

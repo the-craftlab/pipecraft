@@ -13,7 +13,6 @@ import type { PipecraftConfig } from '../../../types/index.js'
 
 export interface VersionContext {
   testJobNames: string[]
-  nxEnabled?: boolean
   baseRef?: string
   config?: Partial<PipecraftConfig>
 }
@@ -22,17 +21,15 @@ export interface VersionContext {
  * Create the version calculation job operation
  */
 export function createVersionJobOperation(ctx: VersionContext): PathOperationConfig {
-  const { testJobNames, nxEnabled = false, baseRef = 'main', config = {} } = ctx
+  const { testJobNames, baseRef = 'main', config = {} } = ctx
 
   // Get the action reference based on configuration
   const actionRef = getActionReference('calculate-version', config)
 
   // Build the needs array
-  const nxJobName = nxEnabled ? 'test-nx' : null
-  const needsArray = ['changes', nxJobName, ...testJobNames].filter(Boolean)
+  const needsArray = ['changes', ...testJobNames].filter(Boolean)
 
   // Build the conditional logic
-  const nxCondition = nxEnabled ? "needs.test-nx.result == 'success'" : ''
   const testConditions =
     testJobNames.length > 0
       ? [
@@ -41,12 +38,7 @@ export function createVersionJobOperation(ctx: VersionContext): PathOperationCon
         ]
       : []
 
-  const allConditions = [
-    'always()',
-    "github.event_name != 'pull_request'",
-    nxCondition,
-    ...testConditions
-  ]
+  const allConditions = ['always()', "github.event_name != 'pull_request'", ...testConditions]
     .filter(Boolean)
     .join(' && ')
 
@@ -74,7 +66,7 @@ export function createVersionJobOperation(ctx: VersionContext): PathOperationCon
         id: version
         with:
           baseRef: \${{ inputs.baseRef || '${baseRef}' }}
-          commitSha: \${{ inputs.commitSha || github.sha }}
+          version: \${{ inputs.version }}
           node-version: \${{ env.NODE_VERSION }}
     outputs:
       version: \${{ steps.version.outputs.version }}

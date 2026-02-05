@@ -151,9 +151,9 @@ runs:
 
         TITLE="🚀 Release $VERSION to $TARGET"
 
-        # Determine promotion behavior text
+        # Determine merge behavior text
         if [ "$AUTO_PROMOTE" == "true" ]; then
-          MERGE_TEXT="promote automatically"
+          MERGE_TEXT="merge automatically"
         else
           MERGE_TEXT="require manual approval"
         fi
@@ -303,4 +303,4 @@ runs:
         echo "ℹ️  Using existing PR #$PR_NUMBER"
         echo "🔗 URL: $PR_URL"
 
-        # Note: Fast-forward merge happens in separate step if autoMerge is enabled
+        # Note: Fast-forward merge happens in separate step if autoPromote is enabled

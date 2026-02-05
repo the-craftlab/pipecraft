@@ -20,7 +20,6 @@ import type { PipecraftConfig } from '../../../types/index.js'
 
 export interface ChangesContext {
   domains: Record<string, any>
-  useNx?: boolean
   baseRef?: string
   config?: Partial<PipecraftConfig>
 }
@@ -32,7 +31,7 @@ export interface ChangesContext {
  * The detect-changes action receives this as structured input.
  */
 export function createChangesJobOperation(ctx: ChangesContext): PathOperationConfig {
-  const { domains, useNx = false, baseRef = 'main', config = {} } = ctx
+  const { domains, baseRef = 'main', config = {} } = ctx
   const sortedDomains = Object.keys(domains).sort()
 
   // Get the action reference based on configuration
@@ -83,14 +82,10 @@ ${domainsYaml}
         with:
           baseRef: \${{ inputs.baseRef || '${baseRef}' }}
           domains-config: \${{ env.DOMAINS }}
-          useNx: '${useNx ? 'true' : 'false'}'
-          node-version: \${{ env.NODE_VERSION }}
     outputs:
 ${outputsSection}
       changes: \${{ steps.detect.outputs.changes }}
       affectedDomains: \${{ steps.detect.outputs.affectedDomains }}
-      nxAvailable: \${{ steps.detect.outputs.nxAvailable }}
-      affectedProjects: \${{ steps.detect.outputs.affectedProjects }}
   `)
   }
 }

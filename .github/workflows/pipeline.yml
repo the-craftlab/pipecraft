@@ -24,6 +24,11 @@
 
 name: Pipeline
 
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
 run-name: "${{ github.event_name == 'pull_request' && !contains('develop,staging,main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #${{ inputs.run_number || github.run_number }}${{ inputs.version && format(' - {0}', inputs.version) || '' }}"
 
 #Git fetch depth configuration
@@ -125,17 +130,12 @@ jobs:
         with:
           baseRef: ${{ inputs.baseRef || 'main' }}
           domains-config: ${{ env.DOMAINS }}
-          useNx: 'false'
-          node-version: ${{ env.NODE_VERSION }}
-          pnpm-version: ${{ env.PNPM_VERSION }}
     outputs:
       cicd: ${{ fromJSON(steps.detect.outputs.changes).cicd }}
       core: ${{ fromJSON(steps.detect.outputs.changes).core }}
       docs: ${{ fromJSON(steps.detect.outputs.changes).docs }}
       changes: ${{ steps.detect.outputs.changes }}
       affectedDomains: ${{ steps.detect.outputs.affectedDomains }}
-      nxAvailable: ${{ steps.detect.outputs.nxAvailable }}
-      affectedProjects: ${{ steps.detect.outputs.affectedProjects }}
 
   #=============================================================================
   # VERSIONING (⚠️  Managed by Pipecraft - do not modify)
@@ -246,7 +246,8 @@ jobs:
       - version
     if: ${{
         needs.changes.outputs.docs == 'true' ||
-        (needs.version.result == 'success' && needs.version.outputs.version != '')
+        (needs.version.result == 'success' &&
+        needs.version.outputs.version != '')
       }}
     runs-on: ubuntu-latest
     steps:
@@ -304,7 +305,7 @@ jobs:
         needs.test-docs.result == 'success' &&
         (
           needs.changes.outputs.docs == 'true' ||
-          needs.version.outputs.version != ''
+        needs.version.outputs.version != ''
         ) &&
         github.ref_name == 'main'
       }}
@@ -343,7 +344,7 @@ jobs:
     if: ${{
         (
           needs.changes.outputs.docs == 'true' ||
-          needs.version.outputs.version != ''
+        needs.version.outputs.version != ''
         ) &&
         needs.deploy-docs.result == 'success' &&
         needs.version.result == 'success' &&
@@ -422,7 +423,6 @@ jobs:
       - uses: ./actions/create-tag
         with:
           version: ${{ needs.version.outputs.version }}
-          commitSha: ${{ inputs.commitSha || github.sha }}
 
   #=============================================================================
   # PROMOTE (⚠️  Managed by Pipecraft - do not modify)
@@ -433,20 +433,14 @@ jobs:
     needs: [ version, tag ]
     if: ${{
         always() &&
-        (
-        github.event_name == 'push' ||
-        github.event_name == 'workflow_dispatch'
-      ) &&
+        (github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch') &&
         needs.version.result == 'success' &&
         needs.version.outputs.version != '' &&
-        (
-        needs.tag.result == 'success' ||
-        needs.tag.result == 'skipped'
-      ) &&
-        (
-        github.ref_name == 'develop' ||
-        github.ref_name == 'staging'
-      )
+        (needs.tag.result == 'success' ||
+        needs.tag.result == 'skipped') &&
+        (github.ref_name == 'develop' ||
+        github.ref_name == 'staging')
       }}
     runs-on: ubuntu-latest
     steps:
@@ -459,7 +453,7 @@ jobs:
           version: ${{ needs.version.outputs.version }}
           sourceBranch: ${{ github.ref_name }}
           targetBranch: ${{ github.ref_name == 'develop' && 'staging' || 'main' }}
-          autoMerge: ${{ github.ref_name == 'develop' && 'true' || 'true' }}
+          autoPromote: ${{ (github.ref_name == 'develop' && 'true') || (github.ref_name == 'staging' && 'true') || 'false' }}
           run_number: ${{ inputs.run_number || github.run_number }}
 
   #=============================================================================
@@ -474,7 +468,8 @@ jobs:
         github.ref_name == 'main' &&
         needs.version.result == 'success' &&
         needs.version.outputs.version != '' &&
-        (needs.tag.result == 'success' || needs.tag.result == 'skipped')
+        (needs.tag.result == 'success' ||
+        needs.tag.result == 'skipped')
       }}
     runs-on: ubuntu-latest
     steps:
@@ -485,4 +480,3 @@ jobs:
       - uses: ./actions/create-release
         with:
           version: ${{ needs.version.outputs.version }}
-          commitSha: ${{ inputs.commitSha || github.sha }}
