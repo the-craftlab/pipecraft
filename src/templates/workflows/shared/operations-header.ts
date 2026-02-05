@@ -180,6 +180,16 @@ Runtime versions
       },
       required: true
     },
+    {
+      path: 'on.workflow_dispatch.inputs.beforeSha',
+      operation: 'set',
+      value: {
+        description: 'The commit SHA before promotion (for change detection)',
+        required: false,
+        type: 'string'
+      },
+      required: true
+    },
 
     // workflow_call inputs (same as workflow_dispatch)
     {
@@ -217,6 +227,16 @@ Runtime versions
       operation: 'set',
       value: {
         description: 'The exact commit SHA to checkout and test',
+        required: false,
+        type: 'string'
+      },
+      required: true
+    },
+    {
+      path: 'on.workflow_call.inputs.beforeSha',
+      operation: 'set',
+      value: {
+        description: 'The commit SHA before promotion (for change detection)',
         required: false,
         type: 'string'
       },
