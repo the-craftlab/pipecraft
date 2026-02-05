@@ -7,6 +7,10 @@ inputs:
     description: 'Base reference to compare against'
     required: false
     default: 'main'
+  beforeSha:
+    description: 'Commit SHA before promotion (for accurate change detection on workflow_dispatch)'
+    required: false
+    default: ''
   domains-config:
     description: 'YAML string of domain configurations (embedded in pipeline at generation time)'
     required: true
@@ -73,11 +77,31 @@ runs:
           echo "EOF"
         } >> $GITHUB_OUTPUT
 
+    - name: Configure Change Detection
+      id: config-detection
+      shell: bash
+      run: |
+        BEFORE_SHA="${{ inputs.beforeSha }}"
+        BASE_BRANCH="${{ steps.set-base.outputs.base_branch }}"
+
+        if [ -n "$BEFORE_SHA" ]; then
+          # Promoted build: compare current SHA against the pre-promotion SHA
+          echo "base=$BEFORE_SHA" >> $GITHUB_OUTPUT
+          echo "ref=${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "📍 Promoted build: comparing ${{ github.sha }} against $BEFORE_SHA"
+        else
+          # Regular push/PR: compare against base branch
+          echo "base=$BASE_BRANCH" >> $GITHUB_OUTPUT
+          echo "ref=" >> $GITHUB_OUTPUT
+          echo "📍 Regular build: comparing against $BASE_BRANCH"
+        fi
+
     - name: Detect Changes with Paths Filter
       uses: dorny/paths-filter@v3
       id: filter
       with:
-        base: ${{ steps.set-base.outputs.base_branch }}
+        base: ${{ steps.config-detection.outputs.base }}
+        ref: ${{ steps.config-detection.outputs.ref }}
         filters: ${{ steps.transform-config.outputs.filters }}
 
     - name: Generate Outputs

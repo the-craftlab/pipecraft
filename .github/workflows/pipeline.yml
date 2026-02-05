@@ -65,6 +65,10 @@ on:
         description: The exact commit SHA to checkout and test
         required: false
         type: string
+      beforeSha:
+        description: The commit SHA before promotion (for change detection)
+        required: false
+        type: string
   workflow_call:
     inputs:
       version:
@@ -81,6 +85,10 @@ on:
         type: string
       commitSha:
         description: The exact commit SHA to checkout and test
+        required: false
+        type: string
+      beforeSha:
+        description: The commit SHA before promotion (for change detection)
         required: false
         type: string
   push:
@@ -129,6 +137,7 @@ jobs:
         id: detect
         with:
           baseRef: ${{ inputs.baseRef || 'main' }}
+          beforeSha: ${{ inputs.beforeSha || github.event.before || '' }}
           domains-config: ${{ env.DOMAINS }}
     outputs:
       cicd: ${{ fromJSON(steps.detect.outputs.changes).cicd }}
@@ -167,7 +176,11 @@ jobs:
   lint:
     needs: changes
     # Skip on promoted builds (inputs.version set) - already tested on develop
-    if: ${{ !inputs.version && (needs.changes.outputs.core == 'true' || needs.changes.outputs.cicd == 'true') }}
+    if: ${{
+        !inputs.version &&
+        (needs.changes.outputs.core == 'true' ||
+        needs.changes.outputs.cicd == 'true')
+      }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -369,35 +382,21 @@ jobs:
 
 
   #=============================================================================
-  # GATE (⚠️  Managed by Pipecraft - do not modify)
+  # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
   #=============================================================================
-  # Gate job that ensures tests pass before allowing tag/promote/deploy.
-  # Uses pattern: at least ONE success AND NO failures (skipped is OK).
+  # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
+  # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
 
+  # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
+  # the 'if' condition to include them. These fields are preserved on regeneration.
+  # Example: needs: [changes, version, test-myapp, build-myapp]
   gate:
-    needs: [ version, test-cicd, test-core, test-docs, deploy-docs, remote-test-docs ]
-    if: ${{
-        always() &&
-        needs.version.result == 'success' &&
-        (
-        needs.test-cicd.result != 'failure' &&
-        needs.test-core.result != 'failure' &&
-        needs.test-docs.result != 'failure' &&
-        needs.deploy-docs.result != 'failure' &&
-        needs.remote-test-docs.result != 'failure'
-      ) &&
-        (
-        needs.test-cicd.result == 'success' ||
-        needs.test-core.result == 'success' ||
-        needs.test-docs.result == 'success' ||
-        needs.deploy-docs.result == 'success' ||
-        needs.remote-test-docs.result == 'success'
-      )
-      }}
     runs-on: ubuntu-latest
     steps:
       - name: Gate passed
-        run: echo "All tests passed - gate allows progression"
+        run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression"
+    needs: [ version, test-cicd, test-core, test-docs, deploy-docs, remote-test-docs ]
+    if: "${{ always() && needs.version.result == 'success' && ( needs.test-cicd.result != 'failure' && needs.test-core.result != 'failure' && needs.test-docs.result != 'failure' && needs.deploy-docs.result != 'failure' && needs.remote-test-docs.result != 'failure' ) && ( needs.test-cicd.result == 'success' || needs.test-core.result == 'success' || needs.test-docs.result == 'success' || needs.deploy-docs.result == 'success' || needs.remote-test-docs.result == 'success' ) }}"
 
   #=============================================================================
   # TAG (⚠️  Managed by Pipecraft - customizable needs and if)

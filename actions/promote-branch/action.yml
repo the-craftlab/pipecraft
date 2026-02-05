@@ -196,6 +196,7 @@ runs:
         echo "   Please review and merge the PR manually when ready."
 
     - name: Fast-Forward Merge (Immediate Auto-Merge)
+      id: fast-forward
       if: inputs.autoPromote == 'true'
       shell: bash
       run: |
@@ -211,6 +212,11 @@ runs:
 
         # Fetch target branch
         git fetch origin $TARGET:$TARGET 2>/dev/null || true
+
+        # Capture the target branch's current SHA BEFORE fast-forward (for change detection)
+        BEFORE_SHA=$(git rev-parse $TARGET)
+        echo "beforeSha=$BEFORE_SHA" >> $GITHUB_OUTPUT
+        echo "Target before: $BEFORE_SHA"
 
         # Checkout target branch
         git checkout $TARGET
@@ -250,18 +256,20 @@ runs:
         TARGET="${{ inputs.targetBranch }}"
         VERSION="${{ steps.get-version.outputs.version }}"
         RUN_NUMBER="${{ inputs.run_number }}"
+        BEFORE_SHA="${{ steps.fast-forward.outputs.beforeSha }}"
 
         # Get the exact commit SHA that was just pushed to target branch
         COMMIT_SHA=$(git rev-parse $TARGET)
         echo "🔄 Triggering pipeline workflow on $TARGET branch"
         echo "   Version: $VERSION"
         echo "   Commit SHA: $COMMIT_SHA"
+        echo "   Before SHA: $BEFORE_SHA (for change detection)"
 
         # Trigger the pipeline workflow on the target branch
         # This is necessary because GITHUB_TOKEN pushes don't trigger workflows by default
         # Pass the exact commit SHA to ensure the workflow checks out the correct commit
-        # (avoids race conditions from GitHub's eventual consistency)
-        WORKFLOW_ARGS=(--ref "$TARGET" --field version="$VERSION" --field commitSha="$COMMIT_SHA")
+        # Pass beforeSha for accurate change detection (simulates push event's 'before' field)
+        WORKFLOW_ARGS=(--ref "$TARGET" --field version="$VERSION" --field commitSha="$COMMIT_SHA" --field beforeSha="$BEFORE_SHA")
         if [ -n "$RUN_NUMBER" ]; then
           WORKFLOW_ARGS+=(--field run_number="$RUN_NUMBER")
           echo "   Run number: $RUN_NUMBER (for traceability)"
