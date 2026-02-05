@@ -395,8 +395,8 @@ jobs:
     steps:
       - name: Gate passed
         run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression"
-    needs: [ version, test-cicd, test-core, test-docs, deploy-docs, remote-test-docs ]
-    if: "${{ always() && needs.version.result == 'success' && ( needs.test-cicd.result != 'failure' && needs.test-core.result != 'failure' && needs.test-docs.result != 'failure' && needs.deploy-docs.result != 'failure' && needs.remote-test-docs.result != 'failure' ) && ( needs.test-cicd.result == 'success' || needs.test-core.result == 'success' || needs.test-docs.result == 'success' || needs.deploy-docs.result == 'success' || needs.remote-test-docs.result == 'success' ) }}"
+    needs: [ version, lint, test-cicd, test-core, test-docs, deploy-docs, remote-test-docs ]
+    if: "${{ always() && needs.version.result == 'success' && ( needs.lint.result != 'failure' && needs.test-cicd.result != 'failure' && needs.test-core.result != 'failure' && needs.test-docs.result != 'failure' && needs.deploy-docs.result != 'failure' && needs.remote-test-docs.result != 'failure' ) && ( needs.lint.result == 'success' || needs.test-cicd.result == 'success' || needs.test-core.result == 'success' || needs.test-docs.result == 'success' || needs.deploy-docs.result == 'success' || needs.remote-test-docs.result == 'success' ) }}"
 
   #=============================================================================
   # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
