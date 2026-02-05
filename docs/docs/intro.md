@@ -2,6 +2,8 @@
 sidebar_position: 1
 ---
 
+{/_ Pipeline validation test - triggers docs domain _/}
+
 # Getting Started
 
 PipeCraft generates battle-tested CI/CD workflows directly into your repository. Instead of debugging GitHub Actions YAML through trial and error, you start with proven templates that handle common patterns like domain-based testing, semantic versioning, and branch promotions.

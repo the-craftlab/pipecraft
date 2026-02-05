@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Pipeline validation test - triggers core domain
 
 /**
  * PipeCraft Command-Line Interface
