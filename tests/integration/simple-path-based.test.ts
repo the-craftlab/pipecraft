@@ -12,7 +12,6 @@ import {
 import { createTestWorkspace } from '../helpers/workspace'
 
 describe('Simple Path-Based Template Tests', () => {
-
   describe('Path Operations with Simple YAML', () => {
     it('should apply set operations for workflow inputs', () => {
       // Create a simple YAML document

@@ -115,7 +115,8 @@ export function ensureGateJob(doc: Document.Parsed, options: EnsureGateOptions) 
     if (!ifCondition) return true // No condition means enabled
 
     // Check if explicitly disabled
-    const ifValue = ifCondition instanceof Scalar ? String(ifCondition.value).trim() : String(ifCondition).trim()
+    const ifValue =
+      ifCondition instanceof Scalar ? String(ifCondition.value).trim() : String(ifCondition).trim()
     return ifValue !== 'false' && ifValue !== '${{ false }}'
   })
 

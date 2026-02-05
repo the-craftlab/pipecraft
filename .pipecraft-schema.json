@@ -69,10 +69,7 @@
       ],
       "default": false,
       "description": "Auto-promote configuration for branch promotions. When enabled, code is automatically promoted (fast-forwarded) to the next branch after checks pass. When disabled, a PR is created for manual review.",
-      "examples": [
-        true,
-        { "staging": true, "main": false }
-      ]
+      "examples": [true, { "staging": true, "main": false }]
     },
     "mergeMethod": {
       "oneOf": [
@@ -256,9 +253,7 @@
           },
           "minItems": 1,
           "description": "Glob patterns matching files in this domain. Changes to these paths will trigger domain-specific jobs.",
-          "examples": [
-            ["apps/api/**", "libs/shared/**"]
-          ]
+          "examples": [["apps/api/**", "libs/shared/**"]]
         },
         "description": {
           "type": "string",

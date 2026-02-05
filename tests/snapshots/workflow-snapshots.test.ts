@@ -181,7 +181,9 @@ describe('Workflow Snapshots', () => {
 
       // Check promote job has autoPromote configuration
       const promoteSteps = parsed.jobs.promote.steps
-      const promoteAction = promoteSteps.find((s: { with?: { autoPromote?: string } }) => s.with?.autoPromote)
+      const promoteAction = promoteSteps.find(
+        (s: { with?: { autoPromote?: string } }) => s.with?.autoPromote
+      )
       expect(promoteAction).toBeDefined()
     })
 

@@ -11,6 +11,7 @@ Systematic cleanup of failing PRs and open issues in the Pipecraft repository.
 ## Completed Work (Session 1)
 
 ### Merged PRs
+
 - ✅ **#253** - fix/update-action-reference-org: Merged to develop
 - ✅ **#293** - fix/support-single-branch-workflows: Created and merged (fixes #277)
 - ✅ **#296** - fix/gate-job-simple: Created and merged (fixes #264)
@@ -18,11 +19,13 @@ Systematic cleanup of failing PRs and open issues in the Pipecraft repository.
 - ✅ **#291** - fix/remote-mode-mkdir-error: Merged
 
 ### Closed PRs
+
 - ✅ **#292** - Closed (superseded by direct fixes to develop)
 - ✅ **#265** - Closed (duplicate of #296)
 - ✅ **#294** - Closed (superseded by #296)
 
 ### Fixed Issues (Direct to Develop)
+
 - ✅ **#277** - Single-branch workflows now supported (PR #293)
 - ✅ **#264** - Gate job excludes disabled jobs (PR #296)
 - ✅ **#289** - Duplicate bumpRules removed (PR #295)
@@ -30,6 +33,7 @@ Systematic cleanup of failing PRs and open issues in the Pipecraft repository.
 - ✅ **#260** - jq dependency already removed (uses Node.js for JSON parsing)
 
 ### Infrastructure
+
 - ✅ NX auto-generation tests skipped (commit fdb86ec) to unblock all PRs
 - ✅ Worktrees added to .gitignore
 - ✅ TypeScript compilation errors fixed across multiple files

@@ -4,11 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PipecraftConfig } from '../../src/types'
 import { VersionManager } from '../../src/utils/versioning'
-import {
-  cleanupTestWorkspace,
-  createPipecraftWorkspace,
-  inWorkspace
-} from '../helpers/workspace'
+import { cleanupTestWorkspace, createPipecraftWorkspace, inWorkspace } from '../helpers/workspace'
 import { FIXTURES_DIR } from '../setup'
 
 // Mock execSync

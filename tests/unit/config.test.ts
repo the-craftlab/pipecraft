@@ -8,7 +8,6 @@ import { loadConfig, validateConfig } from '../../src/utils/config'
 import { FIXTURES_DIR } from '../setup'
 
 describe('Config Utilities', () => {
-
   describe('loadConfig', () => {
     it('should load valid configuration from .pipecraftrc', () => {
       // Use a unique temp directory to avoid race conditions with parallel tests

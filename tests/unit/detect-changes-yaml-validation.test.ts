@@ -91,8 +91,8 @@ describe('detect-changes Action YAML Validation', () => {
     expect(parsed.runs.steps).toBeInstanceOf(Array)
 
     // Find Node.js execution steps
-    const nodeSteps = parsed.runs.steps.filter((step: any) =>
-      step.run && typeof step.run === 'string' && step.run.includes('node -e')
+    const nodeSteps = parsed.runs.steps.filter(
+      (step: any) => step.run && typeof step.run === 'string' && step.run.includes('node -e')
     )
 
     expect(nodeSteps.length).toBeGreaterThan(0)
