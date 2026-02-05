@@ -81,6 +81,7 @@ ${domainsYaml}
         id: detect
         with:
           baseRef: \${{ inputs.baseRef || '${baseRef}' }}
+          beforeSha: \${{ inputs.beforeSha || github.event.before || '' }}
           domains-config: \${{ env.DOMAINS }}
     outputs:
 ${outputsSection}
