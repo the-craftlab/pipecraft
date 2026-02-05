@@ -102,7 +102,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/pipecraft-lab/pipecraft/tree/develop/docs/',
+          editUrl: 'https://github.com/the-craftlab/pipecraft/tree/develop/docs/',
           showLastUpdateTime: true,
           showLastUpdateAuthor: true
         },
@@ -140,7 +140,7 @@ const config: Config = {
           position: 'left'
         },
         {
-          href: 'https://github.com/pipecraft-lab/pipecraft',
+          href: 'https://github.com/the-craftlab/pipecraft',
           label: 'GitHub',
           position: 'right'
         },
@@ -180,11 +180,11 @@ const config: Config = {
           items: [
             {
               label: 'GitHub Issues',
-              href: 'https://github.com/pipecraft-lab/pipecraft/issues'
+              href: 'https://github.com/the-craftlab/pipecraft/issues'
             },
             {
               label: 'GitHub Discussions',
-              href: 'https://github.com/pipecraft-lab/pipecraft/discussions'
+              href: 'https://github.com/the-craftlab/pipecraft/discussions'
             }
           ]
         },
@@ -193,7 +193,7 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/pipecraft-lab/pipecraft'
+              href: 'https://github.com/the-craftlab/pipecraft'
             },
             {
               label: 'npm',

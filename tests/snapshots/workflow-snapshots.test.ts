@@ -62,7 +62,7 @@ function generateWorkflowFromConfig(config: PipecraftConfig): string {
   // Create document and apply operations
   const doc = parseDocument('{}')
   applyPathOperations(doc.contents, operations)
-  ensureGateJob(doc as Document.Parsed, { force: true })
+  ensureGateJob(doc as Document.Parsed)
 
   return stringify(doc, {
     lineWidth: 0,

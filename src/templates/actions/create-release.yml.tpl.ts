@@ -38,6 +38,10 @@ const releaseActionTemplate = (ctx: any) => {
         description: 'Name of the publish workflow file to trigger (e.g., publish.yml)'
         required: false
         default: 'publish.yml'
+      commitSha:
+        description: 'Specific commit SHA to checkout (prevents race conditions during promotion)'
+        required: false
+        default: ''
 
     outputs:
       release_url:
@@ -53,6 +57,7 @@ const releaseActionTemplate = (ctx: any) => {
         - name: Checkout Code
           uses: actions/checkout@v4
           with:
+            ref: \${{ inputs.commitSha || github.sha }}
             fetch-depth: 0
             token: \${{ inputs.token }}
 

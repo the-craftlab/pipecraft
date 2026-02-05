@@ -70,6 +70,10 @@ inputs:
     description: 'Node.js version to use'
     required: false
     default: '22'
+  commitSha:
+    description: 'Specific commit SHA to checkout (prevents race conditions during promotion)'
+    required: false
+    default: ''
 
 outputs:
   version:
@@ -82,6 +86,7 @@ runs:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
+        ref: \${{ inputs.commitSha || github.sha }}
         fetch-depth: 0
 
     - name: Install Node.js

@@ -258,6 +258,9 @@ export const generate = (ctx: PathBasedPipelineContext) =>
       // Extract user-customized section and custom jobs from existing file if it exists
       let userSection: string | null = null
       const customJobsFromExisting: any[] = []
+      // Preserve gate job's needs and if (user may have customized them)
+      let preservedGateNeeds: any = null
+      let preservedGateIf: any = null
       if (fileExists) {
         userSection = extractUserSection(existingContent)
         if (userSection) {
@@ -271,6 +274,18 @@ export const generate = (ctx: PathBasedPipelineContext) =>
             ? (existingDoc.contents as any).get('jobs')
             : null
         const managedJobs = new Set(['changes', 'version', 'gate', 'tag', 'promote', 'release'])
+
+        // Extract gate job's needs and if for preservation
+        if (existingJobs && (existingJobs as any).get) {
+          const existingGate = (existingJobs as any).get('gate')
+          if (existingGate) {
+            preservedGateNeeds = existingGate.get('needs')
+            preservedGateIf = existingGate.get('if')
+            if (preservedGateNeeds || preservedGateIf) {
+              logger.verbose('📋 Preserving gate job needs/if from existing workflow')
+            }
+          }
+        }
         if (existingJobs && (existingJobs as any).items) {
           for (const pair of (existingJobs as any).items) {
             const keyStr = pair.key instanceof Scalar ? pair.key.value : pair.key
@@ -347,6 +362,21 @@ export const generate = (ctx: PathBasedPipelineContext) =>
  📖 Learn more: https://pipecraft.thecraftlab.dev
 =============================================================================`
         const doc = createManagedWorkflowDocument(headerComment, operations, ctx)
+
+        // Restore preserved gate job needs/if (for force mode)
+        if (preservedGateNeeds || preservedGateIf) {
+          const jobs = (doc.contents as YAMLMap)?.get('jobs') as YAMLMap | undefined
+          const gateJob = jobs?.get('gate') as YAMLMap | undefined
+          if (gateJob) {
+            if (preservedGateNeeds) {
+              gateJob.set('needs', preservedGateNeeds)
+            }
+            if (preservedGateIf) {
+              gateJob.set('if', preservedGateIf)
+            }
+            logger.verbose('📋 Restored gate job needs/if from existing workflow')
+          }
+        }
 
         // Stringify to YAML
         let yamlContent = stringifyManagedWorkflow(doc)

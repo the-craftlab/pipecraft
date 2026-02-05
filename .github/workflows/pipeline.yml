@@ -158,6 +158,7 @@ jobs:
           baseRef: ${{ inputs.baseRef || 'main' }}
           version: ${{ inputs.version }}
           node-version: ${{ env.NODE_VERSION }}
+          commitSha: ${{ inputs.commitSha }}
     outputs:
       version: ${{ steps.version.outputs.version }}
 
@@ -483,3 +484,4 @@ jobs:
       - uses: ./actions/create-release
         with:
           version: ${{ needs.version.outputs.version }}
+          commitSha: ${{ inputs.commitSha }}
