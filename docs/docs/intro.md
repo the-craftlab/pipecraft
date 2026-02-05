@@ -368,13 +368,13 @@ You now have a working CI/CD pipeline. From here you can:
 
 **Add more domains** by editing `.pipecraftrc.json` and running `pipecraft generate` again. The workflow will update to include the new domains.
 
-**Learn about the architecture** by reading the [Architecture](architecture) page to understand how PipeCraft works under the hood.
+**Learn about the architecture** by reading the [Architecture](/docs/architecture) page to understand how PipeCraft works under the hood.
 
-**Explore workflow patterns** by checking out [Trunk Flow](flows/trunk-flow) to understand how code flows through your branches.
+**Explore workflow patterns** by checking out [Trunk Flow](/docs/flows/trunk-flow) to understand how code flows through your branches.
 
 ## Getting help
 
-If something goes wrong, check the [Troubleshooting](troubleshooting) page for common issues and solutions.
+If something goes wrong, check the [Troubleshooting](/docs/troubleshooting) page for common issues and solutions.
 
 For questions or discussions, visit [GitHub Discussions](https://github.com/pipecraft-lab/pipecraft/discussions).
 
