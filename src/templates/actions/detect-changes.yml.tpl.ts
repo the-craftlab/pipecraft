@@ -1,16 +1,14 @@
 /**
  * Detect Changes Action Template
  *
- * Generates a REUSABLE GitHub composite action that detects which domains have changed.
- * Supports both Nx dependency graph analysis and path-based change detection.
+ * Generates a REUSABLE GitHub composite action that detects which domains have changed
+ * using path-based change detection with dorny/paths-filter.
  *
  * ## Purpose
  *
- * This action is **configuration-driven** and accepts domain definitions as JSON input,
- * making it truly reusable across any project without regeneration:
- * - For Nx monorepos: Uses `nx show projects --affected` to leverage the dependency graph
- * - For path-based projects: Uses path filters to detect which domains changed
- * - Automatically falls back to path-based detection if Nx is unavailable
+ * This action is **configuration-driven** and accepts domain definitions as YAML input,
+ * making it truly reusable across any project without regeneration.
+ * It uses path filters to detect which domains changed based on file glob patterns.
  *
  * ## Key Design Principle
  *
@@ -34,21 +32,17 @@ import type { PipecraftConfig } from '../../types/index.js'
  * Generates the detect-changes composite action YAML content.
  *
  * Creates a GitHub Actions composite action that:
- * - Accepts domain configuration as JSON input (not hardcoded)
- * - Dynamically parses domains using Node.js (with optional yq fallback for YAML)
- * - Checks for Nx availability in the repository
- * - Uses `nx show projects --affected` for dependency graph analysis
- * - Maps affected projects to domains dynamically
- * - Falls back to path-based detection if Nx isn't available
+ * - Accepts domain configuration as YAML input (not hardcoded)
+ * - Dynamically parses domains using yq or grep fallback
+ * - Uses dorny/paths-filter for path-based change detection
  * - Outputs individual domain results AND a JSON summary
  *
  * @param {any} ctx - Context (not used - action is fully dynamic now)
  * @returns {string} YAML content for the composite action
  */
 const changesActionTemplate = (ctx: any) => {
-  // Generate the composite action YAML - now fully configuration-driven
   return `name: 'Detect Changes (Configuration-Driven)'
-description: 'Enhanced change detection using Nx dependency graph with path-based fallback. Accepts domain configuration as JSON input.'
+description: 'Path-based change detection using dorny/paths-filter. Accepts domain configuration as YAML input.'
 author: 'Pipecraft'
 
 inputs:
@@ -59,14 +53,6 @@ inputs:
   domains-config:
     description: 'YAML string of domain configurations (embedded in pipeline at generation time)'
     required: true
-  useNx:
-    description: 'Whether to use Nx dependency graph for change detection'
-    required: false
-    default: 'true'
-  node-version:
-    description: 'Node.js version to use'
-    required: false
-    default: '22'
 
 outputs:
   changes:
@@ -75,12 +61,6 @@ outputs:
   affectedDomains:
     description: 'Comma-separated list of domains with changes'
     value: \${{ steps.output.outputs.affectedDomains }}
-  nxAvailable:
-    description: 'Whether Nx is available in the repository'
-    value: \${{ steps.nx-check.outputs.available }}
-  affectedProjects:
-    description: 'Comma-separated list of affected Nx projects (only populated when nxAvailable is true)'
-    value: \${{ steps.nx-outputs.outputs.affectedProjects }}
 
 runs:
   using: 'composite'
@@ -99,7 +79,7 @@ runs:
       run: |
         # Parse the domains-config YAML input (embedded in pipeline at generation time)
         echo "\${{ inputs.domains-config }}" > /tmp/domains-config.yml
-        
+
         # Extract domain names using yq (or fallback to grep/awk)
         if command -v yq >/dev/null 2>&1; then
           DOMAIN_NAMES=$(yq eval 'keys | join(",")' /tmp/domains-config.yml)
@@ -107,150 +87,28 @@ runs:
           # Fallback: extract domain names without yq
           DOMAIN_NAMES=$(grep -E '^[[:space:]]*[a-zA-Z0-9_-]+:' /tmp/domains-config.yml | sed 's/[[:space:]]*\\(.*\\):.*/\\1/' | tr '\\n' ',' | sed 's/,$//')
         fi
-        
+
         echo "domains=$DOMAIN_NAMES" >> $GITHUB_OUTPUT
         echo "📋 Configured domains: $DOMAIN_NAMES"
-        
-        # Create filters file for paths-filter action
-        echo "filters:" > /tmp/path-filters.yml
-        cat /tmp/domains-config.yml >> /tmp/path-filters.yml
-        
-        cat /tmp/path-filters.yml
-        echo ""
-
-    - name: Check for Nx
-      id: nx-check
-      shell: bash
-      run: |
-        if [ -f "nx.json" ] || ([ -f "package.json" ] && grep -q '"nx"' package.json); then
-          echo "available=true" >> $GITHUB_OUTPUT
-          echo "🔍 Nx detected in repository"
-        else
-          echo "available=false" >> $GITHUB_OUTPUT
-          echo "⚠️  Nx not detected, falling back to path-based detection"
-        fi
-
-    - name: Setup Node.js
-      if: steps.nx-check.outputs.available == 'true' && inputs.useNx == 'true'
-      uses: actions/setup-node@v4
-      with:
-        node-version: \${{ inputs.node-version }}
-
-    - name: Determine Nx CLI package
-      if: steps.nx-check.outputs.available == 'true' && inputs.useNx == 'true'
-      id: nx-cli
-      shell: bash
-      run: |
-        NX_SPEC=""
-        if [ -f "package.json" ]; then
-          NX_SPEC=$(node -e "const fs=require('fs');try{const p=JSON.parse(fs.readFileSync('package.json','utf8'));const s=p.devDependencies?.nx||p.dependencies?.nx||'';if(s&&typeof s==='string'&&!s.startsWith('workspace:')&&!s.startsWith('file:')){process.stdout.write(s.trim())}}catch{}")
-        fi
-        if [ -n "$NX_SPEC" ]; then
-          echo "package=nx@$NX_SPEC" >> $GITHUB_OUTPUT
-        else
-          echo "package=nx@latest" >> $GITHUB_OUTPUT
-        fi
-
-    - name: Detect Changes with Nx (if available)
-      id: nx-filter
-      if: steps.nx-check.outputs.available == 'true' && inputs.useNx == 'true'
-      shell: bash
-      run: |
-        echo "🚀 Using Nx dependency graph for change detection"
-
-        # Get affected projects using Nx
-        if command -v npx >/dev/null 2>&1; then
-          NX_PACKAGE="\${{ steps.nx-cli.outputs.package || 'nx@latest' }}"
-          # Get list of affected projects (newline-separated)
-          AFFECTED_PROJECTS_RAW=$(npx --yes --package "$NX_PACKAGE" nx show projects --affected --base=\${{ steps.set-base.outputs.base_branch }} 2>/dev/null || echo "")
-
-          # Convert newlines to commas for storage
-          AFFECTED_PROJECTS=$(echo "$AFFECTED_PROJECTS_RAW" | tr '\\n' ',' | sed 's/,$//')
-          echo "affectedProjects=$AFFECTED_PROJECTS" >> $GITHUB_OUTPUT
-
-          if [ -n "$AFFECTED_PROJECTS" ]; then
-            echo "📦 Affected Nx projects: $AFFECTED_PROJECTS"
-
-            # Parse domains dynamically from config
-            IFS=',' read -ra DOMAIN_NAMES <<< "\${{ steps.parse-domains.outputs.domains }}"
-            
-            # Initialize results JSON
-            echo "{" > /tmp/nx-results.json
-            FIRST=true
-            
-            # Check each domain dynamically
-            for domain in "\${DOMAIN_NAMES[@]}"; do
-              domain=$(echo "$domain" | xargs) # trim whitespace
-              DOMAIN_AFFECTED=false
-              
-              # Check if any affected project matches this domain name
-              IFS=',' read -ra PROJECTS <<< "$AFFECTED_PROJECTS"
-              for project in "\${PROJECTS[@]}"; do
-                project=$(echo "$project" | xargs)
-                # Match if project name contains domain name (with flexible - vs _ matching)
-                domain_pattern=$(echo "$domain" | sed 's/-/[-_]/g')
-                if echo "$project" | grep -qiE "$domain_pattern"; then
-                  DOMAIN_AFFECTED=true
-                  echo "  ✅ $project matches $domain domain"
-                  break
-                fi
-              done
-              
-              # Add to JSON
-              if [ "$FIRST" = true ]; then
-                FIRST=false
-              else
-                echo "," >> /tmp/nx-results.json
-              fi
-              echo "  \\"$domain\\": $DOMAIN_AFFECTED" >> /tmp/nx-results.json
-            done
-            
-            echo "}" >> /tmp/nx-results.json
-            
-          else
-            echo "No affected projects detected"
-            # Create empty results
-            echo "{}" > /tmp/nx-results.json
-            IFS=',' read -ra DOMAIN_NAMES <<< "\${{ steps.parse-domains.outputs.domains }}"
-            FIRST=true
-            for domain in "\${DOMAIN_NAMES[@]}"; do
-              if [ "$FIRST" = true ]; then
-                echo "{" > /tmp/nx-results.json
-                FIRST=false
-              else
-                echo "," >> /tmp/nx-results.json
-              fi
-              echo "  \\"$domain\\": false" >> /tmp/nx-results.json
-            done
-            echo "}" >> /tmp/nx-results.json
-          fi
-        else
-          echo "⚠️  npx not available, falling back to path-based detection"
-          echo "{}" > /tmp/nx-results.json
-          echo "affectedProjects=" >> $GITHUB_OUTPUT
-        fi
-        
-        cat /tmp/nx-results.json
 
     - name: Transform Domain Config for Paths Filter
       id: transform-config
-      if: steps.nx-check.outputs.available != 'true' || inputs.useNx != 'true'
       shell: bash
       run: |
         # Transform domains-config from PipeCraft format to paths-filter format
         # PipeCraft format: domain: { paths: [...] }
         # paths-filter format: domain: [...]
-        
+
         # Read the domains config
         cat /tmp/domains-config.yml
-        
+
         # Transform: remove 'paths:' lines and unindent the glob patterns
         sed '/paths:/d' /tmp/domains-config.yml | sed 's/^  -/-/' > /tmp/paths-filter-config.yml
-        
+
         echo ""
         echo "Transformed for paths-filter:"
         cat /tmp/paths-filter-config.yml
-        
+
         # Store as output for use in paths-filter
         {
           echo "filters<<EOF"
@@ -258,91 +116,71 @@ runs:
           echo "EOF"
         } >> $GITHUB_OUTPUT
 
-    - name: Detect Changes with Paths Filter (fallback)
+    - name: Detect Changes with Paths Filter
       uses: dorny/paths-filter@v3
       id: filter
-      if: steps.nx-check.outputs.available != 'true' || inputs.useNx != 'true'
       with:
         base: \${{ steps.set-base.outputs.base_branch }}
         filters: \${{ steps.transform-config.outputs.filters }}
-
-    - name: Set Nx Outputs
-      id: nx-outputs
-      shell: bash
-      run: |
-        # Set affectedProjects output based on NX availability
-        if [ "\${{ steps.nx-check.outputs.available }}" == "true" ] && [ "\${{ inputs.useNx }}" == "true" ]; then
-          echo "affectedProjects=\${{ steps.nx-filter.outputs.affectedProjects }}" >> $GITHUB_OUTPUT
-        else
-          # When NX is not available, set empty value
-          echo "affectedProjects=" >> $GITHUB_OUTPUT
-        fi
 
     - name: Generate Outputs
       id: output
       shell: bash
       run: |
-        # Determine which detection method was used and build results
-        if [ "\${{ steps.nx-check.outputs.available }}" == "true" ] && [ "\${{ inputs.useNx }}" == "true" ]; then
-          # Use Nx results
-          CHANGES_JSON=$(cat /tmp/nx-results.json)
-          echo "🔍 Using Nx dependency analysis results"
-          echo "📦 Affected projects: \${{ steps.nx-outputs.outputs.affectedProjects }}"
-        else
-          # Use path filter results - convert to JSON
-          echo "📁 Using path-based change detection"
-          echo "{" > /tmp/path-results.json
-          
-          IFS=',' read -ra DOMAIN_NAMES <<< "\${{ steps.parse-domains.outputs.domains }}"
-          FIRST=true
-          for domain in "\${DOMAIN_NAMES[@]}"; do
-            domain=$(echo "$domain" | xargs)
-            if [ "$FIRST" = true ]; then
-              FIRST=false
-            else
-              echo "," >> /tmp/path-results.json
-            fi
-            
-            # Check if domain appears in filter changes
-            if echo "\${{ steps.filter.outputs.changes }}" | grep -q "$domain"; then
-              echo "  \\"$domain\\": true" >> /tmp/path-results.json
-            else
-              echo "  \\"$domain\\": false" >> /tmp/path-results.json
-            fi
-          done
-          echo "}" >> /tmp/path-results.json
-          
-          CHANGES_JSON=$(cat /tmp/path-results.json)
-        fi
-        
+        echo "📁 Using path-based change detection"
+        echo "{" > /tmp/path-results.json
+
+        IFS=',' read -ra DOMAIN_NAMES <<< "\${{ steps.parse-domains.outputs.domains }}"
+        FIRST=true
+        for domain in "\${DOMAIN_NAMES[@]}"; do
+          domain=$(echo "$domain" | xargs)
+          if [ "$FIRST" = true ]; then
+            FIRST=false
+          else
+            echo "," >> /tmp/path-results.json
+          fi
+
+          # Check if domain appears in filter changes
+          if echo "\${{ steps.filter.outputs.changes }}" | grep -q "$domain"; then
+            echo "  \\"$domain\\": true" >> /tmp/path-results.json
+          else
+            echo "  \\"$domain\\": false" >> /tmp/path-results.json
+          fi
+        done
+        echo "}" >> /tmp/path-results.json
+
+        CHANGES_JSON=$(cat /tmp/path-results.json)
+
         # Output the JSON
         echo "changes<<EOF" >> $GITHUB_OUTPUT
         echo "$CHANGES_JSON" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
-        
-        # Build comma-separated list of affected domains without requiring jq
-        AFFECTED_DOMAINS=$(CHANGES_JSON="$CHANGES_JSON" node -e "const d=process.env.CHANGES_JSON||'{}';let p={};try{p=JSON.parse(d)}catch(e){console.warn('Unable to parse JSON:',e.message)}process.stdout.write(Object.entries(p).filter(([,v])=>v===true).map(([k])=>k).join(','))")
+
+        # Build comma-separated list of affected domains (using node instead of jq for portability)
+        AFFECTED_DOMAINS=$(node -e "
+          const data = JSON.parse(process.argv[1]);
+          const affected = Object.entries(data)
+            .filter(([_, v]) => v === true)
+            .map(([k]) => k)
+            .join(',');
+          console.log(affected);
+        " "$CHANGES_JSON")
         echo "affectedDomains=$AFFECTED_DOMAINS" >> $GITHUB_OUTPUT
-        
+
         echo "📋 Change Detection Results:"
-        CHANGES_JSON="$CHANGES_JSON" node -e "const d=process.env.CHANGES_JSON||'{}';try{console.log(JSON.stringify(JSON.parse(d),null,2))}catch(e){console.warn('Unable to pretty-print JSON:',e.message);console.log(d)}"
+        node -e "console.log(JSON.stringify(JSON.parse(process.argv[1]), null, 2))" "$CHANGES_JSON"
         echo "🎯 Affected domains: $AFFECTED_DOMAINS"
-        echo "  nx-available: \${{ steps.nx-check.outputs.available }}"
 `
 }
 
 /**
  * Generator entry point for detect-changes composite action.
  *
- * Generates the `actions/detect-changes/action.yml` file with configuration-driven
+ * Generates the \`actions/detect-changes/action.yml\` file with configuration-driven
  * change detection logic. This action accepts domain configuration as input at runtime,
  * making it truly reusable without regeneration.
  *
- * **Important:** This action no longer embeds domain configurations. Instead, it receives
- * them as JSON input from the workflow, allowing the same action to work with any
- * domain configuration.
- *
- * @param {PinionContext} ctx - Pinion generator context (domains no longer needed in template)
+ * @param {PinionContext} ctx - Pinion generator context
  * @returns {Promise<PinionContext>} Updated context after file generation
  */
 export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig> }) =>

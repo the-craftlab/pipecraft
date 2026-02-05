@@ -8,10 +8,10 @@
 import { describe, expect, it } from 'vitest'
 import { parse as parseYAML } from 'yaml'
 
-// Simplified template for testing YAML validity
+// Simplified template for testing YAML validity (matches the actual template)
 const changesActionTemplate = () => {
   return `name: 'Detect Changes (Configuration-Driven)'
-description: 'Enhanced change detection using Nx dependency graph with path-based fallback'
+description: 'Path-based change detection using dorny/paths-filter. Accepts domain configuration as YAML input.'
 author: 'Pipecraft'
 
 inputs:
@@ -22,14 +22,6 @@ inputs:
   domains-config:
     description: 'YAML string of domain configurations'
     required: true
-  useNx:
-    description: 'Whether to use Nx dependency graph'
-    required: false
-    default: 'true'
-  node-version:
-    description: 'Node.js version to use'
-    required: false
-    default: '22'
 
 outputs:
   changes:
@@ -38,12 +30,6 @@ outputs:
   affectedDomains:
     description: 'Comma-separated list of domains with changes'
     value: \${{ steps.output.outputs.affectedDomains }}
-  nxAvailable:
-    description: 'Whether Nx is available in the repository'
-    value: \${{ steps.nx-check.outputs.available }}
-  affectedProjects:
-    description: 'Comma-separated list of affected Nx projects'
-    value: \${{ steps.nx-outputs.outputs.affectedProjects }}
 
 runs:
   using: 'composite'
@@ -51,21 +37,20 @@ runs:
     - name: Test inline Node.js with -e flag
       shell: bash
       run: |
-        RESULT=\$(node -e "const d='test';process.stdout.write(d)")
-        echo "result=\$RESULT" >> \$GITHUB_OUTPUT
+        RESULT=$(node -e "const d='test';process.stdout.write(d)")
+        echo "result=$RESULT" >> $GITHUB_OUTPUT
 
     - name: Test JSON parsing with -e flag
       shell: bash
       run: |
-        OUTPUT=\$(DATA='{"test":true}' node -e "const d=process.env.DATA||'{}';try{const p=JSON.parse(d);process.stdout.write(JSON.stringify(p))}catch(e){console.warn('Error:',e.message)}")
-        echo "output=\$OUTPUT" >> \$GITHUB_OUTPUT
+        OUTPUT=$(DATA='{"test":true}' node -e "const d=process.env.DATA||'{}';try{const p=JSON.parse(d);process.stdout.write(JSON.stringify(p))}catch(e){console.warn('Error:',e.message)}")
+        echo "output=$OUTPUT" >> $GITHUB_OUTPUT
 `
 }
 
 describe('detect-changes Action YAML Validation', () => {
   it('should generate valid YAML that can be parsed', () => {
-    const ctx = {}
-    const content = changesActionTemplate(ctx)
+    const content = changesActionTemplate()
 
     // Should be able to parse without errors
     let parsed: any
@@ -82,8 +67,7 @@ describe('detect-changes Action YAML Validation', () => {
   })
 
   it('should not contain heredoc syntax (<<)', () => {
-    const ctx = {}
-    const content = changesActionTemplate(ctx)
+    const content = changesActionTemplate()
 
     // Check for heredoc delimiters that break GitHub Actions YAML parser
     expect(content).not.toMatch(/<<'NODE'/)
@@ -93,16 +77,14 @@ describe('detect-changes Action YAML Validation', () => {
   })
 
   it('should use Node.js -e flag for inline scripts', () => {
-    const ctx = {}
-    const content = changesActionTemplate(ctx)
+    const content = changesActionTemplate()
 
     // Should use -e flag for inline Node.js scripts
     expect(content).toMatch(/node -e/)
   })
 
   it('should properly escape quotes in generated YAML', () => {
-    const ctx = {}
-    const content = changesActionTemplate(ctx)
+    const content = changesActionTemplate()
     const parsed = parseYAML(content)
 
     // Verify steps parse correctly (would fail if quotes are improperly escaped)
@@ -123,22 +105,19 @@ describe('detect-changes Action YAML Validation', () => {
   })
 
   it('should include all required outputs', () => {
-    const ctx = {}
-    const content = changesActionTemplate(ctx)
+    const content = changesActionTemplate()
     const parsed = parseYAML(content)
 
     expect(parsed.outputs).toHaveProperty('changes')
     expect(parsed.outputs).toHaveProperty('affectedDomains')
-    expect(parsed.outputs).toHaveProperty('nxAvailable')
-    expect(parsed.outputs).toHaveProperty('affectedProjects')
   })
 
-  it('should use conservative Node.js version default', () => {
-    const ctx = {}
-    const content = changesActionTemplate(ctx)
+  it('should only require baseRef and domains-config inputs', () => {
+    const content = changesActionTemplate()
     const parsed = parseYAML(content)
 
-    // Should default to Node 22 (LTS) not 24
-    expect(parsed.inputs['node-version'].default).toBe('22')
+    expect(parsed.inputs).toHaveProperty('baseRef')
+    expect(parsed.inputs).toHaveProperty('domains-config')
+    expect(Object.keys(parsed.inputs)).toHaveLength(2)
   })
 })

@@ -52,11 +52,9 @@ import { generate as generateTagWorkflow } from '../templates/actions/create-tag
 import { generate as generateChangesWorkflow } from '../templates/actions/detect-changes.yml.tpl.js'
 import { generate as generateBranchWorkflow } from '../templates/actions/manage-branch.yml.tpl.js'
 import { generate as generatePromoteBranchWorkflow } from '../templates/actions/promote-branch.yml.tpl.js'
-import { generate as generateRunNxAffectedWorkflow } from '../templates/actions/run-nx-affected.yml.tpl.js'
 import { generate as generateReleaseItConfig } from '../templates/release-it.cjs.tpl.js'
 import { generate as generateEnforcePRTarget } from '../templates/workflows/enforce-pr-target.yml.tpl.js'
-import { generate as generatePathBasedPipeline } from '../templates/workflows/pipeline.yml.tpl.js'
-import { generate as generateNxPipeline } from '../templates/workflows/pipeline-nx.yml.tpl.js'
+import { generate as generatePipeline } from '../templates/workflows/pipeline.yml.tpl.js'
 import { generate as generatePRTitleCheck } from '../templates/workflows/pr-title-check.yml.tpl.js'
 import { PipecraftConfig } from '../types/index.js'
 import { logger } from '../utils/logger.js'
@@ -180,21 +178,11 @@ export const generate = (
         generateReleaseItConfig(ctx)
       ]
 
-      // Add Nx-specific action if Nx is enabled
-      if (ctx.config?.nx?.enabled) {
-        generators.push(generateRunNxAffectedWorkflow(ctx))
-      }
-
       return Promise.all(generators).then(() => ctx)
     })
     .then(ctx => {
-      // Generate the main pipeline (Nx or path-based)
-      if (ctx.config?.nx?.enabled) {
-        logger.info('🔧 Generating Nx-optimized pipeline...')
-        return generateNxPipeline(ctx as any)
-      } else {
-        return generatePathBasedPipeline(ctx)
-      }
+      // Generate the main pipeline (path-based change detection)
+      return generatePipeline(ctx)
     })
     .then(ctx => {
       // Generate the enforce PR target workflow

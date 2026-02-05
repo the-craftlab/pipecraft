@@ -13,7 +13,7 @@ import type { PipecraftConfig } from '../../../types/index.js'
 
 export interface TagPromoteContext {
   branchFlow: string[]
-  autoMerge?: Record<string, boolean> // autoMerge settings per branch
+  autoPromote?: Record<string, boolean> // autoPromote settings per branch
   config?: Partial<PipecraftConfig>
 }
 
@@ -136,7 +136,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
           version: \${{ needs.version.outputs.version }}
           sourceBranch: \${{ github.ref_name }}
           targetBranch: \${{ ${buildTargetBranchExpression(validBranchFlow)} }}
-          autoMerge: \${{ ${buildAutoMergeExpression(validBranchFlow, ctx.autoMerge)} }}
+          autoPromote: \${{ ${buildAutoPromoteExpression(validBranchFlow, ctx.autoPromote)} }}
           run_number: \${{ inputs.run_number || github.run_number }}
   `)
     },
@@ -238,20 +238,20 @@ function buildTargetBranchExpression(branchFlow: string[]): string {
 }
 
 /**
- * Helper to build the autoMerge expression
- * Maps each target branch to its autoMerge setting
+ * Helper to build the autoPromote expression
+ * Maps each target branch to its autoPromote setting
  */
-function buildAutoMergeExpression(
+function buildAutoPromoteExpression(
   branchFlow: string[],
-  autoMerge?: Record<string, boolean>
+  autoPromote?: Record<string, boolean>
 ): string {
-  if (!autoMerge || branchFlow.length === 1) return `'false'`
+  if (!autoPromote || branchFlow.length === 1) return `'false'`
 
   const clauses: string[] = []
   for (let i = 0; i < branchFlow.length - 1; i += 1) {
     const sourceBranch = branchFlow[i]
     const targetBranch = branchFlow[i + 1]
-    const isEnabled = autoMerge[targetBranch] ? 'true' : 'false'
+    const isEnabled = autoPromote[targetBranch] ? 'true' : 'false'
     clauses.push(`(github.ref_name == '${sourceBranch}' && '${isEnabled}')`)
   }
 

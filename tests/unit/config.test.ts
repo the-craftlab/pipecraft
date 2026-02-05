@@ -1,20 +1,13 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
-import { tmpdir } from 'os'
-import { join } from 'path'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
+import { describe, expect, it } from 'vitest'
+
 import { loadConfig, validateConfig } from '../../src/utils/config'
-import { FIXTURES_DIR, TEST_DIR } from '../setup'
+import { FIXTURES_DIR } from '../setup'
 
 describe('Config Utilities', () => {
-  beforeEach(() => {
-    // Clean up any existing config files
-    const configFiles = ['.pipecraftrc', '.pipecraftrc', 'package.json']
-    configFiles.forEach(file => {
-      if (existsSync(join(TEST_DIR, file))) {
-        rmSync(join(TEST_DIR, file))
-      }
-    })
-  })
 
   describe('loadConfig', () => {
     it('should load valid configuration from .pipecraftrc', () => {
@@ -278,6 +271,92 @@ describe('Config Utilities', () => {
       expect(() => validateConfig(config)).toThrow(
         'Domain "api" must have at least one path pattern'
       )
+    })
+
+    it('should throw error when domain name conflicts with reserved job names', () => {
+      const reservedNames = ['version', 'changes', 'gate', 'tag', 'promote', 'release']
+
+      for (const reservedName of reservedNames) {
+        const config = {
+          ciProvider: 'github',
+          mergeStrategy: 'fast-forward',
+          requireConventionalCommits: true,
+          initialBranch: 'develop',
+          finalBranch: 'main',
+          branchFlow: ['develop', 'main'],
+          domains: {
+            [reservedName]: { paths: ['apps/**'], description: 'Test domain' }
+          }
+        }
+
+        expect(() => validateConfig(config)).toThrow(
+          `Domain name "${reservedName}" is reserved and cannot be used`
+        )
+      }
+    })
+
+    it('should throw error when domain name conflicts with reserved names (case insensitive)', () => {
+      const config = {
+        ciProvider: 'github',
+        mergeStrategy: 'fast-forward',
+        requireConventionalCommits: true,
+        initialBranch: 'develop',
+        finalBranch: 'main',
+        branchFlow: ['develop', 'main'],
+        domains: {
+          Version: { paths: ['apps/**'], description: 'Test domain' }
+        }
+      }
+
+      expect(() => validateConfig(config)).toThrow(
+        `Domain name "Version" is reserved and cannot be used`
+      )
+    })
+
+    it('should throw error when initialBranch is not first in branchFlow', () => {
+      const config = {
+        ciProvider: 'github',
+        mergeStrategy: 'fast-forward',
+        requireConventionalCommits: true,
+        initialBranch: 'staging',
+        finalBranch: 'main',
+        branchFlow: ['develop', 'staging', 'main'],
+        domains: { api: { paths: ['apps/api/**'], description: 'API' } }
+      }
+
+      expect(() => validateConfig(config)).toThrow(
+        'initialBranch "staging" must be the first branch in branchFlow'
+      )
+    })
+
+    it('should throw error when finalBranch is not last in branchFlow', () => {
+      const config = {
+        ciProvider: 'github',
+        mergeStrategy: 'fast-forward',
+        requireConventionalCommits: true,
+        initialBranch: 'develop',
+        finalBranch: 'staging',
+        branchFlow: ['develop', 'staging', 'main'],
+        domains: { api: { paths: ['apps/api/**'], description: 'API' } }
+      }
+
+      expect(() => validateConfig(config)).toThrow(
+        'finalBranch "staging" must be the last branch in branchFlow'
+      )
+    })
+
+    it('should accept valid 3-branch flow configuration', () => {
+      const config = {
+        ciProvider: 'github',
+        mergeStrategy: 'fast-forward',
+        requireConventionalCommits: true,
+        initialBranch: 'develop',
+        finalBranch: 'main',
+        branchFlow: ['develop', 'staging', 'main'],
+        domains: { api: { paths: ['apps/api/**'], description: 'API' } }
+      }
+
+      expect(() => validateConfig(config)).not.toThrow()
     })
   })
 })

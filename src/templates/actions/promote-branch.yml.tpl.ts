@@ -41,8 +41,8 @@ const promoteBranchActionTemplate = (ctx: any) => {
         description: 'The original run number from develop branch for traceability'
         required: false
         default: ''
-      autoMerge:
-        description: 'Whether to enable auto-merge for the PR'
+      autoPromote:
+        description: 'Whether to automatically promote (fast-forward) to the target branch'
         required: false
         default: 'false'
       tempBranchPattern:
@@ -170,12 +170,12 @@ const promoteBranchActionTemplate = (ctx: any) => {
             TARGET="\${{ inputs.targetBranch }}"
             SOURCE="\${{ inputs.sourceBranch }}"
             VERSION="\${{ steps.get-version.outputs.version }}"
-            AUTO_MERGE="\${{ inputs.autoMerge }}"
+            AUTO_PROMOTE="\${{ inputs.autoPromote }}"
 
             TITLE="🚀 Release \$VERSION to \$TARGET"
 
             # Determine merge behavior text
-            if [ "\$AUTO_MERGE" == "true" ]; then
+            if [ "\$AUTO_PROMOTE" == "true" ]; then
               MERGE_TEXT="merge automatically"
             else
               MERGE_TEXT="require manual approval"
@@ -209,26 +209,21 @@ const promoteBranchActionTemplate = (ctx: any) => {
               exit 1
             fi
 
-        - name: Enable PR Auto-Merge with Rebase (Manual Approval Required)
-          if: inputs.autoMerge == 'false'
+        - name: Manual Merge Required
+          if: inputs.autoPromote == 'false'
           shell: bash
-          env:
-            GH_TOKEN: \${{ inputs.token }}
           run: |
             PR_NUMBER="\${{ steps.check-pr.outputs.prNumber || steps.create-pr.outputs.prNumber }}"
-            TARGET="\${{ inputs.targetBranch }}"
+            PR_URL="\${{ steps.check-pr.outputs.prUrl || steps.create-pr.outputs.prUrl }}"
 
-            echo "🔐 Enabling auto-merge with rebase for PR #\$PR_NUMBER (requires approval)"
-            echo "   This will fast-forward \$TARGET when approved, maintaining linear history"
-
-            # Enable auto-merge with rebase method (fast-forward, no merge commit)
-            gh pr merge "\$PR_NUMBER" --auto --rebase
-
-            echo "✅ Auto-merge enabled - PR will fast-forward merge when approved"
-            echo "⚠️  Manual approval required before merge completes"
+            echo "✅ PR #\$PR_NUMBER created successfully"
+            echo "🔗 URL: \$PR_URL"
+            echo ""
+            echo "⚠️  Auto-merge is disabled for this branch."
+            echo "   Please review and merge the PR manually when ready."
 
         - name: Fast-Forward Merge (Immediate Auto-Merge)
-          if: inputs.autoMerge == 'true'
+          if: inputs.autoPromote == 'true'
           shell: bash
           run: |
             SOURCE="\${{ inputs.sourceBranch }}"
@@ -266,7 +261,7 @@ const promoteBranchActionTemplate = (ctx: any) => {
             echo "📝 PR will be closed automatically for audit trail"
 
         - name: Wait for Branch to Propagate
-          if: inputs.autoMerge == 'true'
+          if: inputs.autoPromote == 'true'
           shell: bash
           run: |
             echo "⏳ Waiting 5 seconds for branch update to propagate..."
@@ -274,7 +269,7 @@ const promoteBranchActionTemplate = (ctx: any) => {
             echo "✅ Branch should be fully propagated"
 
         - name: Trigger Pipeline Workflow on Target Branch
-          if: inputs.autoMerge == 'true'
+          if: inputs.autoPromote == 'true'
           shell: bash
           env:
             GH_TOKEN: \${{ inputs.token }}
@@ -304,7 +299,7 @@ const promoteBranchActionTemplate = (ctx: any) => {
             echo "✅ Pipeline workflow triggered on \$TARGET with version \$VERSION at commit \$COMMIT_SHA"
 
         - name: Close PR and Delete Branch
-          if: inputs.autoMerge == 'true'
+          if: inputs.autoPromote == 'true'
           shell: bash
           env:
             GH_TOKEN: \${{ inputs.token }}
@@ -335,7 +330,7 @@ const promoteBranchActionTemplate = (ctx: any) => {
             echo "ℹ️  Using existing PR #\$PR_NUMBER"
             echo "🔗 URL: \$PR_URL"
 
-            # Note: Fast-forward merge happens in separate step if autoMerge is enabled
+            # Note: Fast-forward merge happens in separate step if autoPromote is enabled
   `
 }
 

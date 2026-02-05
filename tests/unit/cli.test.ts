@@ -461,4 +461,76 @@ describe('CLI Logic Tests', () => {
       expect(loadedConfig.mergeStrategy).toBe('merge')
     })
   })
+
+  describe('Reserved Domain Names', () => {
+    it('should reject domain names that conflict with managed jobs', () => {
+      const reservedNames = ['version', 'changes', 'gate', 'tag', 'promote', 'release']
+
+      for (const reserved of reservedNames) {
+        const config = {
+          ciProvider: 'github',
+          mergeStrategy: 'fast-forward',
+          requireConventionalCommits: true,
+          initialBranch: 'develop',
+          finalBranch: 'main',
+          branchFlow: ['develop', 'main'],
+          domains: {
+            [reserved]: { paths: ['apps/**'], description: 'Test' }
+          }
+        } as PipecraftConfig
+
+        expect(() => validateConfig(config)).toThrow(/reserved/)
+      }
+    })
+
+    it('should reject reserved names case-insensitively', () => {
+      const config = {
+        ciProvider: 'github',
+        mergeStrategy: 'fast-forward',
+        requireConventionalCommits: true,
+        initialBranch: 'develop',
+        finalBranch: 'main',
+        branchFlow: ['develop', 'main'],
+        domains: {
+          GATE: { paths: ['apps/**'], description: 'Test' }
+        }
+      } as PipecraftConfig
+
+      expect(() => validateConfig(config)).toThrow(/reserved/)
+    })
+  })
+
+  describe('Branch Flow Validation', () => {
+    it('should reject when initialBranch is not first in branchFlow', () => {
+      const config = {
+        ciProvider: 'github',
+        mergeStrategy: 'fast-forward',
+        requireConventionalCommits: true,
+        initialBranch: 'staging', // Not first
+        finalBranch: 'main',
+        branchFlow: ['develop', 'staging', 'main'],
+        domains: {
+          api: { paths: ['apps/**'], description: 'API' }
+        }
+      } as PipecraftConfig
+
+      expect(() => validateConfig(config)).toThrow(/initialBranch/)
+    })
+
+    it('should reject when finalBranch is not last in branchFlow', () => {
+      const config = {
+        ciProvider: 'github',
+        mergeStrategy: 'fast-forward',
+        requireConventionalCommits: true,
+        initialBranch: 'develop',
+        finalBranch: 'staging', // Not last
+        branchFlow: ['develop', 'staging', 'main'],
+        domains: {
+          api: { paths: ['apps/**'], description: 'API' }
+        }
+      } as PipecraftConfig
+
+      expect(() => validateConfig(config)).toThrow(/finalBranch/)
+    })
+  })
 })
