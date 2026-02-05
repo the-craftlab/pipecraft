@@ -47,6 +47,16 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
     # Only runs on push events (skipped on pull requests).
 
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+
+      #=============================================================================
+    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    #=============================================================================
+    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
+    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+
+    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
+    # the 'if' condition to include them. These fields are preserved on regeneration.
+    # Example: needs: [changes, version, test-myapp, build-myapp]
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -145,6 +155,16 @@ exports[`Workflow Snapshots > Config: multi-domain > should match snapshot 1`] =
     # Only runs on push events (skipped on pull requests).
 
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+
+      #=============================================================================
+    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    #=============================================================================
+    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
+    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+
+    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
+    # the 'if' condition to include them. These fields are preserved on regeneration.
+    # Example: needs: [changes, version, test-myapp, build-myapp]
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -233,6 +253,16 @@ exports[`Workflow Snapshots > Config: remote-actions > should match snapshot 1`]
     # Only runs on push events (skipped on pull requests).
 
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: the-craftlab/pipecraft/actions/calculate-version@v1, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+
+      #=============================================================================
+    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    #=============================================================================
+    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
+    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+
+    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
+    # the 'if' condition to include them. These fields are preserved on regeneration.
+    # Example: needs: [changes, version, test-myapp, build-myapp]
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -317,6 +347,16 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
     # Only runs on push events (skipped on pull requests).
 
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+
+      #=============================================================================
+    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    #=============================================================================
+    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
+    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+
+    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
+    # the 'if' condition to include them. These fields are preserved on regeneration.
+    # Example: needs: [changes, version, test-myapp, build-myapp]
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -409,6 +449,16 @@ exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] =
     # Only runs on push events (skipped on pull requests).
 
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+
+      #=============================================================================
+    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    #=============================================================================
+    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
+    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+
+    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
+    # the 'if' condition to include them. These fields are preserved on regeneration.
+    # Example: needs: [changes, version, test-myapp, build-myapp]
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================
@@ -485,6 +535,16 @@ exports[`Workflow Snapshots > Config: with-auto-merge > should match snapshot 1`
     # Only runs on push events (skipped on pull requests).
 
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v4, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
+
+      #=============================================================================
+    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    #=============================================================================
+    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
+    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+
+    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
+    # the 'if' condition to include them. These fields are preserved on regeneration.
+    # Example: needs: [changes, version, test-myapp, build-myapp]
       gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
 
       #=============================================================================

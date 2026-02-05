@@ -33,11 +33,7 @@ const DEFAULT_STRINGIFY_OPTIONS = {
   minContentWidth: 0
 }
 
-function applyManagedOperations(
-  doc: Document.Parsed,
-  operations: PathOperationConfig[],
-  force: boolean
-) {
+function applyManagedOperations(doc: Document.Parsed, operations: PathOperationConfig[]) {
   if (!doc.contents) {
     return
   }
@@ -48,36 +44,36 @@ function applyManagedOperations(
   }
 
   applyPathOperations(rootNode, operations, doc)
-  ensureGateJob(doc, { force })
+  ensureGateJob(doc)
 }
 
 export function createManagedWorkflowDocument(
   headerComment: string,
   operations: PathOperationConfig[],
-  ctx: ManagedWorkflowContext
+  _ctx: ManagedWorkflowContext
 ): Document.Parsed {
   const doc = parseDocument('{}')
   doc.commentBefore = headerComment
-  applyManagedOperations(doc, operations, Boolean(ctx.pinion?.force))
+  applyManagedOperations(doc, operations)
   return doc
 }
 
 export function updateManagedWorkflowDocument(
   existingContent: string,
   operations: PathOperationConfig[],
-  ctx: ManagedWorkflowContext
+  _ctx: ManagedWorkflowContext
 ): Document.Parsed {
   const doc = parseDocument(existingContent)
-  applyManagedOperations(doc, operations, Boolean(ctx.pinion?.force))
+  applyManagedOperations(doc, operations)
   return doc
 }
 
 export function applyManagedWorkflowOperations(
   doc: Document.Parsed,
   operations: PathOperationConfig[],
-  ctx: ManagedWorkflowContext
+  _ctx: ManagedWorkflowContext
 ) {
-  applyManagedOperations(doc, operations, Boolean(ctx.pinion?.force))
+  applyManagedOperations(doc, operations)
 }
 
 export function stringifyManagedWorkflow(

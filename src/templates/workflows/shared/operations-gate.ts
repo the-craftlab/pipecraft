@@ -3,10 +3,14 @@ import { logger } from '../../../utils/logger.js'
 
 const GATE_COMMENT = `
 =============================================================================
- GATE (⚠️  Managed by Pipecraft - do not modify)
+ GATE (⚠️  Managed by Pipecraft - customizable needs and if)
 =============================================================================
  Gate job that ensures prior jobs succeed before allowing tag/promote/release.
  Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+
+ ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
+ the 'if' condition to include them. These fields are preserved on regeneration.
+ Example: needs: [changes, version, test-myapp, build-myapp]
 ` as const
 
 const DEFAULT_GATE_STEP_RUN =
@@ -65,12 +69,7 @@ function dedupePreserveOrder(values: string[]): string[] {
   return result
 }
 
-export interface EnsureGateOptions {
-  force: boolean
-}
-
-export function ensureGateJob(doc: Document.Parsed, options: EnsureGateOptions) {
-  const { force } = options
+export function ensureGateJob(doc: Document.Parsed) {
   const root = doc.contents
 
   if (!(root instanceof YAMLMap)) {
@@ -97,9 +96,10 @@ export function ensureGateJob(doc: Document.Parsed, options: EnsureGateOptions) 
     gatePair = items[gateIndex]
   } else {
     const insertionIndex = tagIndex !== -1 ? tagIndex : items.length
-    gatePair = new Pair(new Scalar('gate'), new YAMLMap())
-    ;(gatePair as any).spaceBefore = true
-    ;(gatePair as any).commentBefore = GATE_COMMENT.trimEnd()
+    const gateKey = new Scalar('gate')
+    ;(gateKey as any).spaceBefore = true
+    ;(gateKey as any).commentBefore = GATE_COMMENT.trimEnd()
+    gatePair = new Pair(gateKey, new YAMLMap())
     items.splice(insertionIndex, 0, gatePair)
   }
 
@@ -129,17 +129,18 @@ export function ensureGateJob(doc: Document.Parsed, options: EnsureGateOptions) 
     gatePair.value = gateMap
   }
 
-  if (!(gatePair as any).commentBefore) {
-    ;(gatePair as any).commentBefore = GATE_COMMENT.trimEnd()
+  // Ensure the gate key has the comment (for existing gates without it)
+  if (!(gatePair.key as any).commentBefore) {
+    ;(gatePair.key as any).commentBefore = GATE_COMMENT.trimEnd()
   }
 
   if (!gateExisted) {
     ensureDefaultRunsAndSteps(gateMap as YAMLMap)
   }
 
-  const shouldUpdateControlFields = force || !gateExisted
-
-  if (shouldUpdateControlFields) {
+  // Only set needs/if when creating a new gate job - always preserve existing values
+  // This allows users to customize their gate job prerequisites (like the tag job)
+  if (!gateExisted) {
     ;(gateMap as YAMLMap).set('needs', buildNeedsSequence(prerequisites))
     ;(gateMap as YAMLMap).set('if', buildIfExpression(prerequisites))
   }
