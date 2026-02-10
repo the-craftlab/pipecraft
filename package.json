@@ -48,7 +48,7 @@
     "test:run": "vitest run --exclude '.worktrees/**'",
     "test:coverage": "vitest run --coverage --exclude '.worktrees/**'",
     "test:watch": "vitest --watch",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern '.worktrees/**'",
     "lint:fix": "eslint --fix . --ext .js,.jsx,.ts,.tsx",
     "lint:strict": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
