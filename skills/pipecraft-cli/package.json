@@ -1,0 +1,37 @@
+{
+  "name": "@pipecraft/claude-skill",
+  "version": "1.0.0",
+  "description": "Claude Code skill for Pipecraft CI/CD workflow generator",
+  "keywords": [
+    "pipecraft",
+    "claude-code",
+    "claude-skill",
+    "agent-skill",
+    "ci-cd",
+    "github-actions",
+    "workflow-generator"
+  ],
+  "homepage": "https://pipecraft.thecraftlab.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/the-craftlab/pipecraft.git",
+    "directory": "skills/pipecraft-cli"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "The Craft Lab",
+    "url": "https://thecraftlab.dev"
+  },
+  "files": [
+    "SKILL.md",
+    "README.md",
+    ".claude-skill.json"
+  ],
+  "scripts": {
+    "postinstall": "node install-skill.js",
+    "preuninstall": "node uninstall-skill.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

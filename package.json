@@ -43,12 +43,12 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/cli/index.ts",
-    "test": "vitest run",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test": "vitest run --exclude '.worktrees/**'",
+    "test:ui": "vitest --ui --exclude '.worktrees/**'",
+    "test:run": "vitest run --exclude '.worktrees/**'",
+    "test:coverage": "vitest run --coverage --exclude '.worktrees/**'",
     "test:watch": "vitest --watch",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern '.worktrees/**'",
     "lint:fix": "eslint --fix . --ext .js,.jsx,.ts,.tsx",
     "lint:strict": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
@@ -106,6 +106,7 @@
     "commander": "^14.0.1",
     "cosmiconfig": "^9.0.0",
     "dedent": "^1.7.0",
+    "glob": "^13.0.1",
     "yaml": "^2.8.1"
   },
   "lint-staged": {
