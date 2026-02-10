@@ -21,28 +21,17 @@
   },
   "domains": {
     "api": {
-      "paths": [
-        "packages/api/**",
-        "libs/api-core/**",
-        "libs/shared/**"
-      ],
+      "paths": ["packages/api/**", "libs/api-core/**", "libs/shared/**"],
       "description": "Backend API service",
       "prefixes": ["test", "deploy"]
     },
     "web": {
-      "paths": [
-        "packages/web/**",
-        "libs/ui-components/**",
-        "libs/shared/**"
-      ],
+      "paths": ["packages/web/**", "libs/ui-components/**", "libs/shared/**"],
       "description": "Frontend web application",
       "prefixes": ["test", "deploy"]
     },
     "infrastructure": {
-      "paths": [
-        "infrastructure/**",
-        "terraform/**"
-      ],
+      "paths": ["infrastructure/**", "terraform/**"],
       "description": "Infrastructure as code",
       "prefixes": ["deploy"]
     }
