@@ -106,6 +106,7 @@
     "commander": "^14.0.1",
     "cosmiconfig": "^9.0.0",
     "dedent": "^1.7.0",
+    "glob": "^13.0.1",
     "yaml": "^2.8.1"
   },
   "lint-staged": {
