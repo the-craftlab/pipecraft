@@ -253,6 +253,25 @@ Regeneration preserves everything in custom sections. See the [Getting Started g
 
 ## Troubleshooting
 
+### Quick Health Check
+
+Run diagnostic checks on your Pipecraft setup:
+
+```bash
+pipecraft doctor
+```
+
+This checks:
+
+- Configuration validation
+- GitHub workflow permissions
+- Branch existence on remote
+- Generated file verification
+- Workflow semantic validation (circular dependencies, missing job references)
+- Domain path validation
+
+### Common Issues
+
 If you encounter issues, the [Troubleshooting guide](https://pipecraft.thecraftlab.dev/docs/troubleshooting) covers common problems with detailed solutions.
 
 For questions and discussions, visit [GitHub Discussions](https://github.com/the-craftlab/pipecraft/discussions).
@@ -275,10 +294,10 @@ npx openskills install the-craftlab/pipecraft
 
 ### Manual Setup
 
-| Tool | Configuration File |
-|------|-------------------|
-| Claude Code | `.claude/skills/pipecraft/SKILL.md` |
-| Cursor | `.cursorrules` (included in repo) |
+| Tool           | Configuration File                                   |
+| -------------- | ---------------------------------------------------- |
+| Claude Code    | `.claude/skills/pipecraft/SKILL.md`                  |
+| Cursor         | `.cursorrules` (included in repo)                    |
 | GitHub Copilot | `.github/copilot-instructions.md` (included in repo) |
 
 ### What the Skill Provides
