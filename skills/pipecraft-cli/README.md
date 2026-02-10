@@ -24,12 +24,12 @@ npx openskills install the-craftlab/pipecraft
 
 Copy `SKILL.md` to your skills directory:
 
-| Tool | Global Path | Project Path |
-|------|-------------|--------------|
-| Claude Code | `~/.claude/skills/pipecraft/` | `.claude/skills/pipecraft/` |
-| Cursor | `~/.cursor/skills/pipecraft/` | `.cursor/skills/pipecraft/` |
-| GitHub Copilot | `~/.copilot/skills/pipecraft/` | `.github/skills/pipecraft/` |
-| Windsurf | `~/.codeium/windsurf/skills/pipecraft/` | `.windsurf/skills/pipecraft/` |
+| Tool           | Global Path                             | Project Path                  |
+| -------------- | --------------------------------------- | ----------------------------- |
+| Claude Code    | `~/.claude/skills/pipecraft/`           | `.claude/skills/pipecraft/`   |
+| Cursor         | `~/.cursor/skills/pipecraft/`           | `.cursor/skills/pipecraft/`   |
+| GitHub Copilot | `~/.copilot/skills/pipecraft/`          | `.github/skills/pipecraft/`   |
+| Windsurf       | `~/.codeium/windsurf/skills/pipecraft/` | `.windsurf/skills/pipecraft/` |
 
 ## Usage
 
@@ -46,6 +46,7 @@ Once installed, the skill activates automatically when you:
 ```
 
 Or just ask naturally:
+
 ```
 How do I configure Pipecraft for a three-branch flow?
 ```

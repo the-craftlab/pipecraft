@@ -183,7 +183,9 @@ program
 
       // Hint about skill installation if not already done
       if (!options.withSkill) {
-        console.log('\n💡 Tip: Run `pipecraft skill` to install AI assistant skills (Claude, Cursor, etc.)')
+        console.log(
+          '\n💡 Tip: Run `pipecraft skill` to install AI assistant skills (Claude, Cursor, etc.)'
+        )
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)

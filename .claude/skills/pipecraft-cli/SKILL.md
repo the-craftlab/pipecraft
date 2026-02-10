@@ -1,7 +1,7 @@
 ---
 name: pipecraft
 description: Help users set up, configure, and use the Pipecraft CLI for GitHub Actions workflow generation. Use when users ask about CI/CD setup, workflow generation, branch promotion, domain configuration, or Pipecraft troubleshooting.
-argument-hint: "[command|question]"
+argument-hint: '[command|question]'
 allowed-tools: Read, Grep, Glob, Bash(pipecraft *), Bash(npx pipecraft *), Bash(cat .pipecraftrc*), Bash(ls -la .pipecraftrc* .github/workflows/pipeline.yml 2>/dev/null), Edit, Write
 ---
 
@@ -18,37 +18,40 @@ Help users with **Pipecraft** - a trunk-based CI/CD workflow generator for GitHu
 
 ## Commands Reference
 
-| Command | Purpose | Key Flags |
-|---------|---------|-----------|
-| `init` | Create `.pipecraftrc` config | `--interactive`, `--force`, `--with-versioning` |
-| `generate` | Generate workflows | `--dry-run`, `--verbose`, `--debug`, `--skip-checks` |
-| `validate` | Check config syntax | (none) |
-| `verify` | Health check entire setup | (none) |
-| `get-config <key>` | Read config value | `--format json\|raw` |
-| `setup` | Create branches from branchFlow | `--force` |
-| `setup-github` | Configure GitHub permissions | `--apply` |
-| `version` | Version management | `--check` |
+| Command            | Purpose                         | Key Flags                                            |
+| ------------------ | ------------------------------- | ---------------------------------------------------- |
+| `init`             | Create `.pipecraftrc` config    | `--interactive`, `--force`, `--with-versioning`      |
+| `generate`         | Generate workflows              | `--dry-run`, `--verbose`, `--debug`, `--skip-checks` |
+| `validate`         | Check config syntax             | (none)                                               |
+| `verify`           | Health check entire setup       | (none)                                               |
+| `get-config <key>` | Read config value               | `--format json\|raw`                                 |
+| `setup`            | Create branches from branchFlow | `--force`                                            |
+| `setup-github`     | Configure GitHub permissions    | `--apply`                                            |
+| `version`          | Version management              | `--check`                                            |
 
 ### validate vs verify: What's the Difference?
 
 These two commands are often confused. Here's when to use each:
 
-| Command | What it checks | When to use |
-|---------|---------------|-------------|
-| `validate` | **Config syntax only** - Parses `.pipecraftrc` and checks required fields, valid values, schema compliance | After editing config, before `generate` |
-| `verify` | **Entire setup** - Config exists + is valid + workflows are generated + repo structure is correct | Troubleshooting, CI health checks, after cloning |
+| Command    | What it checks                                                                                             | When to use                                      |
+| ---------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `validate` | **Config syntax only** - Parses `.pipecraftrc` and checks required fields, valid values, schema compliance | After editing config, before `generate`          |
+| `verify`   | **Entire setup** - Config exists + is valid + workflows are generated + repo structure is correct          | Troubleshooting, CI health checks, after cloning |
 
 **Use `validate` when:**
+
 - You just edited `.pipecraftrc`
 - You want fast feedback on config errors
 - You're debugging a specific config issue
 
 **Use `verify` when:**
+
 - Something isn't working and you don't know why
 - You cloned a repo and want to check if Pipecraft is set up
 - You want a full health check before pushing
 
 **Example workflow:**
+
 ```bash
 # After editing config - quick syntax check
 pipecraft validate
@@ -62,6 +65,7 @@ pipecraft verify
 ### Config File Locations (cosmiconfig)
 
 Pipecraft searches in order:
+
 1. `--config <path>` flag
 2. `.pipecraftrc` (YAML or JSON) **← recommended**
 3. `.pipecraftrc.json`, `.pipecraftrc.yaml`, `.pipecraftrc.yml`
@@ -71,6 +75,7 @@ Pipecraft searches in order:
 ### JSON Schema for IDE Validation
 
 Add to config file for autocomplete and validation:
+
 ```json
 {
   "$schema": "./.pipecraft-schema.json",
@@ -84,12 +89,12 @@ Schema location: [.pipecraft-schema.json](../../../.pipecraft-schema.json)
 ### Required Fields
 
 ```yaml
-ciProvider: github              # Only 'github' fully supported
-mergeStrategy: fast-forward     # or 'merge'
+ciProvider: github # Only 'github' fully supported
+mergeStrategy: fast-forward # or 'merge'
 requireConventionalCommits: true
-initialBranch: develop          # MUST be first in branchFlow
-finalBranch: main               # MUST be last in branchFlow
-branchFlow: [develop, main]     # Ordered promotion path
+initialBranch: develop # MUST be first in branchFlow
+finalBranch: main # MUST be last in branchFlow
+branchFlow: [develop, main] # Ordered promotion path
 semver:
   bumpRules:
     feat: minor
@@ -97,28 +102,28 @@ semver:
     breaking: major
 domains:
   app:
-    paths: ["src/**"]
-    description: "App code"
+    paths: ['src/**']
+    description: 'App code'
 ```
 
 ### Optional Fields
 
-| Field | Type | Default | Purpose |
-|-------|------|---------|---------|
-| `autoPromote` | bool/object | `false` | Auto-promote between branches |
-| `mergeMethod` | string/object | `auto` | `merge`, `squash`, `rebase` |
-| `actionSourceMode` | string | `local` | `local`, `remote`, `source` |
-| `actionVersion` | string | `v1` | Version for remote actions |
-| `versioning.enabled` | bool | | Enable release-it versioning |
+| Field                | Type          | Default | Purpose                       |
+| -------------------- | ------------- | ------- | ----------------------------- |
+| `autoPromote`        | bool/object   | `false` | Auto-promote between branches |
+| `mergeMethod`        | string/object | `auto`  | `merge`, `squash`, `rebase`   |
+| `actionSourceMode`   | string        | `local` | `local`, `remote`, `source`   |
+| `actionVersion`      | string        | `v1`    | Version for remote actions    |
+| `versioning.enabled` | bool          |         | Enable release-it versioning  |
 
 ### Domain Configuration
 
 ```yaml
 domains:
   api:
-    paths: ["packages/api/**", "libs/shared/**"]
-    description: "Backend API"
-    prefixes: [test, deploy, remote-test]  # Optional: job prefixes
+    paths: ['packages/api/**', 'libs/shared/**']
+    description: 'Backend API'
+    prefixes: [test, deploy, remote-test] # Optional: job prefixes
 ```
 
 ### Reserved Domain Names (Cannot Use)
@@ -127,17 +132,18 @@ domains:
 
 ### Deprecated Fields (Don't Use)
 
-| Deprecated | Use Instead |
-|------------|-------------|
-| `testable: true` | `prefixes: [test]` |
-| `deployable: true` | `prefixes: [deploy]` |
-| `remoteTestable: true` | `prefixes: [remote-test]` |
-| `autoMerge` | `autoPromote` |
-| `packageManager` | Removed (language-agnostic now) |
+| Deprecated             | Use Instead                     |
+| ---------------------- | ------------------------------- |
+| `testable: true`       | `prefixes: [test]`              |
+| `deployable: true`     | `prefixes: [deploy]`            |
+| `remoteTestable: true` | `prefixes: [remote-test]`       |
+| `autoMerge`            | `autoPromote`                   |
+| `packageManager`       | Removed (language-agnostic now) |
 
 ## Typical Workflows
 
 ### New Project Setup
+
 ```bash
 pipecraft init              # Create config
 # Edit .pipecraftrc
@@ -150,6 +156,7 @@ git commit -m "chore: add Pipecraft CI/CD"
 ```
 
 ### Debugging Issues
+
 ```bash
 pipecraft verify                    # Overall health check
 pipecraft validate                  # Config syntax
@@ -160,13 +167,13 @@ pipecraft get-config branchFlow     # Inspect specific values
 
 ## Common Errors
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| "initialBranch must be first in branchFlow" | Config validation | Reorder branchFlow array |
-| "finalBranch must be last in branchFlow" | Config validation | Reorder branchFlow array |
-| "Reserved job name used as domain" | Domain named `version`, `changes`, etc. | Rename the domain |
-| "Configuration not found" | No .pipecraftrc | Run `pipecraft init` |
-| "Pre-flight checks failed" | Missing git repo or permissions | Check git status, use `--skip-checks` |
+| Error                                       | Cause                                   | Fix                                   |
+| ------------------------------------------- | --------------------------------------- | ------------------------------------- |
+| "initialBranch must be first in branchFlow" | Config validation                       | Reorder branchFlow array              |
+| "finalBranch must be last in branchFlow"    | Config validation                       | Reorder branchFlow array              |
+| "Reserved job name used as domain"          | Domain named `version`, `changes`, etc. | Rename the domain                     |
+| "Configuration not found"                   | No .pipecraftrc                         | Run `pipecraft init`                  |
+| "Pre-flight checks failed"                  | Missing git repo or permissions         | Check git status, use `--skip-checks` |
 
 ## Branch Flow Patterns
 
@@ -187,6 +194,7 @@ branchFlow: [develop, staging, uat, production]
 ## Generated Files
 
 When `pipecraft generate` runs:
+
 - `.github/workflows/pipeline.yml` - Main CI/CD workflow
 - `.github/actions/*/action.yml` - Reusable actions (if `actionSourceMode: local`)
 - `.github/workflows/enforce-pr-target.yml` - PR targeting rules

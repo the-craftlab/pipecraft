@@ -28,8 +28,8 @@ pipecraft version --check   # Preview next version
 ciProvider: github
 mergeStrategy: fast-forward
 requireConventionalCommits: true
-initialBranch: develop          # Must be FIRST in branchFlow
-finalBranch: main               # Must be LAST in branchFlow
+initialBranch: develop # Must be FIRST in branchFlow
+finalBranch: main # Must be LAST in branchFlow
 branchFlow: [develop, main]
 semver:
   bumpRules:
@@ -38,8 +38,8 @@ semver:
     breaking: major
 domains:
   app:
-    paths: ["src/**"]
-    description: "App code"
+    paths: ['src/**']
+    description: 'App code'
 ```
 
 ## Reserved Domain Names

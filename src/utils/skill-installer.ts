@@ -242,7 +242,9 @@ export function listSkillTargets(): Array<{
 /**
  * Uninstall skills from all targets
  */
-export function uninstallSkills(options: { global?: boolean; local?: boolean; cwd?: string } = {}): InstallResult[] {
+export function uninstallSkills(
+  options: { global?: boolean; local?: boolean; cwd?: string } = {}
+): InstallResult[] {
   const results: InstallResult[] = []
   const cwd = options.cwd || process.cwd()
   const { rmSync } = require('fs')
