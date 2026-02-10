@@ -15,13 +15,14 @@ import {
   inWorkspace,
   cleanupTestWorkspace
 } from '../helpers/workspace.js'
-import { type WorkspaceInfo } from '../helpers/workspace.js'
 import fs from 'fs'
 import path from 'path'
 import { generate as generateWorkflows } from '../../src/generators/workflows.tpl.js'
+import type { PinionContext } from '@featherscloud/pinion'
+import type { PipecraftConfig } from '../../src/types/config.js'
 
 describe('Custom Jobs Preservation', () => {
-  let workspace: WorkspaceInfo
+  let workspace: string
 
   beforeEach(() => {
     workspace = createPipecraftWorkspace('custom-jobs-preservation')
@@ -31,10 +32,30 @@ describe('Custom Jobs Preservation', () => {
     cleanupTestWorkspace(workspace)
   })
 
+  // Helper function to create a proper pinion context
+  function createContext(config: PipecraftConfig): PinionContext & { config?: PipecraftConfig } {
+    return {
+      cwd: workspace,
+      argv: ['generate'],
+      pinion: {
+        logger: {
+          ...console,
+          notice: console.log
+        },
+        prompt: async () => ({}),
+        cwd: workspace,
+        force: true,
+        trace: [],
+        exec: async () => 0
+      },
+      config
+    }
+  }
+
   it('preserves custom jobs between markers when regenerating', async () => {
     await inWorkspace(workspace, async () => {
       // Create initial config
-      const config = {
+      const config: PipecraftConfig = {
         ciProvider: 'github',
         mergeStrategy: 'fast-forward',
         requireConventionalCommits: true,
@@ -51,11 +72,18 @@ describe('Custom Jobs Preservation', () => {
 
       fs.writeFileSync('.pipecraftrc', JSON.stringify(config, null, 2))
 
+      // Ensure .github/workflows directory exists
+      const workflowsDir = path.join(workspace, '.github', 'workflows')
+      fs.mkdirSync(workflowsDir, { recursive: true })
+
+      // Create context for generateWorkflows
+      const ctx = createContext(config)
+
       // Generate initial pipeline
-      await generateWorkflows({ cwd: workspace.path })
+      await generateWorkflows(ctx)
 
       // Read generated pipeline
-      const pipelinePath = path.join(workspace.path, '.github/workflows/pipeline.yml')
+      const pipelinePath = path.join(workspace, '.github/workflows/pipeline.yml')
       let pipelineContent = fs.readFileSync(pipelinePath, 'utf8')
 
       // Find the custom jobs markers and insert custom jobs
@@ -104,7 +132,7 @@ describe('Custom Jobs Preservation', () => {
       expect(linesBefore).toBeGreaterThan(200)
 
       // Regenerate pipeline (should preserve custom jobs)
-      await generateWorkflows({ cwd: workspace.path })
+      await generateWorkflows(ctx)
 
       // Read regenerated pipeline
       const regeneratedContent = fs.readFileSync(pipelinePath, 'utf8')
@@ -128,7 +156,7 @@ describe('Custom Jobs Preservation', () => {
   it('handles missing markers gracefully', async () => {
     await inWorkspace(workspace, async () => {
       // Create config
-      const config = {
+      const config: PipecraftConfig = {
         ciProvider: 'github',
         mergeStrategy: 'fast-forward',
         requireConventionalCommits: true,
@@ -145,11 +173,18 @@ describe('Custom Jobs Preservation', () => {
 
       fs.writeFileSync('.pipecraftrc', JSON.stringify(config, null, 2))
 
+      // Ensure .github/workflows directory exists
+      const workflowsDir = path.join(workspace, '.github', 'workflows')
+      fs.mkdirSync(workflowsDir, { recursive: true })
+
+      // Create context for generateWorkflows
+      const ctx = createContext(config)
+
       // Generate initial pipeline
-      await generateWorkflows({ cwd: workspace.path })
+      await generateWorkflows(ctx)
 
       // Read and modify pipeline to remove markers
-      const pipelinePath = path.join(workspace.path, '.github/workflows/pipeline.yml')
+      const pipelinePath = path.join(workspace, '.github/workflows/pipeline.yml')
       let pipelineContent = fs.readFileSync(pipelinePath, 'utf8')
 
       // Remove the markers but keep the space
@@ -159,7 +194,7 @@ describe('Custom Jobs Preservation', () => {
       fs.writeFileSync(pipelinePath, pipelineContent)
 
       // Regenerate (should add markers back)
-      await generateWorkflows({ cwd: workspace.path })
+      await generateWorkflows(ctx)
 
       const regeneratedContent = fs.readFileSync(pipelinePath, 'utf8')
 
@@ -172,7 +207,7 @@ describe('Custom Jobs Preservation', () => {
   it('preserves custom jobs even when scattered outside markers', async () => {
     await inWorkspace(workspace, async () => {
       // Create config
-      const config = {
+      const config: PipecraftConfig = {
         ciProvider: 'github',
         mergeStrategy: 'fast-forward',
         requireConventionalCommits: true,
@@ -189,11 +224,18 @@ describe('Custom Jobs Preservation', () => {
 
       fs.writeFileSync('.pipecraftrc', JSON.stringify(config, null, 2))
 
+      // Ensure .github/workflows directory exists
+      const workflowsDir = path.join(workspace, '.github', 'workflows')
+      fs.mkdirSync(workflowsDir, { recursive: true })
+
+      // Create context for generateWorkflows
+      const ctx = createContext(config)
+
       // Generate initial pipeline
-      await generateWorkflows({ cwd: workspace.path })
+      await generateWorkflows(ctx)
 
       // Read pipeline and manually add custom jobs OUTSIDE the markers
-      const pipelinePath = path.join(workspace.path, '.github/workflows/pipeline.yml')
+      const pipelinePath = path.join(workspace, '.github/workflows/pipeline.yml')
       let pipelineContent = fs.readFileSync(pipelinePath, 'utf8')
 
       // Add a custom job before the changes job
@@ -231,7 +273,7 @@ describe('Custom Jobs Preservation', () => {
       expect(pipelineContent).toContain('post-gate:')
 
       // Regenerate
-      await generateWorkflows({ cwd: workspace.path })
+      await generateWorkflows(ctx)
 
       const regeneratedContent = fs.readFileSync(pipelinePath, 'utf8')
 
@@ -245,7 +287,7 @@ describe('Custom Jobs Preservation', () => {
   it('preserves large custom jobs sections (2000+ lines)', async () => {
     await inWorkspace(workspace, async () => {
       // Create config
-      const config = {
+      const config: PipecraftConfig = {
         ciProvider: 'github',
         mergeStrategy: 'fast-forward',
         requireConventionalCommits: true,
@@ -262,11 +304,18 @@ describe('Custom Jobs Preservation', () => {
 
       fs.writeFileSync('.pipecraftrc', JSON.stringify(config, null, 2))
 
+      // Ensure .github/workflows directory exists
+      const workflowsDir = path.join(workspace, '.github', 'workflows')
+      fs.mkdirSync(workflowsDir, { recursive: true })
+
+      // Create context for generateWorkflows
+      const ctx = createContext(config)
+
       // Generate initial pipeline
-      await generateWorkflows({ cwd: workspace.path })
+      await generateWorkflows(ctx)
 
       // Create a large custom jobs section
-      const pipelinePath = path.join(workspace.path, '.github/workflows/pipeline.yml')
+      const pipelinePath = path.join(workspace, '.github/workflows/pipeline.yml')
       let pipelineContent = fs.readFileSync(pipelinePath, 'utf8')
 
       // Generate 50 custom jobs (simulating a large real-world pipeline)
@@ -328,7 +377,7 @@ describe('Custom Jobs Preservation', () => {
       expect(jobsBeforeCount).toBeGreaterThan(150) // 50 domains * 3 jobs each + managed jobs
 
       // Regenerate pipeline
-      await generateWorkflows({ cwd: workspace.path })
+      await generateWorkflows(ctx)
 
       // Read regenerated pipeline
       const regeneratedContent = fs.readFileSync(pipelinePath, 'utf8')
