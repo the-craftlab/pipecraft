@@ -47,7 +47,7 @@ jobs:
           git push origin "${SOURCE_BRANCH}"
 
           # Create target branch (simulating existing branch)
-          git checkout -b "${TARGET_BRANCH}"
+          git checkout -b "${TARGET_BRANCH}" "${{ github.sha }}"
           git push origin "${TARGET_BRANCH}"
 
           # Switch back to source for promotion
@@ -144,7 +144,7 @@ jobs:
           echo "target=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
 
           # Create target branch first
-          git checkout -b "${TARGET_BRANCH}"
+          git checkout -b "${TARGET_BRANCH}" "${{ github.sha }}"
           git push origin "${TARGET_BRANCH}"
 
           # Create source branch with new commit (ahead of target)
@@ -264,7 +264,7 @@ jobs:
           git push origin "v9.9.9-test-${TEST_ID}"
 
           # Create target branch
-          git checkout -b "${TARGET_BRANCH}"
+          git checkout -b "${TARGET_BRANCH}" "${{ github.sha }}"
           git push origin "${TARGET_BRANCH}"
 
           git checkout "${SOURCE_BRANCH}"
@@ -352,7 +352,7 @@ jobs:
           git commit -m "test: custom pattern"
           git push origin "${SOURCE_BRANCH}"
 
-          git checkout -b "${TARGET_BRANCH}"
+          git checkout -b "${TARGET_BRANCH}" "${{ github.sha }}"
           git push origin "${TARGET_BRANCH}"
 
           git checkout "${SOURCE_BRANCH}"
@@ -433,7 +433,7 @@ jobs:
           git commit -m "test: existing PR"
           git push origin "${SOURCE_BRANCH}"
 
-          git checkout -b "${TARGET_BRANCH}"
+          git checkout -b "${TARGET_BRANCH}" "${{ github.sha }}"
           git push origin "${TARGET_BRANCH}"
 
           git checkout "${SOURCE_BRANCH}"
