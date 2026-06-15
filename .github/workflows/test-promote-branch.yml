@@ -60,7 +60,7 @@ jobs:
           sourceBranch: ${{ steps.setup.outputs.source }}
           targetBranch: ${{ steps.setup.outputs.target }}
           version: v0.0.0-test-${{ github.run_number }}
-          autoMerge: 'false'
+          autoPromote: 'false'
 
       - name: Verify PR Created
         env:
@@ -163,7 +163,7 @@ jobs:
           sourceBranch: ${{ steps.setup.outputs.source }}
           targetBranch: ${{ steps.setup.outputs.target }}
           version: v0.0.0-test-${{ github.run_number }}
-          autoMerge: 'true'
+          autoPromote: 'true'
 
       - name: Verify Fast-Forward Merge
         run: |
@@ -275,7 +275,7 @@ jobs:
         with:
           sourceBranch: ${{ steps.setup.outputs.source }}
           targetBranch: ${{ steps.setup.outputs.target }}
-          autoMerge: 'false'
+          autoPromote: 'false'
           # version not provided - should auto-detect
 
       - name: Verify Version Detected
@@ -367,7 +367,7 @@ jobs:
           targetBranch: ${{ steps.setup.outputs.target }}
           version: '1.0.0'
           tempBranchPattern: 'custom-release/{version}-{target}'
-          autoMerge: 'false'
+          autoPromote: 'false'
 
       - name: Verify Custom Pattern
         run: |
@@ -447,7 +447,7 @@ jobs:
           sourceBranch: ${{ steps.setup.outputs.source }}
           targetBranch: ${{ steps.setup.outputs.target }}
           version: v0.0.0-test-${{ github.run_number }}
-          autoMerge: 'false'
+          autoPromote: 'false'
 
       - name: Second Promotion (Should Use Existing PR)
         id: second-promote
@@ -456,7 +456,7 @@ jobs:
           sourceBranch: ${{ steps.setup.outputs.source }}
           targetBranch: ${{ steps.setup.outputs.target }}
           version: v0.0.0-test-${{ github.run_number }}
-          autoMerge: 'false'
+          autoPromote: 'false'
 
       - name: Verify Same PR Used
         run: |

@@ -160,7 +160,7 @@ The command handles three types of configuration:
 
 **Workflow Permissions**: Your workflows need write access to create tags and push changes. The command updates your default workflow permissions from read-only to read-write and enables the ability for workflows to create and approve pull requests.
 
-**Repository Auto-Merge**: For branch promotion flows that use auto-merge, this feature must be enabled at the repository level.
+**Repository Auto-Promote**: For branch promotion flows that use auto-merge, this feature must be enabled at the repository level.
 
 **Branch Protection**: Branches configured with auto-merge require basic branch protection rules. The command sets up these rules with sensible defaults: status checks enabled, linear history required, and protection against force pushes.
 
