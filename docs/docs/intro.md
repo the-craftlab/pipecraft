@@ -75,7 +75,7 @@ After answering these questions, you'll have a `.pipecraftrc.json` file:
   "finalBranch": "main",
   "branchFlow": ["develop", "staging", "main"],
   "packageManager": "npm",
-  "autoMerge": {
+  "autoPromote": {
     "staging": true,
     "main": true
   },

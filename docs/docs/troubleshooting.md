@@ -72,7 +72,7 @@ resolved on the final branch's `HEAD`. If the promotion PR is merged as a
 **merge commit**, the version tag is not on the final branch's `HEAD`, so the
 version resolves empty and the release is skipped.
 
-When `autoMerge` is disabled for the final branch (human-gated production
+When `autoPromote` is disabled for the final branch (human-gated production
 promotion), merge promotion PRs using **fast-forward** or **rebase**, not a
 merge commit:
 
