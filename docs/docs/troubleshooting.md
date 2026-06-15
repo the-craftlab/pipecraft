@@ -60,6 +60,33 @@ If you want a commit to promote, make sure it uses a commit message that trigger
 git commit -m "feat: enable promotion"
 ```
 
+## No GitHub Release was created after merging a promotion PR
+
+If a promotion PR merged successfully but no tag/release was cut on the final
+branch — with no error in the logs — the most common cause is the **merge
+method** used on the promotion PR.
+
+PipeCraft creates the version tag on the initial branch and gates the release
+job to the final branch. The release job only runs when a version can be
+resolved on the final branch's `HEAD`. If the promotion PR is merged as a
+**merge commit**, the version tag is not on the final branch's `HEAD`, so the
+version resolves empty and the release is skipped.
+
+When `autoMerge` is disabled for the final branch (human-gated production
+promotion), merge promotion PRs using **fast-forward** or **rebase**, not a
+merge commit:
+
+```bash
+# Fast-forward (preferred) or rebase keeps the tagged commit on HEAD
+gh pr merge <pr> --rebase   # or: --merge is what to AVOID here
+```
+
+Two safeguards back this up: PipeCraft emits a `pipecraft` warning on the final
+branch when no version resolves, and `calculate-version` falls back to the
+nearest reachable tag (`git describe`) so a merge-commit promotion still cuts
+the release in most cases. Merging fast-forward/rebase avoids the situation
+entirely.
+
 ## Promotion fails with "Resource not accessible by integration"
 
 If you see an error like:
