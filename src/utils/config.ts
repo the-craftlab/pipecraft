@@ -21,6 +21,19 @@ import { cosmiconfigSync } from 'cosmiconfig'
 import { type DomainConfig, PipecraftConfig } from '../types/index.js'
 
 /**
+ * Reserved job names that cannot be used as domain names.
+ * These are managed by Pipecraft and would conflict with generated workflow jobs.
+ */
+export const RESERVED_JOB_NAMES = [
+  'version',
+  'changes',
+  'gate',
+  'tag',
+  'promote',
+  'release'
+] as const
+
+/**
  * Load PipeCraft configuration from filesystem.
  *
  * Uses cosmiconfig to search for configuration files in standard locations.
@@ -125,15 +138,44 @@ export const validateConfig = (config: any) => {
     throw new Error('mergeStrategy must be either "fast-forward" or "merge"')
   }
 
-  // Validate branchFlow is a non-empty array with at least 2 branches
-  // (minimum trunk-based flow requires at least develop → main)
-  if (!Array.isArray(config.branchFlow) || config.branchFlow.length < 2) {
-    throw new Error('branchFlow must be an array with at least 2 branches')
+  // Validate branchFlow is a non-empty array
+  // Single-branch workflows are valid (e.g., GitHub Actions, libraries that publish from main)
+  if (!Array.isArray(config.branchFlow) || config.branchFlow.length < 1) {
+    throw new Error('branchFlow must be an array with at least 1 branch')
+  }
+
+  // Validate initialBranch is first in branchFlow
+  if (config.branchFlow[0] !== config.initialBranch) {
+    throw new Error(
+      `initialBranch "${config.initialBranch}" must be the first branch in branchFlow. ` +
+        `Got branchFlow: [${config.branchFlow.join(', ')}]`
+    )
+  }
+
+  // Validate finalBranch is last in branchFlow
+  if (config.branchFlow[config.branchFlow.length - 1] !== config.finalBranch) {
+    throw new Error(
+      `finalBranch "${config.finalBranch}" must be the last branch in branchFlow. ` +
+        `Got branchFlow: [${config.branchFlow.join(', ')}]`
+    )
   }
 
   // Validate domains structure
   if (typeof config.domains !== 'object') {
     throw new Error('domains must be an object')
+  }
+
+  // Validate domain names don't conflict with reserved job names
+  const domainNames = Object.keys(config.domains)
+  for (const domainName of domainNames) {
+    const lowerName = domainName.toLowerCase()
+    if ((RESERVED_JOB_NAMES as readonly string[]).includes(lowerName)) {
+      throw new Error(
+        `Domain name "${domainName}" is reserved and cannot be used. ` +
+          `Reserved names: ${RESERVED_JOB_NAMES.join(', ')}. ` +
+          `These names are used by Pipecraft-managed workflow jobs.`
+      )
+    }
   }
 
   // Validate each domain configuration

@@ -24,6 +24,11 @@
 
 name: Pipeline
 
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
 run-name: "${{ github.event_name == 'pull_request' && !contains('develop,staging,main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #${{ inputs.run_number || github.run_number }}${{ inputs.version && format(' - {0}', inputs.version) || '' }}"
 
 #Git fetch depth configuration
@@ -60,6 +65,10 @@ on:
         description: The exact commit SHA to checkout and test
         required: false
         type: string
+      beforeSha:
+        description: The commit SHA before promotion (for change detection)
+        required: false
+        type: string
   workflow_call:
     inputs:
       version:
@@ -76,6 +85,10 @@ on:
         type: string
       commitSha:
         description: The exact commit SHA to checkout and test
+        required: false
+        type: string
+      beforeSha:
+        description: The commit SHA before promotion (for change detection)
         required: false
         type: string
   push:
@@ -124,18 +137,14 @@ jobs:
         id: detect
         with:
           baseRef: ${{ inputs.baseRef || 'main' }}
+          beforeSha: ${{ inputs.beforeSha || github.event.before || '' }}
           domains-config: ${{ env.DOMAINS }}
-          useNx: 'false'
-          node-version: ${{ env.NODE_VERSION }}
-          pnpm-version: ${{ env.PNPM_VERSION }}
     outputs:
       cicd: ${{ fromJSON(steps.detect.outputs.changes).cicd }}
       core: ${{ fromJSON(steps.detect.outputs.changes).core }}
       docs: ${{ fromJSON(steps.detect.outputs.changes).docs }}
       changes: ${{ steps.detect.outputs.changes }}
       affectedDomains: ${{ steps.detect.outputs.affectedDomains }}
-      nxAvailable: ${{ steps.detect.outputs.nxAvailable }}
-      affectedProjects: ${{ steps.detect.outputs.affectedProjects }}
 
   #=============================================================================
   # VERSIONING (⚠️  Managed by Pipecraft - do not modify)
@@ -156,8 +165,9 @@ jobs:
         id: version
         with:
           baseRef: ${{ inputs.baseRef || 'main' }}
-          commitSha: ${{ inputs.commitSha || github.sha }}
+          version: ${{ inputs.version }}
           node-version: ${{ env.NODE_VERSION }}
+          commitSha: ${{ inputs.commitSha }}
     outputs:
       version: ${{ steps.version.outputs.version }}
 
@@ -165,7 +175,12 @@ jobs:
 
   lint:
     needs: changes
-    if: ${{ needs.changes.outputs.core == 'true' || needs.changes.outputs.cicd == 'true' }}
+    # Skip on promoted builds (inputs.version set) - already tested on develop
+    if: ${{
+        !inputs.version &&
+        (needs.changes.outputs.core == 'true' ||
+        needs.changes.outputs.cicd == 'true')
+      }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -180,7 +195,8 @@ jobs:
 
   test-cicd:
     needs: changes
-    if: ${{ needs.changes.outputs.cicd == 'true' }}
+    # Skip on promoted builds (inputs.version set) - already tested on develop
+    if: ${{ !inputs.version && needs.changes.outputs.cicd == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -204,7 +220,8 @@ jobs:
 
   test-core:
     needs: changes
-    if: ${{ needs.changes.outputs.core == 'true' }}
+    # Skip on promoted builds (inputs.version set) - already tested on develop
+    if: ${{ !inputs.version && needs.changes.outputs.core == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -246,7 +263,8 @@ jobs:
       - version
     if: ${{
         needs.changes.outputs.docs == 'true' ||
-        (needs.version.result == 'success' && needs.version.outputs.version != '')
+        (needs.version.result == 'success' &&
+        needs.version.outputs.version != '')
       }}
     runs-on: ubuntu-latest
     steps:
@@ -304,7 +322,7 @@ jobs:
         needs.test-docs.result == 'success' &&
         (
           needs.changes.outputs.docs == 'true' ||
-          needs.version.outputs.version != ''
+        needs.version.outputs.version != ''
         ) &&
         github.ref_name == 'main'
       }}
@@ -343,7 +361,7 @@ jobs:
     if: ${{
         (
           needs.changes.outputs.docs == 'true' ||
-          needs.version.outputs.version != ''
+        needs.version.outputs.version != ''
         ) &&
         needs.deploy-docs.result == 'success' &&
         needs.version.result == 'success' &&
@@ -364,35 +382,21 @@ jobs:
 
 
   #=============================================================================
-  # GATE (⚠️  Managed by Pipecraft - do not modify)
+  # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
   #=============================================================================
-  # Gate job that ensures tests pass before allowing tag/promote/deploy.
-  # Uses pattern: at least ONE success AND NO failures (skipped is OK).
+  # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
+  # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
 
+  # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
+  # the 'if' condition to include them. These fields are preserved on regeneration.
+  # Example: needs: [changes, version, test-myapp, build-myapp]
   gate:
-    needs: [ version, test-cicd, test-core, test-docs, deploy-docs, remote-test-docs ]
-    if: ${{
-        always() &&
-        needs.version.result == 'success' &&
-        (
-        needs.test-cicd.result != 'failure' &&
-        needs.test-core.result != 'failure' &&
-        needs.test-docs.result != 'failure' &&
-        needs.deploy-docs.result != 'failure' &&
-        needs.remote-test-docs.result != 'failure'
-      ) &&
-        (
-        needs.test-cicd.result == 'success' ||
-        needs.test-core.result == 'success' ||
-        needs.test-docs.result == 'success' ||
-        needs.deploy-docs.result == 'success' ||
-        needs.remote-test-docs.result == 'success'
-      )
-      }}
     runs-on: ubuntu-latest
     steps:
       - name: Gate passed
-        run: echo "All tests passed - gate allows progression"
+        run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression"
+    needs: [ version, lint, test-cicd, test-core, test-docs, deploy-docs, remote-test-docs ]
+    if: "${{ always() && needs.version.result == 'success' && ( needs.lint.result != 'failure' && needs.test-cicd.result != 'failure' && needs.test-core.result != 'failure' && needs.test-docs.result != 'failure' && needs.deploy-docs.result != 'failure' && needs.remote-test-docs.result != 'failure' ) && ( needs.lint.result == 'success' || needs.test-cicd.result == 'success' || needs.test-core.result == 'success' || needs.test-docs.result == 'success' || needs.deploy-docs.result == 'success' || needs.remote-test-docs.result == 'success' ) }}"
 
   #=============================================================================
   # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -422,7 +426,6 @@ jobs:
       - uses: ./actions/create-tag
         with:
           version: ${{ needs.version.outputs.version }}
-          commitSha: ${{ inputs.commitSha || github.sha }}
 
   #=============================================================================
   # PROMOTE (⚠️  Managed by Pipecraft - do not modify)
@@ -430,23 +433,18 @@ jobs:
   # Promotes code from develop to staging or main via PR.
 
   promote:
-    needs: [ version, tag ]
+    needs: [ version, gate, tag ]
     if: ${{
         always() &&
-        (
-        github.event_name == 'push' ||
-        github.event_name == 'workflow_dispatch'
-      ) &&
+        (github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch') &&
         needs.version.result == 'success' &&
         needs.version.outputs.version != '' &&
-        (
-        needs.tag.result == 'success' ||
-        needs.tag.result == 'skipped'
-      ) &&
-        (
-        github.ref_name == 'develop' ||
-        github.ref_name == 'staging'
-      )
+        needs.gate.result == 'success' &&
+        (needs.tag.result == 'success' ||
+        needs.tag.result == 'skipped') &&
+        (github.ref_name == 'develop' ||
+        github.ref_name == 'staging')
       }}
     runs-on: ubuntu-latest
     steps:
@@ -459,7 +457,7 @@ jobs:
           version: ${{ needs.version.outputs.version }}
           sourceBranch: ${{ github.ref_name }}
           targetBranch: ${{ github.ref_name == 'develop' && 'staging' || 'main' }}
-          autoMerge: ${{ github.ref_name == 'develop' && 'true' || 'true' }}
+          autoPromote: ${{ (github.ref_name == 'develop' && 'true') || (github.ref_name == 'staging' && 'true') || 'false' }}
           run_number: ${{ inputs.run_number || github.run_number }}
 
   #=============================================================================
@@ -474,7 +472,8 @@ jobs:
         github.ref_name == 'main' &&
         needs.version.result == 'success' &&
         needs.version.outputs.version != '' &&
-        (needs.tag.result == 'success' || needs.tag.result == 'skipped')
+        (needs.tag.result == 'success' ||
+        needs.tag.result == 'skipped')
       }}
     runs-on: ubuntu-latest
     steps:
@@ -485,4 +484,4 @@ jobs:
       - uses: ./actions/create-release
         with:
           version: ${{ needs.version.outputs.version }}
-          commitSha: ${{ inputs.commitSha || github.sha }}
+          commitSha: ${{ inputs.commitSha }}

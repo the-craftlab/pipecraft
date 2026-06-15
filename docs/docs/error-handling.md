@@ -769,7 +769,7 @@ When troubleshooting issues:
 If you encounter an error not covered in this guide:
 
 1. **Enable Debug Mode**: `pipecraft generate --debug`
-2. **Check GitHub Issues**: https://github.com/pipecraft-lab/pipecraft/issues
+2. **Check GitHub Issues**: https://github.com/the-craftlab/pipecraft/issues
 3. **Create Issue**: Include:
    - PipeCraft version (`pipecraft --version`)
    - Node.js version (`node --version`)
@@ -781,7 +781,7 @@ If you encounter an error not covered in this guide:
 
 ## Related Documentation
 
-- [Architecture](./architecture) - System design and components
-- [Current Trunk Flow](./flows/trunk-flow) - Implementation details
-- [Getting Started](./intro) - User guide and examples
-- [Testing Guide](./testing-guide) - Testing guidelines
+- [Architecture](/docs/architecture) - System design and components
+- [Current Trunk Flow](/docs/flows/trunk-flow) - Implementation details
+- [Getting Started](intro) - User guide and examples
+- [Testing Guide](/docs/testing-guide) - Testing guidelines

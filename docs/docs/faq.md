@@ -376,7 +376,7 @@ Fix reported issues and try generating again.
    ```
 4. **Check change detection output**: Look at the `changes` job output
 
-See the [Troubleshooting guide](./troubleshooting.md) for detailed debugging steps.
+See the [Troubleshooting guide](troubleshooting.md) for detailed debugging steps.
 
 ---
 
@@ -390,7 +390,7 @@ PipeCraft workflows require:
 - **pull-requests: write** - For branch promotion PRs
 - **actions: read** (optional) - For triggering subsequent workflows
 
-These are standard for CI/CD automation. Review the [Security guide](./security.md) for details.
+These are standard for CI/CD automation. Review the [Security guide](security.md) for details.
 
 ### Can I use GitHub self-hosted runners?
 
@@ -436,7 +436,7 @@ Currently **GitHub Actions only**. Planned for future:
 - Bitbucket Pipelines
 - Azure DevOps
 
-Vote on [roadmap issues](https://github.com/pipecraft-lab/pipecraft/issues) to prioritize which provider comes next.
+Vote on [roadmap issues](https://github.com/the-craftlab/pipecraft/issues) to prioritize which provider comes next.
 
 ---
 
@@ -565,14 +565,14 @@ Your customizations will be preserved during regeneration.
 ### Where can I get help?
 
 - **Documentation**: [pipecraft.thecraftlab.dev](https://pipecraft.thecraftlab.dev)
-- **GitHub Discussions**: [Ask questions and share tips](https://github.com/pipecraft-lab/pipecraft/discussions)
-- **GitHub Issues**: [Report bugs and request features](https://github.com/pipecraft-lab/pipecraft/issues)
-- **Examples**: Check the [examples/ directory](https://github.com/pipecraft-lab/pipecraft/tree/main/examples)
+- **GitHub Discussions**: [Ask questions and share tips](https://github.com/the-craftlab/pipecraft/discussions)
+- **GitHub Issues**: [Report bugs and request features](https://github.com/the-craftlab/pipecraft/issues)
+- **Examples**: Check the [examples/ directory](https://github.com/the-craftlab/pipecraft/tree/main/examples)
 
 ### How do I report a bug?
 
-1. Check [existing issues](https://github.com/pipecraft-lab/pipecraft/issues)
-2. If not found, [create a new issue](https://github.com/pipecraft-lab/pipecraft/issues/new)
+1. Check [existing issues](https://github.com/the-craftlab/pipecraft/issues)
+2. If not found, [create a new issue](https://github.com/the-craftlab/pipecraft/issues/new)
 3. Include:
    - PipeCraft version (`pipecraft --version`)
    - Node version (`node --version`)
@@ -582,7 +582,7 @@ Your customizations will be preserved during regeneration.
 
 ### How can I contribute?
 
-We welcome contributions! See the [Contributing guide](./contributing.md) for:
+We welcome contributions! See the [Contributing guide](contributing.md) for:
 
 - Development setup
 - Code architecture
@@ -592,7 +592,7 @@ We welcome contributions! See the [Contributing guide](./contributing.md) for:
 Quick start:
 
 ```bash
-git clone https://github.com/pipecraft-lab/pipecraft.git
+git clone https://github.com/the-craftlab/pipecraft.git
 cd pipecraft
 npm install
 npm test
@@ -602,4 +602,4 @@ npm test
 
 ## Still have questions?
 
-Can't find an answer? Ask in [GitHub Discussions](https://github.com/pipecraft-lab/pipecraft/discussions) or [open an issue](https://github.com/pipecraft-lab/pipecraft/issues/new).
+Can't find an answer? Ask in [GitHub Discussions](https://github.com/the-craftlab/pipecraft/discussions) or [open an issue](https://github.com/the-craftlab/pipecraft/issues/new).

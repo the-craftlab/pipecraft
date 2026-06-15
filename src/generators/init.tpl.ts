@@ -29,7 +29,7 @@
  */
 
 import type { PinionContext } from '@featherscloud/pinion'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { existsSync, writeFileSync } from 'fs'
 import inquirer from 'inquirer'
 
 /**
@@ -52,7 +52,7 @@ const defaultConfig = {
   initialBranch: 'develop',
   finalBranch: 'main',
   branchFlow: ['develop', 'staging', 'main'],
-  autoMerge: {
+  autoPromote: {
     staging: true,
     main: true
   },
@@ -157,9 +157,9 @@ const generateYamlConfig = (config: any): string => {
 
   // Auto Merge
   lines.push('# Automatic promotion after successful tests')
-  lines.push('autoMerge:')
-  const autoMergeEntries = Object.entries(config.autoMerge)
-  autoMergeEntries.forEach(([key, value]) => {
+  lines.push('autoPromote:')
+  const autoPromoteEntries = Object.entries(config.autoPromote)
+  autoPromoteEntries.forEach(([key, value]) => {
     const flowIndex = config.branchFlow.indexOf(key)
     const fromBranch = flowIndex > 0 ? config.branchFlow[flowIndex - 1] : ''
     const comment = fromBranch ? `  # Auto-promote ${fromBranch} → ${key}` : ''
@@ -233,30 +233,6 @@ const generateYamlConfig = (config: any): string => {
     lines.push('')
   })
 
-  // Nx Configuration (if present)
-  if (config.nx) {
-    lines.push('# Nx integration for monorepo optimization')
-    lines.push('nx:')
-    lines.push(`  enabled: ${config.nx.enabled}`)
-    if (config.nx.tasks !== undefined) {
-      if (config.nx.tasks.length > 0) {
-        lines.push('  tasks:')
-        config.nx.tasks.forEach((task: string) => {
-          lines.push(`    - ${task}`)
-        })
-      } else {
-        lines.push('  tasks: []')
-      }
-    }
-    if (config.nx.baseRef) {
-      lines.push(`  baseRef: ${config.nx.baseRef}`)
-    }
-    if (config.nx.enableCache !== undefined) {
-      lines.push(`  enableCache: ${config.nx.enableCache}`)
-    }
-    lines.push('')
-  }
-
   // Versioning (if present)
   if (config.versioning) {
     lines.push('# Version calculation and release automation')
@@ -283,12 +259,7 @@ const generateYamlConfig = (config: any): string => {
     if (config.versioning.changelog !== undefined) {
       lines.push(`  changelog: ${config.versioning.changelog}            # Generate CHANGELOG.md`)
     }
-    if (config.versioning.bumpRules) {
-      lines.push('  bumpRules:')
-      Object.entries(config.versioning.bumpRules).forEach(([key, value]) => {
-        lines.push(`    ${key}: ${value}`)
-      })
-    }
+    // Note: bumpRules are defined in the semver section, not here
     lines.push('')
   }
 
@@ -395,61 +366,6 @@ export const generate = async (ctx: PinionContext) => {
     }
   }
 
-  // Detect package manager before prompting
-  let detectedPackageManager: 'npm' | 'yarn' | 'pnpm' = 'npm'
-  if (existsSync(`${cwd}/pnpm-lock.yaml`)) {
-    detectedPackageManager = 'pnpm'
-  } else if (existsSync(`${cwd}/yarn.lock`)) {
-    detectedPackageManager = 'yarn'
-  } else if (existsSync(`${cwd}/package-lock.json`)) {
-    detectedPackageManager = 'npm'
-  }
-
-  // Detect Nx workspace before prompting
-  const nxJsonPath = `${cwd}/nx.json`
-  let detectedNxTasks: string[] = []
-  let nxDetected = false
-
-  if (existsSync(nxJsonPath)) {
-    try {
-      const nxJsonContent = readFileSync(nxJsonPath, 'utf8')
-      const nxJson = JSON.parse(nxJsonContent)
-
-      // Extract tasks from targetDefaults
-      const tasks = nxJson.targetDefaults ? Object.keys(nxJson.targetDefaults) : []
-
-      // Sort tasks in a logical order (quality → test → build → e2e)
-      const taskOrder = [
-        'lint',
-        'typecheck',
-        'test',
-        'unit-test',
-        'build',
-        'integration-test',
-        'e2e',
-        'e2e-ci'
-      ]
-      detectedNxTasks = tasks.sort((a, b) => {
-        const aIdx = taskOrder.indexOf(a)
-        const bIdx = taskOrder.indexOf(b)
-        if (aIdx === -1 && bIdx === -1) return 0
-        if (aIdx === -1) return 1
-        if (bIdx === -1) return -1
-        return aIdx - bIdx
-      })
-
-      nxDetected = true
-      console.log('\n✅ Nx workspace detected!')
-      console.log(`   Found tasks: ${detectedNxTasks.join(', ')}`)
-      console.log('   Pipecraft can optimize your CI pipeline using Nx affected commands.\n')
-    } catch (error) {
-      console.warn('\n⚠️  Found nx.json but could not parse it:', error)
-      console.log('   Nx integration will use default tasks.\n')
-      nxDetected = true
-      detectedNxTasks = ['lint', 'test', 'build', 'integration-test']
-    }
-  }
-
   // Run inquirer prompts
   const answers = await inquirer.prompt([
     {
@@ -496,22 +412,6 @@ export const generate = async (ctx: PinionContext) => {
       message: 'Enter your branch flow (comma-separated)',
       default: 'develop,staging,main',
       filter: (input: string) => input.split(',').map(b => b.trim())
-    },
-    {
-      type: 'list',
-      name: 'packageManager',
-      message: `Which package manager do you use? (detected: ${detectedPackageManager})`,
-      choices: ['npm', 'yarn', 'pnpm'],
-      default: detectedPackageManager
-    },
-    {
-      type: 'confirm',
-      name: 'enableNx',
-      message: nxDetected
-        ? `Enable Nx integration? (detected ${detectedNxTasks.length} tasks)`
-        : 'Enable Nx integration?',
-      default: nxDetected,
-      when: () => nxDetected // Only show if Nx is detected
     },
     {
       type: 'list',
@@ -594,25 +494,6 @@ export const generate = async (ctx: PinionContext) => {
   // Merge answers with context and defaults
   const mergedCtx = { ...ctx, ...defaultConfig, ...answers } as any
 
-  // Configure Nx based on detection and user confirmation
-  let nxConfig:
-    | { enabled: boolean; tasks: string[]; baseRef: string; enableCache: boolean }
-    | undefined
-  if (nxDetected && answers.enableNx) {
-    console.log('\n✅ Nx integration enabled!')
-    console.log(`   Tasks to run: ${detectedNxTasks.join(', ')}\n`)
-
-    nxConfig = {
-      enabled: true,
-      tasks: detectedNxTasks,
-      baseRef: 'origin/main',
-      enableCache: true
-    }
-  } else if (nxDetected && !answers.enableNx) {
-    console.log('\n⚠️  Nx detected but integration disabled.')
-    console.log('   You can enable it later by editing .pipecraftrc\n')
-  }
-
   const configData: any = {
     ciProvider: mergedCtx.ciProvider,
     mergeStrategy: mergedCtx.mergeStrategy,
@@ -620,17 +501,11 @@ export const generate = async (ctx: PinionContext) => {
     initialBranch: mergedCtx.initialBranch,
     finalBranch: mergedCtx.finalBranch,
     branchFlow: mergedCtx.branchFlow,
-    autoMerge: mergedCtx.autoMerge,
-    packageManager: mergedCtx.packageManager,
+    autoPromote: mergedCtx.autoPromote,
     semver: {
       bumpRules: mergedCtx.semver.bumpRules
     },
     domains: domainConfig // Use user-selected domains instead of defaults
-  }
-
-  // Add Nx config if detected
-  if (nxConfig) {
-    configData.nx = nxConfig
   }
 
   // Generate YAML content with comments

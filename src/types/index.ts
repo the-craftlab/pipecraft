@@ -96,7 +96,7 @@ export interface DomainConfig {
  *   initialBranch: 'develop',
  *   finalBranch: 'main',
  *   branchFlow: ['develop', 'staging', 'main'],
- *   autoMerge: { staging: true },
+ *   autoPromote: { staging: true },
  *   semver: {
  *     bumpRules: { feat: 'minor', fix: 'patch', breaking: 'major' }
  *   },
@@ -152,14 +152,16 @@ export interface PipecraftConfig {
   branchFlow: string[]
 
   /**
-   * Auto-merge configuration for branch promotions.
-   * - boolean: Enable/disable auto-merge for all branches
-   * - Record: Per-branch auto-merge settings (e.g., `{ staging: true, main: false }`)
+   * Auto-promote configuration for branch promotions.
+   * - boolean: Enable/disable auto-promotion for all branches
+   * - Record: Per-branch auto-promote settings (e.g., `{ staging: true, main: false }`)
    *
-   * When enabled, PRs are automatically merged after checks pass.
+   * When enabled, code is automatically promoted (fast-forwarded) to the next branch
+   * in the flow after checks pass. When disabled, a PR is created for manual review
+   * and the promotion happens when the PR is merged.
    * @default false
    */
-  autoMerge?: boolean | Record<string, boolean>
+  autoPromote?: boolean | Record<string, boolean>
 
   /**
    * Git merge method for auto-merge operations.
@@ -209,13 +211,11 @@ export interface PipecraftConfig {
 
   /**
    * Package manager used for dependency installation.
-   * Auto-detected during init based on lockfile presence.
    *
-   * - 'npm': Uses npm (with package-lock.json)
-   * - 'yarn': Uses yarn (with yarn.lock)
-   * - 'pnpm': Uses pnpm (with pnpm-lock.yaml)
-   *
-   * @default 'npm'
+   * @deprecated This field is no longer used by PipeCraft workflows.
+   * It was originally intended for JavaScript/Node.js projects but
+   * PipeCraft now supports language-agnostic workflows. Existing
+   * configs with this field will continue to work, but it has no effect.
    */
   packageManager?: 'npm' | 'yarn' | 'pnpm'
 
@@ -253,52 +253,6 @@ export interface PipecraftConfig {
    * @default 'v1'
    */
   actionVersion?: string
-
-  /**
-   * Nx monorepo integration configuration.
-   * When enabled, PipeCraft generates workflows that leverage Nx's dependency graph
-   * and affected detection for intelligent change-based testing.
-   *
-   * @example
-   * ```typescript
-   * nx: {
-   *   enabled: true,
-   *   tasks: ['lint', 'test', 'build', 'integration-test'],
-   *   baseRef: 'origin/main'
-   * }
-   * ```
-   */
-  nx?: {
-    /**
-     * Whether Nx integration is enabled for this project.
-     * Auto-detected if nx.json exists in project root.
-     */
-    enabled: boolean
-
-    /**
-     * Ordered list of Nx tasks to run sequentially.
-     * Tasks are executed using `nx affected --target=<task>`.
-     *
-     * @example ['lint', 'test', 'build', 'e2e']
-     */
-    tasks: string[]
-
-    /**
-     * Base git reference for affected detection.
-     * Used in `nx affected --base=<baseRef>`.
-     *
-     * @default 'origin/main'
-     */
-    baseRef?: string
-
-    /**
-     * Whether to include Nx cache management in workflows.
-     * Speeds up subsequent runs by caching build outputs.
-     *
-     * @default true
-     */
-    enableCache?: boolean
-  }
 
   /**
    * Idempotency and rebuild configuration.
@@ -380,8 +334,9 @@ export interface PipecraftConfig {
 
     /**
      * Mapping of commit types to version bump levels.
+     * @deprecated Use semver.bumpRules instead. This field is ignored if semver.bumpRules is present.
      */
-    bumpRules: Record<string, string>
+    bumpRules?: Record<string, string>
   }
 }
 

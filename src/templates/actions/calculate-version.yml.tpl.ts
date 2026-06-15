@@ -43,7 +43,7 @@
 import { type PinionContext, renderTemplate, toFile } from '@featherscloud/pinion'
 import fs from 'fs'
 import { logger } from '../../utils/logger.js'
-import { getActionOutputDir } from '../../utils/action-reference.js'
+import { getActionOutputDir, shouldGenerateActions } from '../../utils/action-reference.js'
 import type { PipecraftConfig } from '../../types/index.js'
 
 /**
@@ -62,10 +62,18 @@ inputs:
     description: 'Base reference for version calculation'
     required: false
     default: 'main'
+  version:
+    description: 'Pre-determined version to use (skips calculation if provided)'
+    required: false
+    default: ''
   node-version:
     description: 'Node.js version to use'
     required: false
-    default: '24'
+    default: '22'
+  commitSha:
+    description: 'Specific commit SHA to checkout (prevents race conditions during promotion)'
+    required: false
+    default: ''
 
 outputs:
   version:
@@ -76,12 +84,13 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
+        ref: \${{ inputs.commitSha || github.sha }}
         fetch-depth: 0
 
     - name: Install Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v5
       with:
         node-version: \${{ inputs.node-version }}
 
@@ -107,8 +116,21 @@ runs:
           echo "✅ Already on a branch: $(git branch --show-current)"
         fi
 
+    - name: Check for input version
+      id: check_input_version
+      shell: bash
+      run: |
+        INPUT_VERSION="\${{ inputs.version }}"
+        if [ -n "$INPUT_VERSION" ]; then
+          echo "✅ Using provided version: $INPUT_VERSION"
+          echo "version=$INPUT_VERSION" >> $GITHUB_OUTPUT
+        else
+          echo "No input version provided, will calculate from commits"
+        fi
+
     - name: Get existing version tag
       id: get_version_old
+      if: steps.check_input_version.outputs.version == ''
       shell: bash
       run: |
         set -x  # Enable debugging output
@@ -116,11 +138,11 @@ runs:
         git rev-parse HEAD
         COMMIT_HASH=$(git rev-parse HEAD)
         echo "Current commit hash: $COMMIT_HASH"
-        
+
         # Check for tags on the current commit
         TAG=$(git tag --points-at $COMMIT_HASH | grep -E '^v[0-9]+\\.[0-9]+\\.[0-9]+$' || true)
         echo "Tags found: $TAG"
-        
+
         if [ -z "$TAG" ]; then
           echo "No existing tag found on the current commit"
         else
@@ -136,17 +158,13 @@ runs:
           "version": "0.0.0-release-it"
         }' > package.json
 
-    - name: Install dependencies
-      shell: bash
-      run: npm install @release-it/conventional-changelog conventional-changelog-angular
-
     - name: Get version
-      if: steps.get_version_old.outputs.version == ''
+      if: steps.check_input_version.outputs.version == '' && steps.get_version_old.outputs.version == ''
       id: get_version_new
       shell: bash
       run: |
-        # Get version and filter out warnings
-        RAW_OUTPUT=$(npx release-it --ci --release-version 2>&1 || echo "")
+        # Get version and filter out warnings (install release-it & plugin on the fly)
+        RAW_OUTPUT=$(npx --yes --package release-it --package @release-it/conventional-changelog release-it --ci --release-version 2>&1 || echo "")
         # Extract just the version number (last line that looks like a version)
         VERSION=$(echo "$RAW_OUTPUT" | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+' | tail -1 || true)
 
@@ -160,16 +178,41 @@ runs:
           echo "version=v$VERSION" >> $GITHUB_OUTPUT
         fi
 
+    - name: Get nearest reachable tag
+      if: steps.check_input_version.outputs.version == '' && steps.get_version_old.outputs.version == '' && steps.get_version_new.outputs.version == ''
+      id: get_version_nearest
+      shell: bash
+      run: |
+        # Fallback: when a promotion PR is merged as a merge commit, the release
+        # tag is reachable from HEAD but not directly on it, so the lookups above
+        # miss it and release-it finds no new version. Use the nearest reachable
+        # tag so the release is cut for the promoted version instead of being
+        # silently skipped. No-op in normal flows: this only runs when nothing
+        # else resolved a version.
+        NEAREST=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
+        if echo "$NEAREST" | grep -qE '^v[0-9]+\\.[0-9]+\\.[0-9]+$'; then
+          echo "Using nearest reachable tag: $NEAREST"
+          echo "version=$NEAREST" >> $GITHUB_OUTPUT
+        else
+          echo "No reachable version tag found"
+        fi
+
     - name: Set version output
       id: set_version
       shell: bash
       run: |
-        if [ -n "\${{ steps.get_version_old.outputs.version }}" ]; then
-          echo "Using old version: \${{ steps.get_version_old.outputs.version }}"
+        if [ -n "\${{ steps.check_input_version.outputs.version }}" ]; then
+          echo "Using input version: \${{ steps.check_input_version.outputs.version }}"
+          echo "version=\${{ steps.check_input_version.outputs.version }}" >> $GITHUB_OUTPUT
+        elif [ -n "\${{ steps.get_version_old.outputs.version }}" ]; then
+          echo "Using tag version: \${{ steps.get_version_old.outputs.version }}"
           echo "version=\${{ steps.get_version_old.outputs.version }}" >> $GITHUB_OUTPUT
         elif [ -n "\${{ steps.get_version_new.outputs.version }}" ]; then
-          echo "Using new version: \${{ steps.get_version_new.outputs.version }}"
+          echo "Using calculated version: \${{ steps.get_version_new.outputs.version }}"
           echo "version=\${{ steps.get_version_new.outputs.version }}" >> $GITHUB_OUTPUT
+        elif [ -n "\${{ steps.get_version_nearest.outputs.version }}" ]; then
+          echo "Using nearest reachable tag version: \${{ steps.get_version_nearest.outputs.version }}"
+          echo "version=\${{ steps.get_version_nearest.outputs.version }}" >> $GITHUB_OUTPUT
         else
           echo "No version determined"
           echo "version=" >> $GITHUB_OUTPUT
@@ -188,20 +231,21 @@ runs:
  * @returns {Promise<PinionContext>} Updated context after file generation
  */
 export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig> }) =>
-  Promise.resolve(ctx)
-    .then(ctx => {
-      // Determine output directory based on actionSourceMode
-      const config = ctx.config || {}
-      const outputDir = getActionOutputDir(config)
-      const filePath = `${outputDir}/calculate-version/action.yml`
-      const exists = fs.existsSync(filePath)
-      const status = exists ? '🔄 Merged with existing' : '📝 Created new'
-      logger.verbose(`${status} ${filePath}`)
-      return { ...ctx, actionOutputPath: filePath }
-    })
-    .then(ctx =>
-      renderTemplate(
-        versionActionTemplate,
-        toFile(ctx.actionOutputPath || 'actions/calculate-version/action.yml')
-      )(ctx)
-    )
+  Promise.resolve(ctx).then(ctx => {
+    // Determine output directory based on actionSourceMode
+    const config = ctx.config || {}
+
+    // Skip generation in remote mode - actions come from marketplace
+    if (!shouldGenerateActions(config)) {
+      logger.verbose('Skipping calculate-version action generation (using remote actions)')
+      return ctx
+    }
+
+    const outputDir = getActionOutputDir(config)
+    const filePath = `${outputDir}/calculate-version/action.yml`
+    const exists = fs.existsSync(filePath)
+    const status = exists ? '🔄 Merged with existing' : '📝 Created new'
+    logger.verbose(`${status} ${filePath}`)
+
+    return renderTemplate(versionActionTemplate, toFile(filePath))(ctx)
+  })

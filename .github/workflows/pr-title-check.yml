@@ -1,3 +1,4 @@
+# Pipeline validation test - triggers cicd domain
 name: "PR Title Format Check"
 
 on:

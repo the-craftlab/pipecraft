@@ -56,7 +56,7 @@ export interface SetupSummary {
   overallStatus: 'ready' | 'needs-setup' | 'partial' | 'error'
   permissions: StatusItem[]
   settings: StatusItem[]
-  autoMerge: StatusItem[]
+  autoPromote: StatusItem[]
   nextSteps: string[]
   warnings: string[]
   errors: string[]
@@ -194,10 +194,10 @@ export function createSetupSummary(
   repository: string,
   permissions: StatusItem[],
   settings: StatusItem[],
-  autoMerge: StatusItem[],
+  autoPromote: StatusItem[],
   context: MessageContext
 ): SetupSummary {
-  const allItems = [...permissions, ...settings, ...autoMerge]
+  const allItems = [...permissions, ...settings, ...autoPromote]
   const needsChange = allItems.filter(item => item.status === 'needs-change')
   const missing = allItems.filter(item => item.status === 'missing')
   const errors = allItems.filter(item => item.status === 'error')
@@ -235,7 +235,7 @@ export function createSetupSummary(
     overallStatus,
     permissions,
     settings,
-    autoMerge,
+    autoPromote,
     nextSteps,
     warnings,
     errors: errors.map(item => `${item.name}: ${item.current}`)
@@ -277,8 +277,8 @@ export function formatSetupSummary(summary: SetupSummary, context: MessageContex
     lines.push(formatStatusTable(summary.settings, context))
   }
 
-  if (summary.autoMerge.length > 0) {
-    lines.push(formatStatusTable(summary.autoMerge, context))
+  if (summary.autoPromote.length > 0) {
+    lines.push(formatStatusTable(summary.autoPromote, context))
   }
 
   // Warnings

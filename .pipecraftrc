@@ -23,7 +23,7 @@ branchFlow:
   - main     # Production releases
 
 # Automatic promotion after successful tests
-autoMerge:
+autoPromote:
   staging: true  # Auto-promote develop → staging
   main: true     # Auto-promote staging → main
 
@@ -81,10 +81,6 @@ versioning:
   autoTag: true              # Automatically create git tags
   autoPush: false            # Manual control over git push
   changelog: true            # Generate CHANGELOG.md
-  bumpRules:
-    feat: minor
-    fix: patch
-    breaking: major
 
 # Action source mode (how workflows reference PipeCraft actions)
 # Options: 'local' (default, ./.github/actions/), 'remote' (published actions), 'source' (./actions/, for this repo only)

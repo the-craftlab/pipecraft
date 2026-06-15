@@ -1,0 +1,179 @@
+---
+name: pipecraft
+description: Help users set up, configure, and use the Pipecraft CLI for GitHub Actions workflow generation. Assists with CI/CD setup, workflow generation, branch promotion, domain configuration, and troubleshooting. Invoke when users ask about trunk-based development, GitHub Actions pipelines, or Pipecraft configuration.
+---
+
+# Pipecraft CLI Assistant
+
+Help users with **Pipecraft** - a trunk-based CI/CD workflow generator for GitHub Actions.
+
+**Documentation:** https://pipecraft.thecraftlab.dev
+**GitHub:** https://github.com/the-craftlab/pipecraft
+
+## Commands Reference
+
+| Command                      | Purpose                         | Key Flags                                            |
+| ---------------------------- | ------------------------------- | ---------------------------------------------------- |
+| `pipecraft init`             | Create `.pipecraftrc` config    | `--interactive`, `--force`, `--with-versioning`      |
+| `pipecraft generate`         | Generate workflows              | `--dry-run`, `--verbose`, `--debug`, `--skip-checks` |
+| `pipecraft validate`         | Check config syntax             | -                                                    |
+| `pipecraft verify`           | Health check entire setup       | -                                                    |
+| `pipecraft get-config <key>` | Read config value               | `--format json\|raw`                                 |
+| `pipecraft setup`            | Create branches from branchFlow | `--force`                                            |
+| `pipecraft setup-github`     | Configure GitHub permissions    | `--apply`                                            |
+| `pipecraft version`          | Version management              | `--check`                                            |
+
+### validate vs verify
+
+| Command    | Scope              | When to use                                   |
+| ---------- | ------------------ | --------------------------------------------- |
+| `validate` | Config syntax only | After editing config, before `generate`       |
+| `verify`   | Entire setup       | Troubleshooting, health checks, after cloning |
+
+## Configuration
+
+### Config File Locations
+
+Pipecraft searches (via cosmiconfig):
+
+1. `--config <path>` flag
+2. `.pipecraftrc` (YAML or JSON) **recommended**
+3. `.pipecraftrc.json`, `.pipecraftrc.yaml`, `.pipecraftrc.yml`
+4. `.pipecraftrc.js`, `pipecraft.config.js`
+5. `"pipecraft"` key in `package.json`
+
+### JSON Schema
+
+Add to config for IDE validation:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/the-craftlab/pipecraft/main/.pipecraft-schema.json"
+}
+```
+
+### Required Fields
+
+```yaml
+ciProvider: github # Only 'github' fully supported
+mergeStrategy: fast-forward # or 'merge'
+requireConventionalCommits: true
+initialBranch: develop # MUST be first in branchFlow
+finalBranch: main # MUST be last in branchFlow
+branchFlow: [develop, main] # Ordered promotion path
+semver:
+  bumpRules:
+    feat: minor
+    fix: patch
+    breaking: major
+domains:
+  app:
+    paths: ['src/**']
+    description: 'App code'
+```
+
+### Optional Fields
+
+| Field                | Type          | Default | Purpose                       |
+| -------------------- | ------------- | ------- | ----------------------------- |
+| `autoPromote`        | bool/object   | `false` | Auto-promote between branches |
+| `mergeMethod`        | string/object | `auto`  | `merge`, `squash`, `rebase`   |
+| `actionSourceMode`   | string        | `local` | `local`, `remote`, `source`   |
+| `actionVersion`      | string        | `v1`    | Version for remote actions    |
+| `versioning.enabled` | bool          | -       | Enable release-it versioning  |
+
+### Domain Configuration
+
+```yaml
+domains:
+  api:
+    paths: ['packages/api/**', 'libs/shared/**']
+    description: 'Backend API'
+    prefixes: [test, deploy, remote-test] # Optional job prefixes
+```
+
+### Reserved Domain Names (Cannot Use)
+
+`version`, `changes`, `gate`, `tag`, `promote`, `release`
+
+### Deprecated Fields
+
+| Deprecated             | Use Instead               |
+| ---------------------- | ------------------------- |
+| `testable: true`       | `prefixes: [test]`        |
+| `deployable: true`     | `prefixes: [deploy]`      |
+| `remoteTestable: true` | `prefixes: [remote-test]` |
+| `autoMerge`            | `autoPromote`             |
+| `packageManager`       | Removed                   |
+
+## Typical Workflows
+
+### New Project Setup
+
+```bash
+pipecraft init              # Create config
+# Edit .pipecraftrc
+pipecraft validate          # Check config
+pipecraft generate          # Create workflows
+pipecraft setup             # Create branches
+pipecraft setup-github      # GitHub permissions
+git add .github/ .pipecraftrc
+git commit -m "chore: add Pipecraft CI/CD"
+```
+
+### Debugging
+
+```bash
+pipecraft verify                    # Health check
+pipecraft validate                  # Config syntax
+pipecraft generate --dry-run        # Preview mode
+pipecraft generate --debug          # Maximum detail
+pipecraft get-config branchFlow     # Inspect values
+```
+
+## Common Errors
+
+| Error                                       | Fix                                                          |
+| ------------------------------------------- | ------------------------------------------------------------ |
+| "initialBranch must be first in branchFlow" | Reorder branchFlow array                                     |
+| "finalBranch must be last in branchFlow"    | Reorder branchFlow array                                     |
+| "Reserved job name used as domain"          | Rename domain (not version/changes/gate/tag/promote/release) |
+| "Configuration not found"                   | Run `pipecraft init`                                         |
+| "Pre-flight checks failed"                  | Check git status, use `--skip-checks`                        |
+
+## Branch Flow Patterns
+
+```yaml
+# Two-stage (simple)
+branchFlow: [develop, main]
+
+# Three-stage (recommended)
+branchFlow: [develop, staging, main]
+autoPromote:
+  staging: true
+  main: false
+
+# Enterprise
+branchFlow: [develop, staging, uat, production]
+```
+
+## Generated Files
+
+- `.github/workflows/pipeline.yml` - Main CI/CD workflow
+- `.github/actions/*/action.yml` - Reusable actions (if `actionSourceMode: local`)
+- `.github/workflows/enforce-pr-target.yml` - PR targeting rules
+- `.github/workflows/pr-title-check.yml` - Conventional commit validation
+- `.release-it.cjs` - Version management config
+
+## Managed vs Custom Jobs
+
+**Pipecraft manages:** `changes`, `version`, `gate`, `tag`, `promote`, `release`
+
+**You customize:** Everything between `# <--START CUSTOM JOBS-->` and `# <--END CUSTOM JOBS-->` markers.
+
+## Questions to Ask Users
+
+1. **Project type:** Monorepo or single app?
+2. **Branch strategy:** How many stages? (develop/main vs develop/staging/main)
+3. **Domains:** What parts need separate CI jobs?
+4. **Auto-promotion:** Should code auto-advance between branches?

@@ -126,7 +126,7 @@ PipeCraft-generated workflows require these permissions:
 
 - **contents: write** - For creating tags and pushing changes
 - **pull-requests: write** - For creating pull requests during promotion
-- **actions: write** - For triggering subsequent workflow runs (optional)
+- **actions: write** - For triggering workflow_dispatch on target branches during promotion (required when using autoMerge)
 
 Review the [GitHub Actions security hardening guide](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions) for additional best practices.
 
@@ -135,7 +135,7 @@ Review the [GitHub Actions security hardening guide](https://docs.github.com/en/
 Security updates will be released as patch versions and documented in:
 
 - [CHANGELOG.md](./CHANGELOG.md)
-- [GitHub Security Advisories](https://github.com/pipecraft-lab/pipecraft/security/advisories)
+- [GitHub Security Advisories](https://github.com/the-craftlab/pipecraft/security/advisories)
 - [npm Package Updates](https://www.npmjs.com/package/pipecraft)
 
 Subscribe to release notifications to stay informed about security updates.

@@ -14,11 +14,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/pipecraft-lab/pipecraft.git"
+    "url": "https://github.com/the-craftlab/pipecraft.git"
   },
   "homepage": "https://pipecraft.thecraftlab.dev",
   "bugs": {
-    "url": "https://github.com/pipecraft-lab/pipecraft/issues"
+    "url": "https://github.com/the-craftlab/pipecraft/issues"
   },
   "keywords": [
     "ci-cd",
@@ -43,12 +43,12 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/cli/index.ts",
-    "test": "vitest run",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test": "vitest run --exclude '.worktrees/**'",
+    "test:ui": "vitest --ui --exclude '.worktrees/**'",
+    "test:run": "vitest run --exclude '.worktrees/**'",
+    "test:coverage": "vitest run --coverage --exclude '.worktrees/**'",
     "test:watch": "vitest --watch",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern '.worktrees/**'",
     "lint:fix": "eslint --fix . --ext .js,.jsx,.ts,.tsx",
     "lint:strict": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
@@ -68,7 +68,8 @@
     "examples:deactivate": "node tests/scripts/deactivate-example-repos.mjs",
     "sync-actions": "tsx scripts/sync-actions.ts",
     "sync-actions:check": "tsx scripts/sync-actions.ts --check",
-    "sync-actions:verify": "tsx scripts/sync-actions.ts --verify"
+    "sync-actions:verify": "tsx scripts/sync-actions.ts --verify",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
@@ -89,12 +90,15 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
+    "husky": "^9.1.7",
     "inquirer": "^12.10.0",
+    "lint-staged": "^16.2.7",
     "prettier": "^2.8.8",
     "release-it": "^18.1.2",
     "tsx": "^4.20.6",
     "typedoc": "^0.28.14",
     "typedoc-plugin-markdown": "^4.9.0",
+    "typescript": "^5.9.3",
     "vitest": "^2.1.8"
   },
   "dependencies": {
@@ -102,6 +106,15 @@
     "commander": "^14.0.1",
     "cosmiconfig": "^9.0.0",
     "dedent": "^1.7.0",
+    "glob": "^13.0.1",
     "yaml": "^2.8.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --max-warnings=0"
+    ],
+    "*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "prettier --check"
+    ]
   }
 }
