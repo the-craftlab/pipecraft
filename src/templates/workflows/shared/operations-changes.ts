@@ -73,7 +73,7 @@ export function createChangesJobOperation(ctx: ChangesContext): PathOperationCon
       DOMAINS: |
 ${domainsYaml}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: \${{ inputs.commitSha || github.sha }}
           fetch-depth: \${{ env.FETCH_DEPTH_AFFECTED }}
