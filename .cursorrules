@@ -1,0 +1,57 @@
+# Pipecraft Development Rules
+
+You are working on Pipecraft - a trunk-based CI/CD workflow generator for GitHub Actions.
+
+## Project Context
+
+- **Language**: TypeScript (strict mode)
+- **Runtime**: Node.js >= 18
+- **Package Manager**: pnpm
+- **Test Framework**: Vitest
+- **Template Engine**: @featherscloud/pinion
+
+## Key Architecture
+
+### Template System
+- Templates in `src/templates/` generate YAML via path operations
+- Shared operations in `src/templates/workflows/shared/`
+- `applyPathOperations()` applies operations to YAML AST
+
+### Reserved Job Names (Cannot be domain names)
+`version`, `changes`, `gate`, `tag`, `promote`, `release`
+
+### Configuration Validation
+- `initialBranch` must be first in `branchFlow`
+- `finalBranch` must be last in `branchFlow`
+- Domains need `paths` array and `description` string
+
+## CLI Commands
+
+| Command | Purpose |
+|---------|---------|
+| `pipecraft init` | Create config |
+| `pipecraft generate` | Generate workflows |
+| `pipecraft validate` | Check config syntax |
+| `pipecraft verify` | Full health check |
+| `pipecraft setup` | Create branches |
+| `pipecraft setup-github` | Configure permissions |
+
+## Testing
+
+```bash
+pnpm vitest run --exclude '.worktrees/**'
+pnpm vitest run tests/unit/config.test.ts
+pnpm vitest run tests/snapshots/ --update
+```
+
+## Config Schema
+
+See `.pipecraft-schema.json` for full schema.
+
+Required fields: `ciProvider`, `mergeStrategy`, `requireConventionalCommits`, `initialBranch`, `finalBranch`, `branchFlow`, `semver.bumpRules`, `domains`
+
+## References
+
+- Full AI Guide: [PIPECRAFT_AI_GUIDE.md](PIPECRAFT_AI_GUIDE.md)
+- Schema: [.pipecraft-schema.json](.pipecraft-schema.json)
+- Documentation: https://pipecraft.thecraftlab.dev
