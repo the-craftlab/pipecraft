@@ -22,8 +22,8 @@ inputs:
     description: 'The original run number from develop branch for traceability'
     required: false
     default: ''
-  autoMerge:
-    description: 'Whether to enable auto-merge for the PR'
+  autoPromote:
+    description: 'Whether to automatically promote (fast-forward) to the target branch'
     required: false
     default: 'false'
   tempBranchPattern:
@@ -50,7 +50,7 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
         token: ${{ inputs.token }}
@@ -157,12 +157,12 @@ runs:
         TARGET="${{ inputs.targetBranch }}"
         SOURCE="${{ inputs.sourceBranch }}"
         VERSION="${{ steps.get-version.outputs.version }}"
-        AUTO_MERGE="${{ inputs.autoMerge }}"
+        AUTO_PROMOTE="${{ inputs.autoPromote }}"
 
         TITLE="🚀 Release $VERSION to $TARGET"
 
         # Determine merge behavior text
-        if [ "$AUTO_MERGE" == "true" ]; then
+        if [ "$AUTO_PROMOTE" == "true" ]; then
           MERGE_TEXT="merge automatically"
         else
           MERGE_TEXT="require manual approval"
@@ -193,7 +193,7 @@ runs:
         fi
 
     - name: Manual Merge Required
-      if: inputs.autoMerge == 'false'
+      if: inputs.autoPromote == 'false'
       shell: bash
       run: |
         PR_NUMBER="${{ steps.check-pr.outputs.prNumber || steps.create-pr.outputs.prNumber }}"
@@ -203,11 +203,11 @@ runs:
         echo "🔗 URL: $PR_URL"
         echo ""
         echo "⚠️  Auto-merge is disabled for this branch."
-        echo "   Review and merge the PR manually when ready (fast-forward)."
-        echo "   Pipecraft uses fast-forward promotion; do not squash or rebase-merge."
+        echo "   Please review and merge the PR manually when ready."
 
     - name: Fast-Forward Merge (Immediate Auto-Merge)
-      if: inputs.autoMerge == 'true'
+      id: fast-forward
+      if: inputs.autoPromote == 'true'
       shell: bash
       run: |
         SOURCE="${{ inputs.sourceBranch }}"
@@ -222,6 +222,11 @@ runs:
 
         # Fetch target branch
         git fetch origin $TARGET:$TARGET 2>/dev/null || true
+
+        # Capture the target branch's current SHA BEFORE fast-forward (for change detection)
+        BEFORE_SHA=$(git rev-parse $TARGET)
+        echo "beforeSha=$BEFORE_SHA" >> $GITHUB_OUTPUT
+        echo "Target before: $BEFORE_SHA"
 
         # Checkout target branch
         git checkout $TARGET
@@ -245,7 +250,7 @@ runs:
         echo "📝 PR will be closed automatically for audit trail"
 
     - name: Wait for Branch to Propagate
-      if: inputs.autoMerge == 'true'
+      if: inputs.autoPromote == 'true'
       shell: bash
       run: |
         echo "⏳ Waiting 5 seconds for branch update to propagate..."
@@ -253,7 +258,7 @@ runs:
         echo "✅ Branch should be fully propagated"
 
     - name: Trigger Pipeline Workflow on Target Branch
-      if: inputs.autoMerge == 'true'
+      if: inputs.autoPromote == 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.token }}
@@ -261,18 +266,20 @@ runs:
         TARGET="${{ inputs.targetBranch }}"
         VERSION="${{ steps.get-version.outputs.version }}"
         RUN_NUMBER="${{ inputs.run_number }}"
+        BEFORE_SHA="${{ steps.fast-forward.outputs.beforeSha }}"
 
         # Get the exact commit SHA that was just pushed to target branch
         COMMIT_SHA=$(git rev-parse $TARGET)
         echo "🔄 Triggering pipeline workflow on $TARGET branch"
         echo "   Version: $VERSION"
         echo "   Commit SHA: $COMMIT_SHA"
+        echo "   Before SHA: $BEFORE_SHA (for change detection)"
 
         # Trigger the pipeline workflow on the target branch
         # This is necessary because GITHUB_TOKEN pushes don't trigger workflows by default
         # Pass the exact commit SHA to ensure the workflow checks out the correct commit
-        # (avoids race conditions from GitHub's eventual consistency)
-        WORKFLOW_ARGS=(--ref "$TARGET" --field version="$VERSION" --field commitSha="$COMMIT_SHA")
+        # Pass beforeSha for accurate change detection (simulates push event's 'before' field)
+        WORKFLOW_ARGS=(--ref "$TARGET" --field version="$VERSION" --field commitSha="$COMMIT_SHA" --field beforeSha="$BEFORE_SHA")
         if [ -n "$RUN_NUMBER" ]; then
           WORKFLOW_ARGS+=(--field run_number="$RUN_NUMBER")
           echo "   Run number: $RUN_NUMBER (for traceability)"
@@ -283,7 +290,7 @@ runs:
         echo "✅ Pipeline workflow triggered on $TARGET with version $VERSION at commit $COMMIT_SHA"
 
     - name: Close PR and Delete Branch
-      if: inputs.autoMerge == 'true'
+      if: inputs.autoPromote == 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.token }}
@@ -314,4 +321,4 @@ runs:
         echo "ℹ️  Using existing PR #$PR_NUMBER"
         echo "🔗 URL: $PR_URL"
 
-        # Note: Fast-forward merge happens in separate step if autoMerge is enabled
+        # Note: Fast-forward merge happens in separate step if autoPromote is enabled

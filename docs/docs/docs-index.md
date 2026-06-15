@@ -35,7 +35,7 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
 - **[Current Trunk Flow](/docs/flows/trunk-flow)** - The ONE currently implemented workflow pattern
 
   - How promotions work (develop → staging → main)
-  - Auto-merge configuration
+  - Auto-promote configuration
   - Domain-based testing
   - Semantic versioning integration
 
