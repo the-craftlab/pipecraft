@@ -110,7 +110,7 @@ function generatePrefixedJobsText(domains: Record<string, any>): string {
     if: \${{ needs.changes.outputs.${job.domain} == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: \${{ inputs.commitSha || github.sha }}
       # TODO: Replace with your ${job.domain} ${prefix} logic

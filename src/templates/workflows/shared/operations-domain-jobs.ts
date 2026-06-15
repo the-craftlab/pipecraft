@@ -65,7 +65,7 @@ export function createPrefixedDomainJobOperations(ctx: DomainJobsContext): PathO
     if: \${{ needs.changes.outputs.${job.domain} == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: \${{ inputs.commitSha || github.sha }}
       # TODO: Replace with your ${job.domain} ${prefix} logic
@@ -112,7 +112,7 @@ export function createDomainTestJobOperations(ctx: DomainJobsContext): PathOpera
     if: \${{ needs.changes.outputs.${domain} == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: \${{ inputs.commitSha || github.sha }}
       # TODO: Replace with your ${domain} test logic
@@ -158,7 +158,7 @@ export function createDomainDeployJobOperations(ctx: DomainJobsContext): PathOpe
     if: \${{ always() && needs.version.result == 'success' && needs.changes.outputs.${domain} == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: \${{ inputs.commitSha || github.sha }}
       # TODO: Replace with your ${domain} deployment logic
@@ -204,7 +204,7 @@ export function createDomainRemoteTestJobOperations(ctx: DomainJobsContext): Pat
     if: \${{ needs.changes.outputs.${domain} == 'true' && needs.deploy-${domain}.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: \${{ inputs.commitSha || github.sha }}
       # TODO: Replace with your ${domain} remote testing logic
