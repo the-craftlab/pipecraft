@@ -22,7 +22,6 @@ jobs:
         uses: ./actions/detect-changes
         with:
           baseRef: ${{ github.event.pull_request.base.ref || 'develop' }}
-          useNx: false  # Force path-based for this test
           domains-config: |
             actions:
               paths:
@@ -47,7 +46,6 @@ jobs:
           echo '${{ steps.changes.outputs.changes }}' | jq '.'
           echo ""
           echo "Affected Domains: ${{ steps.changes.outputs.affectedDomains }}"
-          echo "Nx Available: ${{ steps.changes.outputs.nxAvailable }}"
           echo ""
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
@@ -64,54 +62,6 @@ jobs:
         if: fromJSON(steps.changes.outputs.changes).actions == true
         run: |
           echo "✅ Actions domain changed - this step should run!"
-
-  test-nx-detection:
-    name: Test Nx Detection (if available)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Test Action (Auto-detect Nx)
-        id: changes
-        uses: ./actions/detect-changes
-        with:
-          baseRef: ${{ github.event.pull_request.base.ref || 'develop' }}
-          useNx: true  # Will auto-detect and fallback to path-based
-          domains-config: |
-            cicd:
-              paths:
-                - '.github/**'
-            core:
-              paths:
-                - 'src/**'
-            tests:
-              paths:
-                - 'tests/**'
-
-      - name: Display Results
-        run: |
-          echo "📋 Nx Detection Test Results:"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo ""
-          echo "Nx Available: ${{ steps.changes.outputs.nxAvailable }}"
-          echo "Affected Domains: ${{ steps.changes.outputs.affectedDomains }}"
-
-          if [ "${{ steps.changes.outputs.nxAvailable }}" == "true" ]; then
-            echo "Affected Nx Projects: ${{ steps.changes.outputs.affectedProjects }}"
-            echo ""
-            echo "🚀 Using Nx dependency graph"
-          else
-            echo ""
-            echo "📁 Using path-based detection (Nx not available)"
-          fi
-          echo ""
-          echo "Changes:"
-          echo '${{ steps.changes.outputs.changes }}' | jq '.'
-          echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
   test-matrix-strategy:
     name: Test Matrix Strategy
@@ -131,13 +81,17 @@ jobs:
           baseRef: ${{ github.event.pull_request.base.ref || 'develop' }}
           domains-config: |
             actions:
-              paths: ['actions/**']
+              paths:
+                - 'actions/**'
             workflows:
-              paths: ['.github/workflows/**']
+              paths:
+                - '.github/workflows/**'
             src:
-              paths: ['src/**']
+              paths:
+                - 'src/**'
             docs:
-              paths: ['docs/**']
+              paths:
+                - 'docs/**'
 
   process-domains:
     name: Process Domain (${{ matrix.domain }})
@@ -183,7 +137,7 @@ jobs:
 
   summary:
     name: Test Summary
-    needs: [test-path-based, test-nx-detection, test-matrix-strategy, test-no-changes]
+    needs: [test-path-based, test-matrix-strategy, test-no-changes]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -194,13 +148,11 @@ jobs:
           echo "| Test | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Path-Based Detection | ${{ needs.test-path-based.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Nx Detection | ${{ needs.test-nx-detection.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Matrix Strategy | ${{ needs.test-matrix-strategy.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| No Changes Scenario | ${{ needs.test-no-changes.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ "${{ needs.test-path-based.result }}" == "success" ] && \
-             [ "${{ needs.test-nx-detection.result }}" == "success" ] && \
              [ "${{ needs.test-matrix-strategy.result }}" == "success" ] && \
              [ "${{ needs.test-no-changes.result }}" == "success" ]; then
             echo "### ✅ All tests passed!" >> $GITHUB_STEP_SUMMARY

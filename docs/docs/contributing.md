@@ -7,7 +7,7 @@ PipeCraft is an open source project that welcomes contributions. Whether you're 
 Start by cloning the repository and installing dependencies:
 
 ```bash
-git clone https://github.com/pipecraft-lab/pipecraft.git
+git clone https://github.com/the-craftlab/pipecraft.git
 cd pipecraft
 pnpm install
 pnpm run build

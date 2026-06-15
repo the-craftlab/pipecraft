@@ -492,6 +492,40 @@ jobs:
       expect(pipeline.on.workflow_dispatch.inputs.baseRef).toBeDefined()
     })
 
+    it('should include permissions block with actions: write for workflow_dispatch', async () => {
+      const ctx: PinionContext & { config?: PipecraftConfig } = {
+        cwd: workspace,
+        argv: ['generate'],
+        pinion: {
+          logger: {
+            ...console,
+            notice: console.log
+          },
+          prompt: async () => ({}),
+          cwd: workspace,
+          force: true,
+          trace: [],
+          exec: async () => 0
+        },
+        config: testConfig
+      }
+
+      const workflowsDir = join(workspace, '.github', 'workflows')
+      mkdirSync(workflowsDir, { recursive: true })
+
+      await generateWorkflows(ctx)
+
+      const pipelinePath = join(workflowsDir, 'pipeline.yml')
+      const pipelineContent = readFileSync(pipelinePath, 'utf8')
+      const pipeline = parseYAML(pipelineContent)
+
+      // Permissions block is required for workflow_dispatch to work with GITHUB_TOKEN
+      expect(pipeline.permissions).toBeDefined()
+      expect(pipeline.permissions.contents).toBe('write')
+      expect(pipeline.permissions['pull-requests']).toBe('write')
+      expect(pipeline.permissions.actions).toBe('write')
+    })
+
     it('should include push trigger with branch flow', async () => {
       // Skipped: Same race condition as 'should generate all workflow files'
       // Core functionality is tested in path-based-template.test.ts

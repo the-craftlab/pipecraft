@@ -97,19 +97,20 @@ export default function ConfigBuilder() {
       .map(b => b.trim())
       .filter(b => b)
 
-    // Update autoMerge for new branches
-    const newAutoMerge: Record<string, boolean> = {}
-    branches.forEach((branch, idx) => {
-      if (idx > 0) {
-        newAutoMerge[branch] = config.autoMerge[branch] ?? true
+    setConfig(prev => {
+      // Update autoMerge for new branches, preserving existing values
+      const newAutoMerge: Record<string, boolean> = {}
+      branches.forEach((branch, idx) => {
+        if (idx > 0) {
+          newAutoMerge[branch] = prev.autoMerge[branch] ?? true
+        }
+      })
+      return {
+        ...prev,
+        branchFlow: branches,
+        autoMerge: newAutoMerge
       }
     })
-
-    setConfig(prev => ({
-      ...prev,
-      branchFlow: branches,
-      autoMerge: newAutoMerge
-    }))
   }, [branchFlowInput])
 
   const generateYAML = (): string => {
