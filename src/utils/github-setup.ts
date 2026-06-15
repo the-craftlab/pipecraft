@@ -31,13 +31,13 @@
  * 2. **Per-PR Activation**:
  *    - Must be explicitly enabled on each PR (via button, CLI, or API)
  *    - Pipecraft workflows automatically enable it for configured branches
- *    - Configured per-branch in .pipecraftrc autoMerge setting
+ *    - Configured per-branch in .pipecraftrc autoPromote setting
  *
  * Example config:
  * ```json
  * {
  *   "branchFlow": ["develop", "staging", "main"],
- *   "autoMerge": {
+ *   "autoPromote": {
  *     "staging": true,  // Auto-merge PRs to staging
  *     "main": true      // Auto-merge PRs to main
  *   }
@@ -367,23 +367,86 @@ export async function updateWorkflowPermissions(
     const errorText = await response.text()
 
     // Check if this is an organization-level policy conflict
-    if (response.status === 409) {
-      throw new Error(
-        `Organization-level policy prevents changing workflow permissions.\n\n` +
-          `⚠️  This repository's organization has restricted workflow permissions.\n` +
-          `    The organization administrator must:\n\n` +
-          `    1. Visit: https://github.com/organizations/${owner}/settings/actions\n` +
-          `    2. Under "Workflow permissions":\n` +
-          `       - Enable "Read and write permissions"\n` +
-          `       - Check "Allow GitHub Actions to create and approve pull requests"\n` +
-          `    3. Save changes\n\n` +
-          `    Then run 'pipecraft setup-github' again to configure this repository.\n\n` +
-          `API Error: ${errorText}`
-      )
+    if (isOrgActionsPermissionLock(response.status)) {
+      throw new Error(formatOrgActionsLockMessage(owner, errorText))
     }
 
     throw new Error(`Failed to update workflow permissions: ${response.status} ${errorText}`)
   }
+}
+
+/**
+ * Whether an HTTP status from the Actions workflow-permissions API indicates an
+ * organization-level policy lock.
+ *
+ * GitHub returns 409 Conflict when a repository tries to enable a workflow
+ * permission (e.g. "Allow GitHub Actions to create and approve pull requests")
+ * that the parent organization has disabled. The repo-level setting cannot be
+ * changed until an org admin enables it at the organization level.
+ *
+ * @param status - HTTP status code from the GitHub Actions permissions API
+ * @returns true if the status is the org-policy conflict (409)
+ */
+export function isOrgActionsPermissionLock(status: number): boolean {
+  return status === 409
+}
+
+/**
+ * Build an actionable, human-readable message explaining that an organization
+ * policy is blocking the repository's workflow permissions, and exactly how an
+ * org admin can unblock it. Used both by `setup-github` (on a 409 write) and by
+ * `doctor` (when it detects the org-level lock proactively).
+ *
+ * @param owner - Repository owner (the organization name)
+ * @param apiError - Optional raw API error text to append for debugging
+ * @returns A multi-line actionable message
+ */
+export function formatOrgActionsLockMessage(owner: string, apiError?: string): string {
+  const base =
+    `Organization-level policy prevents changing workflow permissions.\n\n` +
+    `⚠️  This repository's organization has restricted workflow permissions.\n` +
+    `    The organization administrator must:\n\n` +
+    `    1. Visit: https://github.com/organizations/${owner}/settings/actions\n` +
+    `    2. Under "Workflow permissions":\n` +
+    `       - Enable "Read and write permissions"\n` +
+    `       - Check "Allow GitHub Actions to create and approve pull requests"\n` +
+    `    3. Save changes\n\n` +
+    `    Then run 'pipecraft setup-github' again to configure this repository.`
+
+  return apiError ? `${base}\n\nAPI Error: ${apiError}` : base
+}
+
+/**
+ * Get organization-level workflow permissions.
+ *
+ * Used to proactively detect an org-level lock from a read-only context (e.g.
+ * `doctor`) without attempting a write that would 409. Returns `null` when the
+ * org endpoint is not accessible — which is the expected case for personal
+ * accounts (404) or tokens lacking org-admin scope (403). Callers should treat
+ * `null` as "indeterminate" and fall back to their default behavior.
+ *
+ * @param org - Organization (owner) name
+ * @param token - GitHub token
+ * @returns The org workflow permissions, or null if not determinable
+ */
+export async function getOrgWorkflowPermissions(
+  org: string,
+  token: string
+): Promise<WorkflowPermissions | null> {
+  const response = await fetch(`https://api.github.com/orgs/${org}/actions/permissions/workflow`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    }
+  })
+
+  if (!response.ok) {
+    // 404 (personal account / no such org) or 403 (no admin scope) -> indeterminate
+    return null
+  }
+
+  return response.json()
 }
 
 /**
@@ -713,28 +776,28 @@ export async function promptMergeCommitChanges(
  * Check if auto-merge should be enabled based on .pipecraftrc config.
  *
  * Auto-merge should be enabled at the repository level if ANY branch
- * has autoMerge configured in the config file.
+ * has autoPromote configured in the config file.
  */
 export function shouldEnableAutoMerge(): boolean {
   try {
     const config = loadConfig() as PipecraftConfig
 
-    if (!config.autoMerge) {
+    if (!config.autoPromote) {
       return false
     }
 
-    if (typeof config.autoMerge === 'boolean') {
-      return config.autoMerge
+    if (typeof config.autoPromote === 'boolean') {
+      return config.autoPromote
     }
 
-    if (typeof config.autoMerge === 'object') {
+    if (typeof config.autoPromote === 'object') {
       // Check if any branch has auto-merge enabled
-      return Object.values(config.autoMerge).some(enabled => enabled === true)
+      return Object.values(config.autoPromote).some(enabled => enabled === true)
     }
 
     return false
   } catch (error) {
-    // No config file or autoMerge not configured
+    // No config file or autoPromote not configured
     return false
   }
 }
@@ -743,7 +806,7 @@ export function shouldEnableAutoMerge(): boolean {
  * Get Pipecraft's recommended repository settings.
  *
  * These are the settings that work best with Pipecraft workflows:
- * - Allow auto-merge: ON if any branch has autoMerge in config, OFF otherwise
+ * - Allow auto-merge: ON if any branch has autoPromote in config, OFF otherwise
  * - Always suggest updating PR branches: ON
  * - Allow merge commits: OFF
  * - Allow rebase merging: OFF
@@ -919,21 +982,21 @@ export function displaySettingsComparison(
   if (current.allow_auto_merge || recommended.allow_auto_merge) {
     try {
       const config = loadConfig() as PipecraftConfig
-      if (config.autoMerge) {
+      if (config.autoPromote) {
         console.log('\n📋 Auto-Merge Branch Configuration:')
         console.log('   ℹ️  Repository-level allow_auto_merge must be ON for these to work\n')
 
-        if (typeof config.autoMerge === 'boolean') {
-          if (config.autoMerge) {
+        if (typeof config.autoPromote === 'boolean') {
+          if (config.autoPromote) {
             console.log('   • All branches: Auto-merge ENABLED ✅')
           } else {
             console.log('   • All branches: Auto-merge DISABLED')
           }
-        } else if (typeof config.autoMerge === 'object') {
+        } else if (typeof config.autoPromote === 'object') {
           const branches = config.branchFlow || []
-          const autoMergeConfig = config.autoMerge as Record<string, boolean>
+          const autoPromoteConfig = config.autoPromote as Record<string, boolean>
           branches.forEach(branch => {
-            const enabled = autoMergeConfig[branch]
+            const enabled = autoPromoteConfig[branch]
             if (enabled === true) {
               console.log(`   • ${branch}:`)
               console.log(`       Status: Auto-merge ENABLED ✅`)
@@ -1112,7 +1175,7 @@ export async function configureBranchProtection(
 ): Promise<void> {
   console.log('\n🔍 Checking auto-merge configuration...')
 
-  // Load config to get autoMerge settings
+  // Load config to get autoPromote settings
   let config: PipecraftConfig
   try {
     config = loadConfig() as PipecraftConfig
@@ -1121,8 +1184,8 @@ export async function configureBranchProtection(
     return
   }
 
-  if (!config.autoMerge || !config.branchFlow) {
-    console.log('ℹ️  No autoMerge configuration found - skipping branch protection setup')
+  if (!config.autoPromote || !config.branchFlow) {
+    console.log('ℹ️  No autoPromote configuration found - skipping branch protection setup')
     return
   }
 
@@ -1130,17 +1193,17 @@ export async function configureBranchProtection(
   // This function only configures branch protection for the branches that need it
 
   // Determine which branches need auto-merge
-  const autoMergeConfig = config.autoMerge
+  const autoPromoteConfig = config.autoPromote
   const branchesNeedingProtection: string[] = []
 
-  if (typeof autoMergeConfig === 'boolean') {
+  if (typeof autoPromoteConfig === 'boolean') {
     // If true for all, protect all intermediate branches
-    if (autoMergeConfig && config.branchFlow.length > 1) {
+    if (autoPromoteConfig && config.branchFlow.length > 1) {
       branchesNeedingProtection.push(...config.branchFlow.slice(1, -1))
     }
-  } else if (typeof autoMergeConfig === 'object') {
-    // Check which branches have autoMerge enabled
-    for (const [branch, enabled] of Object.entries(autoMergeConfig)) {
+  } else if (typeof autoPromoteConfig === 'object') {
+    // Check which branches have autoPromote enabled
+    for (const [branch, enabled] of Object.entries(autoPromoteConfig)) {
       if (enabled === true) {
         branchesNeedingProtection.push(branch)
       }
@@ -1180,7 +1243,7 @@ export async function configureBranchProtection(
           } else {
             console.log(`⚠️  Skipped ${branch}:`)
             console.log(`     • Auto-merge will not work without branch protection`)
-            console.log(`     • Run 'pipecraft setup-github' again to enable it`)
+            console.log(`     • Run 'pipecraft setup-github --apply' to enable it`)
           }
         }
       } else {
@@ -1257,7 +1320,7 @@ export async function setupGitHubPermissions(autoApply: boolean = false): Promis
       console.log('\n📍 To update manually:')
       console.log(`   1. Visit: ${repoInfo.owner}/${repoInfo.repo}/settings/actions`)
       console.log(`   2. Enable write permissions and PR creation`)
-      console.log(`   3. Or run 'pipecraft setup-github' again to auto-apply`)
+      console.log(`   3. Or run 'pipecraft setup-github --apply' to auto-apply`)
       // Still continue to check branch protection
       permissionsAlreadyCorrect = true
     }
@@ -1311,7 +1374,7 @@ export async function setupGitHubPermissions(autoApply: boolean = false): Promis
         console.log('\n📍 To update manually:')
         console.log(`   1. Visit: ${repoInfo.owner}/${repoInfo.repo}/settings`)
         console.log(`   2. Apply the recommended changes listed above`)
-        console.log(`   3. Or run 'pipecraft setup-github' again to auto-apply`)
+        console.log(`   3. Or run 'pipecraft setup-github --apply' to auto-apply`)
       }
     }
   } catch (error: any) {

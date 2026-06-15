@@ -11,18 +11,19 @@ import { type PinionContext, renderTemplate, toFile } from '@featherscloud/pinio
 import fs from 'fs'
 import { Document, parseDocument, Scalar, stringify, YAMLMap } from 'yaml'
 import type { PipecraftConfig } from '../../types/index.js'
-import { applyPathOperations, type PathOperationConfig } from '../../utils/ast-path-operations.js'
+import { type PathOperationConfig } from '../../utils/ast-path-operations.js'
 import { logger } from '../../utils/logger.js'
 import { formatIfConditions } from '../yaml-format-utils.js'
 import {
   createChangesJobOperation,
-  createGateJobOperation,
   createHeaderOperations,
   createPrefixedDomainJobOperations,
   createTagPromoteReleaseOperations,
-  createVersionJobOperation
+  createVersionJobOperation,
+  createManagedWorkflowDocument,
+  stringifyManagedWorkflow,
+  applyManagedWorkflowOperations
 } from './shared/index.js'
-import { getDomainJobNames } from './shared/operations-domain-jobs.js'
 
 interface PathBasedPipelineContext extends PinionContext {
   config: PipecraftConfig
@@ -201,18 +202,37 @@ export const generate = (ctx: PathBasedPipelineContext) =>
       const { config, branchFlow } = ctx
       const domains = config?.domains || {}
 
-      // Get job names from domains (supports both prefixes and legacy boolean flags)
-      const { testJobs, deployJobs, remoteTestJobs, allJobsByPrefix } = getDomainJobNames(domains)
+      const fileExists = fs.existsSync(filePath)
+      let existingContent = ''
+      let existingEnv: Record<string, any> | null = null
 
+      if (fileExists) {
+        existingContent = fs.readFileSync(filePath, 'utf8')
+        try {
+          const envDoc = parseDocument(existingContent)
+          const envNode =
+            envDoc && typeof (envDoc as any).get === 'function' ? (envDoc as any).get('env') : null
+          if (envNode && typeof (envNode as any).toJSON === 'function') {
+            existingEnv = (envNode as any).toJSON()
+          }
+        } catch (error) {
+          logger.warn(`⚠️  Failed to parse existing pipeline for runtime defaults: ${error}`)
+        }
+      }
+
+      // Get job names from domains (supports both prefixes and legacy boolean flags)
       // Build operations array - only managed jobs
       const operations: PathOperationConfig[] = [
         // Header (name, run-name, on triggers)
-        ...createHeaderOperations({ branchFlow }),
+        ...createHeaderOperations({
+          branchFlow,
+          nodeVersion: (existingEnv?.NODE_VERSION as string | undefined) ?? undefined,
+          pnpmVersion: (existingEnv?.PNPM_VERSION as string | undefined) ?? undefined
+        }),
 
         // Changes detection (path-based)
         createChangesJobOperation({
           domains,
-          useNx: false,
           baseRef: config.finalBranch,
           config
         }),
@@ -220,7 +240,6 @@ export const generate = (ctx: PathBasedPipelineContext) =>
         // Version calculation (simplified - only depends on changes)
         createVersionJobOperation({
           testJobNames: [], // No test job dependencies in new model
-          nxEnabled: false,
           baseRef: config.finalBranch,
           config
         }),
@@ -228,35 +247,38 @@ export const generate = (ctx: PathBasedPipelineContext) =>
         // NOTE: Prefixed domain jobs are NOT generated via operations
         // They are generated as text and merged into the custom section below
 
-        // Gate job (runs after ALL prefix-based jobs, gates downstream jobs)
-        createGateJobOperation({
-          testJobNames: testJobs,
-          deployJobNames: deployJobs,
-          allJobsByPrefix // Includes ALL jobs from all prefixes (test, deploy, lint, build, etc.)
-        }),
-
         // Tag, promote, release
         ...createTagPromoteReleaseOperations({
           branchFlow,
-          deployJobNames: [], // No deployment dependencies in new model
-          remoteTestJobNames: [],
-          testJobNames: testJobs, // Pass test jobs for default tag job dependencies
-          autoMerge: typeof config.autoMerge === 'object' ? config.autoMerge : {},
+          autoPromote: typeof config.autoPromote === 'object' ? config.autoPromote : {},
           config
         })
       ]
 
-      // Check if file exists
-      const fileExists = fs.existsSync(filePath)
-
       // Extract user-customized section and custom jobs from existing file if it exists
       let userSection: string | null = null
       const customJobsFromExisting: any[] = []
+      // Preserve gate job's needs and if (user may have customized them)
+      let preservedGateNeeds: any = null
+      let preservedGateIf: any = null
       if (fileExists) {
-        const existingContent = fs.readFileSync(filePath, 'utf8')
         userSection = extractUserSection(existingContent)
         if (userSection) {
           logger.verbose('📋 Found user-customized section between markers')
+        } else {
+          // Check if markers exist but are mismatched
+          const hasStartMarker = /^.*#+\s*<--START CUSTOM JOBS-->\s*$/m.test(existingContent)
+          const hasEndMarker = /^.*#+\s*<--END CUSTOM JOBS-->\s*$/m.test(existingContent)
+
+          if (hasStartMarker && !hasEndMarker) {
+            logger.warn('⚠️  Found START marker but missing END marker - markers are mismatched!')
+            logger.warn('   Custom jobs will be preserved but markers will be fixed.')
+          } else if (!hasStartMarker && hasEndMarker) {
+            logger.warn('⚠️  Found END marker but missing START marker - markers are mismatched!')
+            logger.warn('   Custom jobs will be preserved but markers will be fixed.')
+          } else if (!hasStartMarker && !hasEndMarker) {
+            logger.verbose('📋 No custom jobs markers found - will preserve existing custom jobs')
+          }
         }
 
         // Also extract custom jobs (for force mode preservation)
@@ -266,6 +288,18 @@ export const generate = (ctx: PathBasedPipelineContext) =>
             ? (existingDoc.contents as any).get('jobs')
             : null
         const managedJobs = new Set(['changes', 'version', 'gate', 'tag', 'promote', 'release'])
+
+        // Extract gate job's needs and if for preservation
+        if (existingJobs && (existingJobs as any).get) {
+          const existingGate = (existingJobs as any).get('gate')
+          if (existingGate) {
+            preservedGateNeeds = existingGate.get('needs')
+            preservedGateIf = existingGate.get('if')
+            if (preservedGateNeeds || preservedGateIf) {
+              logger.verbose('📋 Preserving gate job needs/if from existing workflow')
+            }
+          }
+        }
         if (existingJobs && (existingJobs as any).items) {
           for (const pair of (existingJobs as any).items) {
             const keyStr = pair.key instanceof Scalar ? pair.key.value : pair.key
@@ -275,39 +309,55 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           }
         }
         if (customJobsFromExisting.length > 0) {
-          logger.verbose(`📋 Found ${customJobsFromExisting.length} custom job(s) to preserve`)
+          const customJobNames = customJobsFromExisting
+            .map(pair => (pair.key instanceof Scalar ? pair.key.value : pair.key))
+            .join(', ')
+          logger.info(
+            `📋 Preserving ${customJobsFromExisting.length} custom job(s): ${customJobNames}`
+          )
 
           // If no userSection but custom jobs exist, convert custom jobs to YAML text
           if (!userSection && customJobsFromExisting.length > 0) {
-            // Stringify each job pair individually to get proper formatting
-            const jobTexts: string[] = []
+            logger.info('   Converting custom jobs to YAML (markers were missing or mismatched)')
+            try {
+              // Stringify each job pair individually to get proper formatting
+              const jobTexts: string[] = []
 
-            for (const pair of customJobsFromExisting) {
-              // Create a temp doc for this one job to get proper YAML formatting
-              const tempDoc = new Document(new YAMLMap())
-              ;(tempDoc.contents as YAMLMap).items = [pair]
+              for (const pair of customJobsFromExisting) {
+                // Create a temp doc for this one job to get proper YAML formatting
+                const tempDoc = new Document(new YAMLMap())
+                ;(tempDoc.contents as YAMLMap).items = [pair]
 
-              let jobYaml = tempDoc.toString({
-                lineWidth: 0,
-                indent: 2,
-                defaultStringType: 'PLAIN',
-                defaultKeyType: 'PLAIN',
-                minContentWidth: 0
-              })
+                let jobYaml = tempDoc.toString({
+                  lineWidth: 0,
+                  indent: 2,
+                  defaultStringType: 'PLAIN',
+                  defaultKeyType: 'PLAIN',
+                  minContentWidth: 0
+                })
 
-              // Remove trailing newlines and add proper indentation (2 spaces for YAML jobs section)
-              jobYaml = jobYaml
-                .trim()
-                .split('\n')
-                .map(line => '  ' + line)
-                .join('\n')
-              jobTexts.push(jobYaml)
+                // Remove trailing newlines and add proper indentation (2 spaces for YAML jobs section)
+                jobYaml = jobYaml
+                  .trim()
+                  .split('\n')
+                  .map(line => '  ' + line)
+                  .join('\n')
+                jobTexts.push(jobYaml)
+              }
+
+              // Join all jobs with double newlines
+              userSection = jobTexts.join('\n\n')
+              logger.info(
+                `   ✅ Successfully converted ${customJobsFromExisting.length} custom jobs`
+              )
+            } catch (error) {
+              logger.error(`❌ Failed to convert custom jobs to YAML: ${error}`)
+              logger.error('   Your custom jobs may be lost! Please backup your pipeline file.')
+              throw error // Re-throw to prevent silent data loss
             }
-
-            // Join all jobs with double newlines
-            userSection = jobTexts.join('\n\n')
-            logger.verbose('📋 Converted custom jobs to user section')
           }
+        } else {
+          logger.warn('⚠️  No custom jobs found in existing pipeline')
         }
       }
 
@@ -318,14 +368,6 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           : '🔄 Force mode: Rebuilding path-based pipeline from scratch'
         logger.verbose(logMessage)
 
-        // Create new document with empty YAML map
-        const doc = parseDocument('{}')
-        // Ensure the root map uses block style (not flow/compact)
-        if (doc.contents && (doc.contents as any).flow !== undefined) {
-          ;(doc.contents as any).flow = false
-        }
-
-        // Add header comment block to document
         const headerComment = `=============================================================================
  PIPECRAFT MANAGED WORKFLOW
 =============================================================================
@@ -349,24 +391,25 @@ export const generate = (ctx: PathBasedPipelineContext) =>
 
  📖 Learn more: https://pipecraft.thecraftlab.dev
 =============================================================================`
-        doc.commentBefore = headerComment
+        const doc = createManagedWorkflowDocument(headerComment, operations, ctx)
 
-        // NOTE: Custom jobs are NOT added to the document via AST
-        // They are preserved in userSection and merged with generated placeholders
-        // Then inserted as text after version job (see below)
-
-        if (doc.contents) {
-          applyPathOperations(doc.contents as any, operations, doc)
+        // Restore preserved gate job needs/if (for force mode)
+        if (preservedGateNeeds || preservedGateIf) {
+          const jobs = (doc.contents as YAMLMap)?.get('jobs') as YAMLMap | undefined
+          const gateJob = jobs?.get('gate') as YAMLMap | undefined
+          if (gateJob) {
+            if (preservedGateNeeds) {
+              gateJob.set('needs', preservedGateNeeds)
+            }
+            if (preservedGateIf) {
+              gateJob.set('if', preservedGateIf)
+            }
+            logger.verbose('📋 Restored gate job needs/if from existing workflow')
+          }
         }
 
         // Stringify to YAML
-        let yamlContent = stringify(doc, {
-          lineWidth: 0,
-          indent: 2,
-          defaultStringType: 'PLAIN',
-          defaultKeyType: 'PLAIN',
-          minContentWidth: 0
-        })
+        let yamlContent = stringifyManagedWorkflow(doc)
 
         // Generate placeholder jobs from prefixes and merge with existing custom section
         const generatedPlaceholders = generatePrefixedJobsText(domains)
@@ -422,13 +465,9 @@ export const generate = (ctx: PathBasedPipelineContext) =>
       }
 
       // Parse existing file for merge mode (no force flag)
-      const existingContent = fs.readFileSync(filePath, 'utf8')
-      const doc = parseDocument(existingContent)
-
-      // Apply operations to update managed jobs
-      if (doc.contents) {
-        applyPathOperations(doc.contents as any, operations, doc)
-      }
+      const freshContent = fs.readFileSync(filePath, 'utf8')
+      const doc = parseDocument(freshContent)
+      applyManagedWorkflowOperations(doc, operations, ctx)
 
       // Stringify to YAML
       let yamlContent = stringify(doc, {

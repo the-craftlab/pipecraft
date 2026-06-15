@@ -177,6 +177,6 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 ### Links
 
 - [Documentation](https://pipecraft.thecraftlab.dev)
-- [GitHub Repository](https://github.com/pipecraft-lab/pipecraft)
+- [GitHub Repository](https://github.com/the-craftlab/pipecraft)
 - [npm Package](https://www.npmjs.com/package/pipecraft)
-- [Issue Tracker](https://github.com/pipecraft-lab/pipecraft/issues)
+- [Issue Tracker](https://github.com/the-craftlab/pipecraft/issues)

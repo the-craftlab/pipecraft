@@ -38,11 +38,19 @@ const config: Config = {
   // Documentation site configuration
   url: 'https://pipecraft.thecraftlab.dev',
   baseUrl: '/',
+  trailingSlash: false,
 
   organizationName: 'jamesvillarrubia',
   projectName: 'pipecraft',
 
   headTags: [
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'algolia-site-verification',
+        content: '3FB982517D1A21CD'
+      }
+    },
     {
       tagName: 'link',
       attributes: {
@@ -94,7 +102,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/pipecraft-lab/pipecraft/tree/develop/docs/',
+          editUrl: 'https://github.com/the-craftlab/pipecraft/tree/develop/docs/',
           showLastUpdateTime: true,
           showLastUpdateAuthor: true
         },
@@ -132,7 +140,7 @@ const config: Config = {
           position: 'left'
         },
         {
-          href: 'https://github.com/pipecraft-lab/pipecraft',
+          href: 'https://github.com/the-craftlab/pipecraft',
           label: 'GitHub',
           position: 'right'
         },
@@ -172,11 +180,11 @@ const config: Config = {
           items: [
             {
               label: 'GitHub Issues',
-              href: 'https://github.com/pipecraft-lab/pipecraft/issues'
+              href: 'https://github.com/the-craftlab/pipecraft/issues'
             },
             {
               label: 'GitHub Discussions',
-              href: 'https://github.com/pipecraft-lab/pipecraft/discussions'
+              href: 'https://github.com/the-craftlab/pipecraft/discussions'
             }
           ]
         },
@@ -185,7 +193,7 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/pipecraft-lab/pipecraft'
+              href: 'https://github.com/the-craftlab/pipecraft'
             },
             {
               label: 'npm',
@@ -208,8 +216,8 @@ const config: Config = {
     },
     algolia: {
       // You'll need to add Algolia later for search
-      appId: 'DCG4CKGMNT',
-      apiKey: 'adf1f82db72b5f1f360684b19d4ea648',
+      appId: 'JPOBW2G16D',
+      apiKey: 'fad562cc189c49a9bde177e40dc9747d',
       indexName: 'pipecraft',
       contextualSearch: true
     }

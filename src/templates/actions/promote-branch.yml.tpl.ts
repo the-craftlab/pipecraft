@@ -11,7 +11,7 @@ import { type PinionContext, renderTemplate, toFile } from '@featherscloud/pinio
 import dedent from 'dedent'
 import fs from 'fs'
 import { logger } from '../../utils/logger.js'
-import { getActionOutputDir } from '../../utils/action-reference.js'
+import { getActionOutputDir, shouldGenerateActions } from '../../utils/action-reference.js'
 import type { PipecraftConfig } from '../../types/index.js'
 
 /**
@@ -41,8 +41,8 @@ const promoteBranchActionTemplate = (ctx: any) => {
         description: 'The original run number from develop branch for traceability'
         required: false
         default: ''
-      autoMerge:
-        description: 'Whether to enable auto-merge for the PR'
+      autoPromote:
+        description: 'Whether to automatically promote (fast-forward) to the target branch'
         required: false
         default: 'false'
       tempBranchPattern:
@@ -170,12 +170,12 @@ const promoteBranchActionTemplate = (ctx: any) => {
             TARGET="\${{ inputs.targetBranch }}"
             SOURCE="\${{ inputs.sourceBranch }}"
             VERSION="\${{ steps.get-version.outputs.version }}"
-            AUTO_MERGE="\${{ inputs.autoMerge }}"
+            AUTO_PROMOTE="\${{ inputs.autoPromote }}"
 
             TITLE="🚀 Release \$VERSION to \$TARGET"
 
             # Determine merge behavior text
-            if [ "\$AUTO_MERGE" == "true" ]; then
+            if [ "\$AUTO_PROMOTE" == "true" ]; then
               MERGE_TEXT="merge automatically"
             else
               MERGE_TEXT="require manual approval"
@@ -209,26 +209,22 @@ const promoteBranchActionTemplate = (ctx: any) => {
               exit 1
             fi
 
-        - name: Enable PR Auto-Merge with Rebase (Manual Approval Required)
-          if: inputs.autoMerge == 'false'
+        - name: Manual Merge Required
+          if: inputs.autoPromote == 'false'
           shell: bash
-          env:
-            GH_TOKEN: \${{ inputs.token }}
           run: |
             PR_NUMBER="\${{ steps.check-pr.outputs.prNumber || steps.create-pr.outputs.prNumber }}"
-            TARGET="\${{ inputs.targetBranch }}"
+            PR_URL="\${{ steps.check-pr.outputs.prUrl || steps.create-pr.outputs.prUrl }}"
 
-            echo "🔐 Enabling auto-merge with rebase for PR #\$PR_NUMBER (requires approval)"
-            echo "   This will fast-forward \$TARGET when approved, maintaining linear history"
-
-            # Enable auto-merge with rebase method (fast-forward, no merge commit)
-            gh pr merge "\$PR_NUMBER" --auto --rebase
-
-            echo "✅ Auto-merge enabled - PR will fast-forward merge when approved"
-            echo "⚠️  Manual approval required before merge completes"
+            echo "✅ PR #\$PR_NUMBER created successfully"
+            echo "🔗 URL: \$PR_URL"
+            echo ""
+            echo "⚠️  Auto-merge is disabled for this branch."
+            echo "   Please review and merge the PR manually when ready."
 
         - name: Fast-Forward Merge (Immediate Auto-Merge)
-          if: inputs.autoMerge == 'true'
+          id: fast-forward
+          if: inputs.autoPromote == 'true'
           shell: bash
           run: |
             SOURCE="\${{ inputs.sourceBranch }}"
@@ -243,6 +239,11 @@ const promoteBranchActionTemplate = (ctx: any) => {
 
             # Fetch target branch
             git fetch origin \$TARGET:\$TARGET 2>/dev/null || true
+
+            # Capture the target branch's current SHA BEFORE fast-forward (for change detection)
+            BEFORE_SHA=\$(git rev-parse \$TARGET)
+            echo "beforeSha=\$BEFORE_SHA" >> \$GITHUB_OUTPUT
+            echo "Target before: \$BEFORE_SHA"
 
             # Checkout target branch
             git checkout \$TARGET
@@ -266,7 +267,7 @@ const promoteBranchActionTemplate = (ctx: any) => {
             echo "📝 PR will be closed automatically for audit trail"
 
         - name: Wait for Branch to Propagate
-          if: inputs.autoMerge == 'true'
+          if: inputs.autoPromote == 'true'
           shell: bash
           run: |
             echo "⏳ Waiting 5 seconds for branch update to propagate..."
@@ -274,7 +275,7 @@ const promoteBranchActionTemplate = (ctx: any) => {
             echo "✅ Branch should be fully propagated"
 
         - name: Trigger Pipeline Workflow on Target Branch
-          if: inputs.autoMerge == 'true'
+          if: inputs.autoPromote == 'true'
           shell: bash
           env:
             GH_TOKEN: \${{ inputs.token }}
@@ -282,18 +283,20 @@ const promoteBranchActionTemplate = (ctx: any) => {
             TARGET="\${{ inputs.targetBranch }}"
             VERSION="\${{ steps.get-version.outputs.version }}"
             RUN_NUMBER="\${{ inputs.run_number }}"
+            BEFORE_SHA="\${{ steps.fast-forward.outputs.beforeSha }}"
 
             # Get the exact commit SHA that was just pushed to target branch
-            COMMIT_SHA=$(git rev-parse \$TARGET)
+            COMMIT_SHA=\$(git rev-parse \$TARGET)
             echo "🔄 Triggering pipeline workflow on \$TARGET branch"
             echo "   Version: \$VERSION"
             echo "   Commit SHA: \$COMMIT_SHA"
+            echo "   Before SHA: \$BEFORE_SHA (for change detection)"
 
             # Trigger the pipeline workflow on the target branch
             # This is necessary because GITHUB_TOKEN pushes don't trigger workflows by default
             # Pass the exact commit SHA to ensure the workflow checks out the correct commit
-            # (avoids race conditions from GitHub's eventual consistency)
-            WORKFLOW_ARGS=(--ref "\$TARGET" --field version="\$VERSION" --field commitSha="\$COMMIT_SHA")
+            # Pass beforeSha for accurate change detection (simulates push event's 'before' field)
+            WORKFLOW_ARGS=(--ref "\$TARGET" --field version="\$VERSION" --field commitSha="\$COMMIT_SHA" --field beforeSha="\$BEFORE_SHA")
             if [ -n "\$RUN_NUMBER" ]; then
               WORKFLOW_ARGS+=(--field run_number="\$RUN_NUMBER")
               echo "   Run number: \$RUN_NUMBER (for traceability)"
@@ -304,7 +307,7 @@ const promoteBranchActionTemplate = (ctx: any) => {
             echo "✅ Pipeline workflow triggered on \$TARGET with version \$VERSION at commit \$COMMIT_SHA"
 
         - name: Close PR and Delete Branch
-          if: inputs.autoMerge == 'true'
+          if: inputs.autoPromote == 'true'
           shell: bash
           env:
             GH_TOKEN: \${{ inputs.token }}
@@ -335,7 +338,7 @@ const promoteBranchActionTemplate = (ctx: any) => {
             echo "ℹ️  Using existing PR #\$PR_NUMBER"
             echo "🔗 URL: \$PR_URL"
 
-            # Note: Fast-forward merge happens in separate step if autoMerge is enabled
+            # Note: Fast-forward merge happens in separate step if autoPromote is enabled
   `
 }
 
@@ -346,20 +349,19 @@ const promoteBranchActionTemplate = (ctx: any) => {
  * @returns {Promise<PinionContext>} Updated context after file generation
  */
 export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig> }) =>
-  Promise.resolve(ctx)
-    .then(ctx => {
-      // Check if file exists to determine merge status
-      const config = ctx.config || {}
-      const outputDir = getActionOutputDir(config)
-      const filePath = `${outputDir}/promote-branch/action.yml`
-      const exists = fs.existsSync(filePath)
-      const status = exists ? '🔄 Merged with existing' : '📝 Created new'
-      logger.verbose(`${status} ${filePath}`)
-      return { ...ctx, actionOutputPath: filePath }
-    })
-    .then(ctx =>
-      renderTemplate(
-        promoteBranchActionTemplate,
-        toFile(ctx.actionOutputPath || 'actions/promote-branch/action.yml')
-      )(ctx)
-    )
+  Promise.resolve(ctx).then(ctx => {
+    const config = ctx.config || {}
+
+    if (!shouldGenerateActions(config)) {
+      logger.verbose('Skipping promote-branch action generation (using remote actions)')
+      return ctx
+    }
+
+    const outputDir = getActionOutputDir(config)
+    const filePath = `${outputDir}/promote-branch/action.yml`
+    const exists = fs.existsSync(filePath)
+    const status = exists ? '🔄 Merged with existing' : '📝 Created new'
+    logger.verbose(`${status} ${filePath}`)
+
+    return renderTemplate(promoteBranchActionTemplate, toFile(filePath))(ctx)
+  })

@@ -12,7 +12,7 @@ import { type PinionContext, renderTemplate, toFile } from '@featherscloud/pinio
 import dedent from 'dedent'
 import fs from 'fs'
 import { logger } from '../../utils/logger.js'
-import { getActionOutputDir } from '../../utils/action-reference.js'
+import { getActionOutputDir, shouldGenerateActions } from '../../utils/action-reference.js'
 import type { PipecraftConfig } from '../../types/index.js'
 
 /**
@@ -38,6 +38,10 @@ const releaseActionTemplate = (ctx: any) => {
         description: 'Name of the publish workflow file to trigger (e.g., publish.yml)'
         required: false
         default: 'publish.yml'
+      commitSha:
+        description: 'Specific commit SHA to checkout (prevents race conditions during promotion)'
+        required: false
+        default: ''
 
     outputs:
       release_url:
@@ -53,6 +57,7 @@ const releaseActionTemplate = (ctx: any) => {
         - name: Checkout Code
           uses: actions/checkout@v4
           with:
+            ref: \${{ inputs.commitSha || github.sha }}
             fetch-depth: 0
             token: \${{ inputs.token }}
 
@@ -113,9 +118,10 @@ const releaseActionTemplate = (ctx: any) => {
             if [ -f ".github/workflows/$PUBLISH_WORKFLOW" ]; then
               echo "🔄 Triggering $PUBLISH_WORKFLOW for $VERSION"
 
-              # Trigger the publish workflow with the release tag
+              # Trigger the publish workflow with the release tag on main branch
               # This is necessary because GITHUB_TOKEN release creation doesn't trigger workflows
-              if gh workflow run "$PUBLISH_WORKFLOW" --field tag="$VERSION" 2>&1; then
+              # Explicitly use --ref main to ensure it runs on main, not the default branch (develop)
+              if gh workflow run "$PUBLISH_WORKFLOW" --ref main --field tag="$VERSION" 2>&1; then
                 echo "✅ Publish workflow triggered for $VERSION"
               else
                 echo "⚠️  Failed to trigger publish workflow, but continuing"
@@ -134,20 +140,19 @@ const releaseActionTemplate = (ctx: any) => {
  * @returns {Promise<PinionContext>} Updated context after file generation
  */
 export const generate = (ctx: PinionContext & { config?: Partial<PipecraftConfig> }) =>
-  Promise.resolve(ctx)
-    .then(ctx => {
-      // Check if file exists to determine merge status
-      const config = ctx.config || {}
-      const outputDir = getActionOutputDir(config)
-      const filePath = `${outputDir}/create-release/action.yml`
-      const exists = fs.existsSync(filePath)
-      const status = exists ? '🔄 Merged with existing' : '📝 Created new'
-      logger.verbose(`${status} ${filePath}`)
-      return { ...ctx, actionOutputPath: filePath }
-    })
-    .then(ctx =>
-      renderTemplate(
-        releaseActionTemplate,
-        toFile(ctx.actionOutputPath || 'actions/create-release/action.yml')
-      )(ctx)
-    )
+  Promise.resolve(ctx).then(ctx => {
+    const config = ctx.config || {}
+
+    if (!shouldGenerateActions(config)) {
+      logger.verbose('Skipping create-release action generation (using remote actions)')
+      return ctx
+    }
+
+    const outputDir = getActionOutputDir(config)
+    const filePath = `${outputDir}/create-release/action.yml`
+    const exists = fs.existsSync(filePath)
+    const status = exists ? '🔄 Merged with existing' : '📝 Created new'
+    logger.verbose(`${status} ${filePath}`)
+
+    return renderTemplate(releaseActionTemplate, toFile(filePath))(ctx)
+  })

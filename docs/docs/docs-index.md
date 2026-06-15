@@ -12,19 +12,19 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
 
 ### For New Users
 
-1. **[Main README](https://github.com/pipecraft-lab/pipecraft#readme)** - Start here! Installation, quick start, and basic usage
-2. **[Current Trunk Flow](./flows/trunk-flow)** - Understand how the trunk-based workflow works
-3. **[Examples](https://github.com/pipecraft-lab/pipecraft/tree/main/examples)** - Example configurations for different use cases
+1. **[Main README](https://github.com/the-craftlab/pipecraft#readme)** - Start here! Installation, quick start, and basic usage
+2. **[Current Trunk Flow](/docs/flows/trunk-flow)** - Understand how the trunk-based workflow works
+3. **[Examples](https://github.com/the-craftlab/pipecraft/tree/main/examples)** - Example configurations for different use cases
    - `basic-config.json` - Simple single-repo configuration
    - `monorepo-config.json` - Multi-domain monorepo configuration
    - `usage.md` - Detailed usage examples
 
 ### Quick Links
 
-- 📦 [Installation](https://github.com/pipecraft-lab/pipecraft#installation)
-- ⚡ [Quick Start](https://github.com/pipecraft-lab/pipecraft#quick-start)
-- ⚙️ [Configuration Options](https://github.com/pipecraft-lab/pipecraft#configuration-options)
-- 🐛 [Troubleshooting](./error-handling.md)
+- 📦 [Installation](https://github.com/the-craftlab/pipecraft#installation)
+- ⚡ [Quick Start](https://github.com/the-craftlab/pipecraft#quick-start)
+- ⚙️ [Configuration Options](https://github.com/the-craftlab/pipecraft#configuration-options)
+- 🐛 [Troubleshooting](error-handling.md)
 
 ---
 
@@ -32,14 +32,14 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
 
 ### Core Concepts
 
-- **[Current Trunk Flow](./flows/trunk-flow)** - The ONE currently implemented workflow pattern
+- **[Current Trunk Flow](/docs/flows/trunk-flow)** - The ONE currently implemented workflow pattern
 
   - How promotions work (develop → staging → main)
   - Auto-merge configuration
   - Domain-based testing
   - Semantic versioning integration
 
-- **[Architecture](./architecture.md)** - System design and how PipeCraft works
+- **[Architecture](architecture.md)** - System design and how PipeCraft works
   - Component overview
   - Data flow diagrams
   - Design decisions explained
@@ -47,7 +47,7 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
 
 ### Guides & References
 
-- **[Error Handling](./error-handling.md)** - Complete error types, causes, and solutions
+- **[Error Handling](error-handling.md)** - Complete error types, causes, and solutions
 
   - Configuration errors
   - Pre-flight check failures
@@ -56,7 +56,7 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
   - File system errors
   - Recovery strategies
 
-- **[AST Operations](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/AST_OPERATIONS.md)** - YAML manipulation internals
+- **[AST Operations](https://github.com/the-craftlab/pipecraft/blob/main/docs/AST_OPERATIONS.md)** - YAML manipulation internals
   - How comment preservation works
   - Path-based operations
   - Advanced YAML AST manipulation
@@ -67,36 +67,36 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
 
 ### Getting Started with Contributing
 
-- **[Repository Cleanup Plan](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/REPO_CLEANUP_PLAN.md)** - Understanding the repo structure
+- **[Repository Cleanup Plan](https://github.com/the-craftlab/pipecraft/blob/main/docs/REPO_CLEANUP_PLAN.md)** - Understanding the repo structure
   - Directory organization
   - Where to add new code/tests/docs
   - File categorization
 
 ### Development Guides
 
-- **[Architecture](./architecture.md)** - Required reading for contributors
+- **[Architecture](architecture.md)** - Required reading for contributors
 
   - System components in detail
   - How everything fits together
   - Performance considerations
   - Security considerations
 
-- **[Test Documentation](https://github.com/pipecraft-lab/pipecraft/blob/main/tests/README.md)** - How to run and write tests
+- **[Test Documentation](https://github.com/the-craftlab/pipecraft/blob/main/tests/README.md)** - How to run and write tests
 
   - Test structure and categories
   - Running tests locally
   - Writing good tests
   - Debugging test failures
 
-- **[AST Operations](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/AST_OPERATIONS.md)** - Deep dive into YAML manipulation
+- **[AST Operations](https://github.com/the-craftlab/pipecraft/blob/main/docs/AST_OPERATIONS.md)** - Deep dive into YAML manipulation
   - Required for working on template generation
   - Comment preservation implementation
   - Path operation implementation
 
 ### Contributing Workflow
 
-1. Read [Architecture](./architecture.md) to understand the system
-2. Read [Test Documentation](https://github.com/pipecraft-lab/pipecraft/blob/main/tests/README.md) to understand testing
+1. Read [Architecture](architecture.md) to understand the system
+2. Read [Test Documentation](https://github.com/the-craftlab/pipecraft/blob/main/tests/README.md) to understand testing
 3. Pick an issue or feature to work on
 4. Write tests first (TDD approach)
 5. Implement the feature/fix
@@ -109,7 +109,7 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
 
 ### Future Plans
 
-- **[Roadmap](https://github.com/pipecraft-lab/pipecraft/blob/main/TRUNK_FLOW_PLAN.md)** - Future features and enhancements
+- **[Roadmap](https://github.com/the-craftlab/pipecraft/blob/main/TRUNK_FLOW_PLAN.md)** - Future features and enhancements
   - ⚠️ **Note**: This describes FUTURE plans, not current implementation
   - Temporary branches (planned)
   - Multiple flow patterns (planned)
@@ -118,7 +118,7 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
 
 ### Historical/Planning Documents
 
-- **[User Journey Errors Planning](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/USER_JOURNEY_ERRORS_PLANNING.md)** - Comprehensive error scenario planning
+- **[User Journey Errors Planning](https://github.com/the-craftlab/pipecraft/blob/main/docs/USER_JOURNEY_ERRORS_PLANNING.md)** - Comprehensive error scenario planning
   - This is a planning/design document
   - Maps every possible error scenario
   - Reference for error handling implementation
@@ -129,28 +129,28 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
 
 ### Production Documentation (User-Facing)
 
-| Document                                                                  | Purpose                          | Audience            |
-| ------------------------------------------------------------------------- | -------------------------------- | ------------------- |
-| [Main README](https://github.com/pipecraft-lab/pipecraft#readme)          | Installation, quick start, usage | All users           |
-| [Current Trunk Flow](./flows/trunk-flow)                                  | Current implementation details   | Users, contributors |
-| [Error Handling](./error-handling.md)                                     | Troubleshooting guide            | Users               |
-| [Examples](https://github.com/pipecraft-lab/pipecraft/tree/main/examples) | Configuration examples           | Users               |
+| Document                                                                 | Purpose                          | Audience            |
+| ------------------------------------------------------------------------ | -------------------------------- | ------------------- |
+| [Main README](https://github.com/the-craftlab/pipecraft#readme)          | Installation, quick start, usage | All users           |
+| [Current Trunk Flow](/docs/flows/trunk-flow)                             | Current implementation details   | Users, contributors |
+| [Error Handling](error-handling.md)                                      | Troubleshooting guide            | Users               |
+| [Examples](https://github.com/the-craftlab/pipecraft/tree/main/examples) | Configuration examples           | Users               |
 
 ### Technical Documentation (Contributor-Facing)
 
-| Document                                                                                                  | Purpose                     | Audience              |
-| --------------------------------------------------------------------------------------------------------- | --------------------------- | --------------------- |
-| [Architecture](./architecture.md)                                                                         | System design               | Contributors          |
-| [AST Operations](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/AST_OPERATIONS.md)             | YAML manipulation internals | Advanced contributors |
-| [Test Documentation](https://github.com/pipecraft-lab/pipecraft/blob/main/tests/README.md)                | Testing guide               | Contributors          |
-| [Repository Cleanup Plan](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/REPO_CLEANUP_PLAN.md) | Repo organization           | Contributors          |
+| Document                                                                                                 | Purpose                     | Audience              |
+| -------------------------------------------------------------------------------------------------------- | --------------------------- | --------------------- |
+| [Architecture](architecture.md)                                                                          | System design               | Contributors          |
+| [AST Operations](https://github.com/the-craftlab/pipecraft/blob/main/docs/AST_OPERATIONS.md)             | YAML manipulation internals | Advanced contributors |
+| [Test Documentation](https://github.com/the-craftlab/pipecraft/blob/main/tests/README.md)                | Testing guide               | Contributors          |
+| [Repository Cleanup Plan](https://github.com/the-craftlab/pipecraft/blob/main/docs/REPO_CLEANUP_PLAN.md) | Repo organization           | Contributors          |
 
 ### Planning Documentation (Reference)
 
-| Document                                                                                                                  | Purpose                 | Audience             |
-| ------------------------------------------------------------------------------------------------------------------------- | ----------------------- | -------------------- |
-| [Roadmap](https://github.com/pipecraft-lab/pipecraft/blob/main/TRUNK_FLOW_PLAN.md)                                        | Future features         | Product planning     |
-| [User Journey Errors Planning](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/USER_JOURNEY_ERRORS_PLANNING.md) | Error scenario planning | Development planning |
+| Document                                                                                                                 | Purpose                 | Audience             |
+| ------------------------------------------------------------------------------------------------------------------------ | ----------------------- | -------------------- |
+| [Roadmap](https://github.com/the-craftlab/pipecraft/blob/main/TRUNK_FLOW_PLAN.md)                                        | Future features         | Product planning     |
+| [User Journey Errors Planning](https://github.com/the-craftlab/pipecraft/blob/main/docs/USER_JOURNEY_ERRORS_PLANNING.md) | Error scenario planning | Development planning |
 
 ---
 
@@ -159,35 +159,35 @@ PipeCraft documentation is organized into user-facing guides, contributor resour
 ### I want to...
 
 **Use PipeCraft**
-→ Start with [Main README](https://github.com/pipecraft-lab/pipecraft#readme)
-→ Then read [Current Trunk Flow](./flows/trunk-flow)
-→ Check [Examples](https://github.com/pipecraft-lab/pipecraft/tree/main/examples) for your use case
+→ Start with [Main README](https://github.com/the-craftlab/pipecraft#readme)
+→ Then read [Current Trunk Flow](/docs/flows/trunk-flow)
+→ Check [Examples](https://github.com/the-craftlab/pipecraft/tree/main/examples) for your use case
 
 **Troubleshoot an error**
-→ Read [Error Handling](./error-handling.md)
+→ Read [Error Handling](error-handling.md)
 → Search for your error message
 → Follow the recovery steps
 
 **Understand how PipeCraft works**
-→ Read [Architecture](./architecture.md)
-→ Read [Current Trunk Flow](./flows/trunk-flow)
-→ Study [AST Operations](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/AST_OPERATIONS.md) for template internals
+→ Read [Architecture](architecture.md)
+→ Read [Current Trunk Flow](/docs/flows/trunk-flow)
+→ Study [AST Operations](https://github.com/the-craftlab/pipecraft/blob/main/docs/AST_OPERATIONS.md) for template internals
 
 **Contribute code**
-→ Read [Architecture](./architecture.md) first
-→ Read [Test Documentation](https://github.com/pipecraft-lab/pipecraft/blob/main/tests/README.md)
-→ Check [Repository Cleanup Plan](https://github.com/pipecraft-lab/pipecraft/blob/main/docs/REPO_CLEANUP_PLAN.md) for structure
+→ Read [Architecture](architecture.md) first
+→ Read [Test Documentation](https://github.com/the-craftlab/pipecraft/blob/main/tests/README.md)
+→ Check [Repository Cleanup Plan](https://github.com/the-craftlab/pipecraft/blob/main/docs/REPO_CLEANUP_PLAN.md) for structure
 → Write tests, then code
 → Submit PR
 
 **Add a new feature**
-→ Check [Roadmap](https://github.com/pipecraft-lab/pipecraft/blob/main/TRUNK_FLOW_PLAN.md) for planned features
-→ Read [Architecture](./architecture.md) for extension points
+→ Check [Roadmap](https://github.com/the-craftlab/pipecraft/blob/main/TRUNK_FLOW_PLAN.md) for planned features
+→ Read [Architecture](architecture.md) for extension points
 → Discuss in GitHub issues first
 → Follow contributor workflow above
 
 **Write tests**
-→ Read [Test Documentation](https://github.com/pipecraft-lab/pipecraft/blob/main/tests/README.md)
+→ Read [Test Documentation](https://github.com/the-craftlab/pipecraft/blob/main/tests/README.md)
 → Look at existing tests for examples
 → Follow test best practices documented there
 
@@ -253,7 +253,7 @@ Documentation is code! When contributing:
 If you can't find what you need:
 
 1. **Search this index** for keywords
-2. **Check [Main README](https://github.com/pipecraft-lab/pipecraft#readme)** for quick answers
+2. **Check [Main README](https://github.com/the-craftlab/pipecraft#readme)** for quick answers
 3. **Search GitHub issues** for similar questions
 4. **Ask in GitHub Discussions**
 5. **Create a new issue** with the "documentation" label
@@ -273,7 +273,7 @@ If you can't find what you need:
 
 ## 📜 License
 
-All documentation is licensed under the same license as PipeCraft (see [LICENSE](https://github.com/pipecraft-lab/pipecraft/blob/main/LICENSE)).
+All documentation is licensed under the same license as PipeCraft (see [LICENSE](https://github.com/the-craftlab/pipecraft/blob/main/LICENSE)).
 
 ---
 

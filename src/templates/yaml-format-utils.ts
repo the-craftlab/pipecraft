@@ -40,12 +40,7 @@ export function formatIfConditions(yamlContent: string, minLength: number = 80):
     formatted = formatted.replace(/\s+&&\s+/g, ' &&\n        ')
     formatted = formatted.replace(/\s+\|\|\s+/g, ' ||\n        ')
 
-    // Step 3: Format grouping parentheses (now that function calls are protected)
-    formatted = formatted.replace(/\(\s*/g, '(\n        ')
-    formatted = formatted.replace(/\s*\)\s*(&&|\|\|)/g, '\n      ) $1')
-    formatted = formatted.replace(/\s*\)(\s*)$/g, '\n      )')
-
-    // Step 4: Restore function calls
+    // Step 3: Restore function calls
     functionCalls.forEach((funcCall, index) => {
       formatted = formatted.replace(`__FUNC_${index}__`, funcCall)
     })

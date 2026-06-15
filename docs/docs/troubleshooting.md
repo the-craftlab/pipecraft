@@ -60,6 +60,34 @@ If you want a commit to promote, make sure it uses a commit message that trigger
 git commit -m "feat: enable promotion"
 ```
 
+## Promotion fails with "Resource not accessible by integration"
+
+If you see an error like:
+
+```
+HTTP 403: Resource not accessible by integration
+could not create workflow dispatch event
+```
+
+This means your workflow is missing the required `permissions` block. The promote job uses `workflow_dispatch` to trigger the pipeline on the target branch, which requires `actions: write` permission.
+
+Check your `.github/workflows/pipeline.yml` has a permissions block near the top:
+
+```yaml
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write # Required for workflow_dispatch
+```
+
+If you have an older workflow generated before this was added, regenerate it:
+
+```bash
+pipecraft generate --force
+```
+
+Or manually add the permissions block after the `name:` field in your workflow file.
+
 ## Regeneration says "No changes detected"
 
 PipeCraft caches your configuration to avoid unnecessary regeneration. If you see this message but want to regenerate anyway, use the `--force` flag:
@@ -107,4 +135,4 @@ If you can't resolve the issue, open an issue on GitHub with:
 - The full error message
 - Steps to reproduce the problem
 
-We'll help you figure it out: [github.com/pipecraft-lab/pipecraft/issues](https://github.com/pipecraft-lab/pipecraft/issues)
+We'll help you figure it out: [github.com/the-craftlab/pipecraft/issues](https://github.com/the-craftlab/pipecraft/issues)

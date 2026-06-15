@@ -59,9 +59,9 @@ Actions are referenced from the GitHub Marketplace with explicit version tags.
 
 ```yaml
 # Generated workflow references (example with v1)
-- uses: pipecraft-lab/pipecraft/actions/detect-changes@v1
-- uses: pipecraft-lab/pipecraft/actions/calculate-version@v1
-- uses: pipecraft-lab/pipecraft/actions/create-tag@v1
+- uses: the-craftlab/pipecraft/actions/detect-changes@v1
+- uses: the-craftlab/pipecraft/actions/calculate-version@v1
+- uses: the-craftlab/pipecraft/actions/create-tag@v1
 ```
 
 **Advantages**:

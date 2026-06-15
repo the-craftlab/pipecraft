@@ -1,38 +1,17 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
-import { join } from 'path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+import { describe, expect, it } from 'vitest'
 import { parse, parseDocument, stringify } from 'yaml'
+
 import {
   applyPathOperations,
-  createValueFromObject,
   createValueFromString,
   type PathOperationConfig
 } from '../../src/utils/ast-path-operations'
-import { TEST_DIR } from '../setup'
+import { createTestWorkspace } from '../helpers/workspace'
 
 describe('Simple Path-Based Template Tests', () => {
-  beforeEach(() => {
-    // Clean up test files
-    const filesToClean = ['.pipecraft-cache.json']
-    filesToClean.forEach(file => {
-      const fullPath = join(TEST_DIR, file)
-      if (existsSync(fullPath)) {
-        rmSync(fullPath, { recursive: true, force: true })
-      }
-    })
-  })
-
-  afterEach(() => {
-    // Clean up after each test
-    const filesToClean = ['.pipecraft-cache.json']
-    filesToClean.forEach(file => {
-      const fullPath = join(TEST_DIR, file)
-      if (existsSync(fullPath)) {
-        rmSync(fullPath, { recursive: true, force: true })
-      }
-    })
-  })
-
   describe('Path Operations with Simple YAML', () => {
     it('should apply set operations for workflow inputs', () => {
       // Create a simple YAML document
@@ -283,6 +262,9 @@ jobs:
 
   describe('CLI Integration with Custom Files', () => {
     it('should handle custom config file with unexpected variables', async () => {
+      // Create isolated workspace for this test
+      const workspace = createTestWorkspace('custom-config-test')
+
       // Create custom config with unexpected variables
       const customConfig = {
         ciProvider: 'github',
@@ -318,7 +300,7 @@ jobs:
         }
       }
 
-      const configPath = join(TEST_DIR, 'custom-pipecraftrc.json')
+      const configPath = join(workspace, 'custom-pipecraftrc.json')
       writeFileSync(configPath, JSON.stringify(customConfig, null, 2))
 
       // Test that the config can be loaded and parsed
@@ -333,6 +315,9 @@ jobs:
     })
 
     it('should handle custom pipeline file with user customizations', async () => {
+      // Create isolated workspace for this test
+      const workspace = createTestWorkspace('custom-pipeline-test')
+
       // Create existing pipeline with user customizations
       const existingPipeline = {
         name: 'USER NAME',
@@ -393,7 +378,7 @@ jobs:
         }
       }
 
-      const pipelinePath = join(TEST_DIR, 'custom-pipeline.yml')
+      const pipelinePath = join(workspace, 'custom-pipeline.yml')
       writeFileSync(pipelinePath, stringify(existingPipeline))
 
       // Test that the pipeline can be loaded and parsed
