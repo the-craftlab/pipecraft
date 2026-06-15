@@ -123,7 +123,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      workflows: write
+      actions: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
