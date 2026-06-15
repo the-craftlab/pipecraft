@@ -66,9 +66,9 @@
     "examples:store-git": "./scripts/store-example-git-repos.sh",
     "examples:activate": "node tests/scripts/activate-example-repos.mjs",
     "examples:deactivate": "node tests/scripts/deactivate-example-repos.mjs",
-    "sync-actions": "tsx scripts/sync-actions.ts",
-    "sync-actions:check": "tsx scripts/sync-actions.ts --check",
-    "sync-actions:verify": "tsx scripts/sync-actions.ts --verify",
+    "sync-actions": "tsx tests/scripts/sync-actions.ts",
+    "sync-actions:check": "tsx tests/scripts/sync-actions.ts --check",
+    "sync-actions:verify": "tsx tests/scripts/sync-actions.ts --verify",
     "prepare": "husky"
   },
   "devDependencies": {

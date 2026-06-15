@@ -1,0 +1,38 @@
+name: Sync Actions Check
+
+# Fails when the committed actions/ directory drifts from its source templates
+# in src/templates/actions/. Prevents the template <-> generated-action drift
+# that previously went unnoticed (the sync tooling was broken and ungated).
+
+on:
+  pull_request:
+    paths:
+      - 'src/templates/actions/**'
+      - 'actions/**'
+      - 'tests/scripts/sync-actions.ts'
+      - '.github/workflows/sync-actions-check.yml'
+  workflow_dispatch:
+
+jobs:
+  sync-actions-check:
+    name: Verify actions/ matches templates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify actions are in sync with templates
+        run: pnpm run sync-actions:check
