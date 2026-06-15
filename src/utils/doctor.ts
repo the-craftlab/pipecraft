@@ -21,7 +21,9 @@ import { glob } from 'glob'
 import type { PipecraftConfig } from '../types/index.js'
 import { loadConfig, validateConfig } from './config.js'
 import {
+  formatOrgActionsLockMessage,
   getGitHubToken,
+  getOrgWorkflowPermissions,
   getRepositoryInfo,
   getRequiredPermissionChanges,
   getWorkflowPermissions
@@ -281,14 +283,40 @@ export async function checkGitHubPermissions(): Promise<CheckCategory> {
           })
         }
         if (!permissions.can_approve_pull_request_reviews) {
-          results.push({
-            status: 'error',
-            message: 'Cannot create/approve PRs (should be enabled)',
-            fix: {
-              description: 'Enable PR creation permission',
-              command: 'pipecraft setup-github'
+          // Proactively detect an organization-level lock. If the org itself
+          // disallows Actions creating/approving PRs, `pipecraft setup-github`
+          // cannot fix it (the write would 409) — only an org admin can. Surface
+          // that directly instead of recommending a command that will fail.
+          let orgLocked = false
+          try {
+            const orgPermissions = await getOrgWorkflowPermissions(repoInfo.owner, token)
+            if (orgPermissions && orgPermissions.can_approve_pull_request_reviews === false) {
+              orgLocked = true
             }
-          })
+          } catch {
+            // Indeterminate (no org-admin scope, not an org, network) — fall back.
+          }
+
+          if (orgLocked) {
+            results.push({
+              status: 'error',
+              message:
+                'Cannot create/approve PRs — blocked by organization policy (org admin action required)',
+              fix: {
+                description: formatOrgActionsLockMessage(repoInfo.owner),
+                command: `https://github.com/organizations/${repoInfo.owner}/settings/actions`
+              }
+            })
+          } else {
+            results.push({
+              status: 'error',
+              message: 'Cannot create/approve PRs (should be enabled)',
+              fix: {
+                description: 'Enable PR creation permission',
+                command: 'pipecraft setup-github'
+              }
+            })
+          }
         }
       }
     } catch (error: unknown) {

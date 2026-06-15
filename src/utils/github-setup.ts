@@ -367,23 +367,86 @@ export async function updateWorkflowPermissions(
     const errorText = await response.text()
 
     // Check if this is an organization-level policy conflict
-    if (response.status === 409) {
-      throw new Error(
-        `Organization-level policy prevents changing workflow permissions.\n\n` +
-          `⚠️  This repository's organization has restricted workflow permissions.\n` +
-          `    The organization administrator must:\n\n` +
-          `    1. Visit: https://github.com/organizations/${owner}/settings/actions\n` +
-          `    2. Under "Workflow permissions":\n` +
-          `       - Enable "Read and write permissions"\n` +
-          `       - Check "Allow GitHub Actions to create and approve pull requests"\n` +
-          `    3. Save changes\n\n` +
-          `    Then run 'pipecraft setup-github' again to configure this repository.\n\n` +
-          `API Error: ${errorText}`
-      )
+    if (isOrgActionsPermissionLock(response.status)) {
+      throw new Error(formatOrgActionsLockMessage(owner, errorText))
     }
 
     throw new Error(`Failed to update workflow permissions: ${response.status} ${errorText}`)
   }
+}
+
+/**
+ * Whether an HTTP status from the Actions workflow-permissions API indicates an
+ * organization-level policy lock.
+ *
+ * GitHub returns 409 Conflict when a repository tries to enable a workflow
+ * permission (e.g. "Allow GitHub Actions to create and approve pull requests")
+ * that the parent organization has disabled. The repo-level setting cannot be
+ * changed until an org admin enables it at the organization level.
+ *
+ * @param status - HTTP status code from the GitHub Actions permissions API
+ * @returns true if the status is the org-policy conflict (409)
+ */
+export function isOrgActionsPermissionLock(status: number): boolean {
+  return status === 409
+}
+
+/**
+ * Build an actionable, human-readable message explaining that an organization
+ * policy is blocking the repository's workflow permissions, and exactly how an
+ * org admin can unblock it. Used both by `setup-github` (on a 409 write) and by
+ * `doctor` (when it detects the org-level lock proactively).
+ *
+ * @param owner - Repository owner (the organization name)
+ * @param apiError - Optional raw API error text to append for debugging
+ * @returns A multi-line actionable message
+ */
+export function formatOrgActionsLockMessage(owner: string, apiError?: string): string {
+  const base =
+    `Organization-level policy prevents changing workflow permissions.\n\n` +
+    `⚠️  This repository's organization has restricted workflow permissions.\n` +
+    `    The organization administrator must:\n\n` +
+    `    1. Visit: https://github.com/organizations/${owner}/settings/actions\n` +
+    `    2. Under "Workflow permissions":\n` +
+    `       - Enable "Read and write permissions"\n` +
+    `       - Check "Allow GitHub Actions to create and approve pull requests"\n` +
+    `    3. Save changes\n\n` +
+    `    Then run 'pipecraft setup-github' again to configure this repository.`
+
+  return apiError ? `${base}\n\nAPI Error: ${apiError}` : base
+}
+
+/**
+ * Get organization-level workflow permissions.
+ *
+ * Used to proactively detect an org-level lock from a read-only context (e.g.
+ * `doctor`) without attempting a write that would 409. Returns `null` when the
+ * org endpoint is not accessible — which is the expected case for personal
+ * accounts (404) or tokens lacking org-admin scope (403). Callers should treat
+ * `null` as "indeterminate" and fall back to their default behavior.
+ *
+ * @param org - Organization (owner) name
+ * @param token - GitHub token
+ * @returns The org workflow permissions, or null if not determinable
+ */
+export async function getOrgWorkflowPermissions(
+  org: string,
+  token: string
+): Promise<WorkflowPermissions | null> {
+  const response = await fetch(`https://api.github.com/orgs/${org}/actions/permissions/workflow`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    }
+  })
+
+  if (!response.ok) {
+    // 404 (personal account / no such org) or 403 (no admin scope) -> indeterminate
+    return null
+  }
+
+  return response.json()
 }
 
 /**
