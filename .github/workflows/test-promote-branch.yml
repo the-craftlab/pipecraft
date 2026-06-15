@@ -41,6 +41,8 @@ jobs:
           git checkout -b "${SOURCE_BRANCH}"
           echo "Test content ${TEST_ID}" > test-file-${TEST_ID}.txt
           git add test-file-${TEST_ID}.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "test: add test content for ${TEST_ID}"
           git push origin "${SOURCE_BRANCH}"
 
@@ -123,7 +125,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      workflows: write
+      actions: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -149,6 +151,8 @@ jobs:
           git checkout -b "${SOURCE_BRANCH}"
           echo "Test content ${TEST_ID}" > test-file-${TEST_ID}.txt
           git add test-file-${TEST_ID}.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "test: add test content for ${TEST_ID}"
           git push origin "${SOURCE_BRANCH}"
 
@@ -249,6 +253,8 @@ jobs:
           git checkout -b "${SOURCE_BRANCH}"
           echo "Test content" > test-file.txt
           git add test-file.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "test: version detection"
 
           # Create a tag for version detection
@@ -341,6 +347,8 @@ jobs:
           git checkout -b "${SOURCE_BRANCH}"
           echo "Test content" > test-file.txt
           git add test-file.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "test: custom pattern"
           git push origin "${SOURCE_BRANCH}"
 
@@ -420,6 +428,8 @@ jobs:
           git checkout -b "${SOURCE_BRANCH}"
           echo "Test content" > test-file.txt
           git add test-file.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "test: existing PR"
           git push origin "${SOURCE_BRANCH}"
 
