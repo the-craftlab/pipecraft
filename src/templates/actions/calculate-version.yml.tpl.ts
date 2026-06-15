@@ -84,13 +84,13 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         ref: \${{ inputs.commitSha || github.sha }}
         fetch-depth: 0
 
     - name: Install Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v5
       with:
         node-version: \${{ inputs.node-version }}
 
@@ -178,6 +178,25 @@ runs:
           echo "version=v$VERSION" >> $GITHUB_OUTPUT
         fi
 
+    - name: Get nearest reachable tag
+      if: steps.check_input_version.outputs.version == '' && steps.get_version_old.outputs.version == '' && steps.get_version_new.outputs.version == ''
+      id: get_version_nearest
+      shell: bash
+      run: |
+        # Fallback: when a promotion PR is merged as a merge commit, the release
+        # tag is reachable from HEAD but not directly on it, so the lookups above
+        # miss it and release-it finds no new version. Use the nearest reachable
+        # tag so the release is cut for the promoted version instead of being
+        # silently skipped. No-op in normal flows: this only runs when nothing
+        # else resolved a version.
+        NEAREST=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
+        if echo "$NEAREST" | grep -qE '^v[0-9]+\\.[0-9]+\\.[0-9]+$'; then
+          echo "Using nearest reachable tag: $NEAREST"
+          echo "version=$NEAREST" >> $GITHUB_OUTPUT
+        else
+          echo "No reachable version tag found"
+        fi
+
     - name: Set version output
       id: set_version
       shell: bash
@@ -191,6 +210,9 @@ runs:
         elif [ -n "\${{ steps.get_version_new.outputs.version }}" ]; then
           echo "Using calculated version: \${{ steps.get_version_new.outputs.version }}"
           echo "version=\${{ steps.get_version_new.outputs.version }}" >> $GITHUB_OUTPUT
+        elif [ -n "\${{ steps.get_version_nearest.outputs.version }}" ]; then
+          echo "Using nearest reachable tag version: \${{ steps.get_version_nearest.outputs.version }}"
+          echo "version=\${{ steps.get_version_nearest.outputs.version }}" >> $GITHUB_OUTPUT
         else
           echo "No version determined"
           echo "version=" >> $GITHUB_OUTPUT

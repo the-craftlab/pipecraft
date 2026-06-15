@@ -13,9 +13,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   displaySettingsComparison,
   enableAutoMerge,
+  formatOrgActionsLockMessage,
   getBranchProtection,
   getGitHubToken,
   getMergeCommitSettings,
+  getOrgWorkflowPermissions,
   getRecommendedRepositorySettings,
   getRepositoryInfo,
   getRepositorySettings,
@@ -23,6 +25,7 @@ import {
   getRequiredPermissionChanges,
   getSettingsGaps,
   getWorkflowPermissions,
+  isOrgActionsPermissionLock,
   promptApplySettings,
   promptMergeCommitChanges,
   promptPermissionChanges,
@@ -303,6 +306,86 @@ describe('GitHub Setup', () => {
 
       expect(body).toHaveProperty('default_workflow_permissions', 'write')
       expect(body).not.toHaveProperty('can_approve_pull_request_reviews')
+    })
+
+    it('should throw an actionable org-level message on 409 (org policy lock)', async () => {
+      vi.mocked(global.fetch).mockResolvedValue({
+        ok: false,
+        status: 409,
+        text: async () =>
+          'The organization does not allow GitHub Actions to create or approve pull requests'
+      } as Response)
+
+      const err = await updateWorkflowPermissions('my-org', 'repo', 'token123', {
+        can_approve_pull_request_reviews: true
+      }).catch((e: unknown) => e as Error)
+
+      expect(err).toBeInstanceOf(Error)
+      // Actionable, not a raw 409
+      expect(err.message).toContain('Organization-level policy')
+      expect(err.message).toContain('https://github.com/organizations/my-org/settings/actions')
+      expect(err.message).toContain('create and approve pull requests')
+    })
+  })
+
+  describe('isOrgActionsPermissionLock()', () => {
+    it('returns true for HTTP 409 (org policy conflict)', () => {
+      expect(isOrgActionsPermissionLock(409)).toBe(true)
+    })
+
+    it('returns false for other statuses', () => {
+      expect(isOrgActionsPermissionLock(403)).toBe(false)
+      expect(isOrgActionsPermissionLock(404)).toBe(false)
+      expect(isOrgActionsPermissionLock(200)).toBe(false)
+    })
+  })
+
+  describe('formatOrgActionsLockMessage()', () => {
+    it('produces an actionable message pointing at org settings', () => {
+      const msg = formatOrgActionsLockMessage('acme-org')
+      expect(msg).toContain('Organization-level policy')
+      expect(msg).toContain('https://github.com/organizations/acme-org/settings/actions')
+      expect(msg).toContain('create and approve pull requests')
+    })
+
+    it('appends the raw API error when provided', () => {
+      const msg = formatOrgActionsLockMessage('acme-org', 'raw 409 body')
+      expect(msg).toContain('raw 409 body')
+    })
+  })
+
+  describe('getOrgWorkflowPermissions()', () => {
+    it('returns org workflow permissions on success', async () => {
+      const orgPerms = {
+        default_workflow_permissions: 'read',
+        can_approve_pull_request_reviews: false
+      }
+      vi.mocked(global.fetch).mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => orgPerms
+      } as Response)
+
+      const result = await getOrgWorkflowPermissions('my-org', 'token123')
+
+      expect(result).toEqual(orgPerms)
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.github.com/orgs/my-org/actions/permissions/workflow',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer token123' })
+        })
+      )
+    })
+
+    it('returns null when the org endpoint is not accessible (404/403 — personal repo or no admin scope)', async () => {
+      vi.mocked(global.fetch).mockResolvedValue({
+        ok: false,
+        status: 404,
+        text: async () => 'Not Found'
+      } as Response)
+
+      const result = await getOrgWorkflowPermissions('some-user', 'token123')
+      expect(result).toBeNull()
     })
   })
 

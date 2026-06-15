@@ -110,7 +110,7 @@ function generatePrefixedJobsText(domains: Record<string, any>): string {
     if: \${{ needs.changes.outputs.${job.domain} == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: \${{ inputs.commitSha || github.sha }}
       # TODO: Replace with your ${job.domain} ${prefix} logic
@@ -265,6 +265,20 @@ export const generate = (ctx: PathBasedPipelineContext) =>
         userSection = extractUserSection(existingContent)
         if (userSection) {
           logger.verbose('📋 Found user-customized section between markers')
+        } else {
+          // Check if markers exist but are mismatched
+          const hasStartMarker = /^.*#+\s*<--START CUSTOM JOBS-->\s*$/m.test(existingContent)
+          const hasEndMarker = /^.*#+\s*<--END CUSTOM JOBS-->\s*$/m.test(existingContent)
+
+          if (hasStartMarker && !hasEndMarker) {
+            logger.warn('⚠️  Found START marker but missing END marker - markers are mismatched!')
+            logger.warn('   Custom jobs will be preserved but markers will be fixed.')
+          } else if (!hasStartMarker && hasEndMarker) {
+            logger.warn('⚠️  Found END marker but missing START marker - markers are mismatched!')
+            logger.warn('   Custom jobs will be preserved but markers will be fixed.')
+          } else if (!hasStartMarker && !hasEndMarker) {
+            logger.verbose('📋 No custom jobs markers found - will preserve existing custom jobs')
+          }
         }
 
         // Also extract custom jobs (for force mode preservation)
@@ -295,39 +309,55 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           }
         }
         if (customJobsFromExisting.length > 0) {
-          logger.verbose(`📋 Found ${customJobsFromExisting.length} custom job(s) to preserve`)
+          const customJobNames = customJobsFromExisting
+            .map(pair => (pair.key instanceof Scalar ? pair.key.value : pair.key))
+            .join(', ')
+          logger.info(
+            `📋 Preserving ${customJobsFromExisting.length} custom job(s): ${customJobNames}`
+          )
 
           // If no userSection but custom jobs exist, convert custom jobs to YAML text
           if (!userSection && customJobsFromExisting.length > 0) {
-            // Stringify each job pair individually to get proper formatting
-            const jobTexts: string[] = []
+            logger.info('   Converting custom jobs to YAML (markers were missing or mismatched)')
+            try {
+              // Stringify each job pair individually to get proper formatting
+              const jobTexts: string[] = []
 
-            for (const pair of customJobsFromExisting) {
-              // Create a temp doc for this one job to get proper YAML formatting
-              const tempDoc = new Document(new YAMLMap())
-              ;(tempDoc.contents as YAMLMap).items = [pair]
+              for (const pair of customJobsFromExisting) {
+                // Create a temp doc for this one job to get proper YAML formatting
+                const tempDoc = new Document(new YAMLMap())
+                ;(tempDoc.contents as YAMLMap).items = [pair]
 
-              let jobYaml = tempDoc.toString({
-                lineWidth: 0,
-                indent: 2,
-                defaultStringType: 'PLAIN',
-                defaultKeyType: 'PLAIN',
-                minContentWidth: 0
-              })
+                let jobYaml = tempDoc.toString({
+                  lineWidth: 0,
+                  indent: 2,
+                  defaultStringType: 'PLAIN',
+                  defaultKeyType: 'PLAIN',
+                  minContentWidth: 0
+                })
 
-              // Remove trailing newlines and add proper indentation (2 spaces for YAML jobs section)
-              jobYaml = jobYaml
-                .trim()
-                .split('\n')
-                .map(line => '  ' + line)
-                .join('\n')
-              jobTexts.push(jobYaml)
+                // Remove trailing newlines and add proper indentation (2 spaces for YAML jobs section)
+                jobYaml = jobYaml
+                  .trim()
+                  .split('\n')
+                  .map(line => '  ' + line)
+                  .join('\n')
+                jobTexts.push(jobYaml)
+              }
+
+              // Join all jobs with double newlines
+              userSection = jobTexts.join('\n\n')
+              logger.info(
+                `   ✅ Successfully converted ${customJobsFromExisting.length} custom jobs`
+              )
+            } catch (error) {
+              logger.error(`❌ Failed to convert custom jobs to YAML: ${error}`)
+              logger.error('   Your custom jobs may be lost! Please backup your pipeline file.')
+              throw error // Re-throw to prevent silent data loss
             }
-
-            // Join all jobs with double newlines
-            userSection = jobTexts.join('\n\n')
-            logger.verbose('📋 Converted custom jobs to user section')
           }
+        } else {
+          logger.warn('⚠️  No custom jobs found in existing pipeline')
         }
       }
 

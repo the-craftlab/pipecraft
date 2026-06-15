@@ -98,7 +98,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
       path: 'jobs.tag.steps',
       operation: 'overwrite',
       value: createValueFromString(`
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: \${{ inputs.commitSha || github.sha }}
           fetch-depth: \${{ env.FETCH_DEPTH_VERSIONING }}
@@ -126,7 +126,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
     )}) }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: \${{ inputs.commitSha || github.sha }}
           fetch-depth: \${{ env.FETCH_DEPTH_VERSIONING }}
@@ -158,7 +158,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
     }' && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: \${{ inputs.commitSha || github.sha }}
           fetch-depth: \${{ env.FETCH_DEPTH_VERSIONING }}
