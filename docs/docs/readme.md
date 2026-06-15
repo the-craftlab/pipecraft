@@ -487,7 +487,7 @@ The `setup-github` command configures:
    - Default workflow permissions: **write** (for creating tags and pushing changes)
    - Can create/approve pull requests: **Yes** (for automated PR creation)
 
-2. **Repository Auto-Merge**
+2. **Repository Auto-Promote**
 
    - Enables auto-merge feature at repository level
    - Required for automatic promotion between branches
@@ -512,7 +512,7 @@ The command will:
 
 1. Check your current repository permissions
 2. Enable repository-level auto-merge if needed
-3. Configure branch protection for branches with `autoMerge: true` in config
+3. Configure branch protection for branches with `autoPromote: true` in config
 4. Prompt you to apply each change
 5. Update the settings if you accept
 
@@ -619,7 +619,7 @@ You can also configure these settings manually:
    - Check **Allow GitHub Actions to create and approve pull requests**
 4. Click **Save**
 
-**Repository Auto-Merge:**
+**Repository Auto-Promote:**
 
 1. Navigate to **Settings** → **General**
 2. Scroll to "Pull Requests"

@@ -59,12 +59,12 @@ feature → develop → staging → main
 }
 ```
 
-#### Auto-Merge Configuration
+#### Auto-Promote Configuration
 
 ```json
 {
-  "autoMerge": {
-    "staging": true, // Auto-merge develop → staging PRs
+  "autoPromote": {
+    "staging": true, // Auto-promote develop → staging PRs
     "main": false // Manual approval for staging → main
   },
   "mergeMethod": {
@@ -74,9 +74,9 @@ feature → develop → staging → main
 }
 ```
 
-**Auto-Merge Behavior**:
+**Auto-Promote Behavior**:
 
-- When `autoMerge` is `true` for a branch, PRs targeting that branch are automatically merged after checks pass
+- When `autoPromote` is `true` for a branch, PRs targeting that branch are automatically merged after checks pass
 - When `false`, PRs require manual approval
 - Typically used for automated promote-to-staging, manual promote-to-production
 
@@ -414,7 +414,7 @@ The following GitHub settings must be configured (can use `pipecraft setup`):
 
 - **Branch Protection**: Require status checks before merging
 - **Workflow Permissions**: Allow workflow to create PRs
-- **Auto-Merge**: Enable auto-merge for the repository
+- **Auto-Promote**: Enable auto-merge for the repository
 
 ### Git Workflow Constraints
 
@@ -458,7 +458,7 @@ The following GitHub settings must be configured (can use `pipecraft setup`):
   "initialBranch": "develop",
   "finalBranch": "main",
   "branchFlow": ["develop", "staging", "main"],
-  "autoMerge": {
+  "autoPromote": {
     "staging": true,
     "main": false
   },
@@ -527,13 +527,13 @@ git branch --show-current
 # Should match one of branchFlow values
 ```
 
-### Auto-Merge Not Working
+### Auto-Promote Not Working
 
 **Symptom**: PRs created but not automatically merged
 
 **Causes**:
 
-1. Auto-merge not enabled in repo settings
+1. Auto-promote not enabled in repo settings
 2. Branch protection rules blocking
 3. Required checks not passing
 4. Insufficient permissions
