@@ -51,7 +51,7 @@ const branchActionTemplate = (ctx: any) => {
       using: 'composite'
       steps:
         - name: Checkout Code
-          uses: actions/checkout@v4
+          uses: actions/checkout@v5
           with:
             fetch-depth: 0
             token: \${{ inputs.token }}

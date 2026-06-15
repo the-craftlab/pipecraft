@@ -84,13 +84,13 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         ref: \${{ inputs.commitSha || github.sha }}
         fetch-depth: 0
 
     - name: Install Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v5
       with:
         node-version: \${{ inputs.node-version }}
 
