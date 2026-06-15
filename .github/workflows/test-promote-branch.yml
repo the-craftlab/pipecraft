@@ -287,10 +287,11 @@ jobs:
 
           echo "Temp branch: $TEMP_BRANCH"
 
-          # Temp branch should contain version
-          if [[ ! "$TEMP_BRANCH" =~ 9\.9\.9-test-${{ github.run_number }} ]]; then
+          # Temp branch should contain the auto-detected version
+          # (tag is v9.9.9-test-version-<run>, so TEST_ID 'version-<run>' is part of it)
+          if [[ ! "$TEMP_BRANCH" =~ 9\.9\.9-test-version-${{ github.run_number }} ]]; then
             echo "❌ Version not detected in temp branch name"
-            echo "Expected version 9.9.9-test-${{ github.run_number }} in: $TEMP_BRANCH"
+            echo "Expected version 9.9.9-test-version-${{ github.run_number }} in: $TEMP_BRANCH"
             exit 1
           fi
 
