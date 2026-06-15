@@ -27,7 +27,7 @@ jobs:
         id: create-tag
         uses: ./.github/actions/create-tag
         with:
-          version: '0.0.0-test-${{ github.run_number }}'
+          version: '0.1.${{ github.run_number }}'
           push: 'false' # Don't push test tags
 
       - name: Verify Tag Created
@@ -74,7 +74,7 @@ jobs:
         id: create-tag
         uses: ./.github/actions/create-tag
         with:
-          version: '0.0.0-test-${{ github.run_number }}'
+          version: '0.2.${{ github.run_number }}'
           tag_prefix: 'release/'
           push: 'false'
 
@@ -116,7 +116,7 @@ jobs:
         id: valid-version
         uses: ./.github/actions/create-tag
         with:
-          version: '1.2.3-test-${{ github.run_number }}'
+          version: '1.2.${{ github.run_number }}'
           push: 'false'
 
       - name: Verify Valid Version Succeeded
@@ -131,7 +131,7 @@ jobs:
         id: valid-with-prefix
         uses: ./.github/actions/create-tag
         with:
-          version: 'v1.2.3-test-${{ github.run_number }}'
+          version: 'v1.3.${{ github.run_number }}'
           push: 'false'
 
       - name: Verify v-Prefixed Version Succeeded
@@ -162,7 +162,7 @@ jobs:
         if: always()
         run: |
           # Clean up any test tags that were created
-          git tag -l | grep "test-${{ github.run_number }}" | xargs -r git tag -d || true
+          git tag -l | grep "${{ github.run_number }}$" | xargs -r git tag -d || true
 
   # Test 4: Duplicate tag handling
   test-duplicate-handling:
@@ -178,7 +178,7 @@ jobs:
         id: first-tag
         uses: ./.github/actions/create-tag
         with:
-          version: '0.0.0-dup-test-${{ github.run_number }}'
+          version: '0.4.${{ github.run_number }}'
           push: 'false'
 
       - name: Verify First Tag Succeeded
@@ -193,7 +193,7 @@ jobs:
         id: duplicate-tag
         uses: ./.github/actions/create-tag
         with:
-          version: '0.0.0-dup-test-${{ github.run_number }}'
+          version: '0.4.${{ github.run_number }}'
           push: 'false'
 
       - name: Verify Duplicate Handling
@@ -233,7 +233,7 @@ jobs:
         id: no-push
         uses: ./.github/actions/create-tag
         with:
-          version: '0.0.0-no-push-${{ github.run_number }}'
+          version: '0.5.${{ github.run_number }}'
           push: 'false'
 
       - name: Verify Tag Exists Locally
@@ -276,14 +276,14 @@ jobs:
         id: create-tag
         uses: ./.github/actions/create-tag
         with:
-          version: '0.0.0-no-prefix-${{ github.run_number }}'
+          version: '0.6.${{ github.run_number }}'
           tag_prefix: ''
           push: 'false'
 
       - name: Verify No Prefix
         run: |
           TAG="${{ steps.create-tag.outputs.tag_name }}"
-          EXPECTED="0.0.0-no-prefix-${{ github.run_number }}"
+          EXPECTED="0.6.${{ github.run_number }}"
 
           if [ "$TAG" != "$EXPECTED" ]; then
             echo "❌ Tag name mismatch. Expected: $EXPECTED, Got: $TAG"
