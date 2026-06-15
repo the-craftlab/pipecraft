@@ -44,7 +44,7 @@ env:
   FETCH_DEPTH_AFFECTED: "100"
   FETCH_DEPTH_VERSIONING: "0"
   NODE_VERSION: "24"
-  PNPM_VERSION: "10"
+  PNPM_VERSION: "10.6.2"
 
 on:
   workflow_dispatch:
@@ -210,7 +210,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
