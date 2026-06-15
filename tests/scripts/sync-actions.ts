@@ -24,7 +24,8 @@ import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const rootDir = path.resolve(__dirname, '..')
+// tests/scripts/ -> repo root
+const rootDir = path.resolve(__dirname, '..', '..')
 
 // Parse command line arguments
 const args = process.argv.slice(2)
@@ -48,85 +49,74 @@ const ACTION_TEMPLATES = [
 /**
  * Generate actions from templates by running a minimal PipeCraft generation
  */
+function generateActionsToTemp(): string {
+  // Create a temporary generation directory at the repo root
+  const tempDir = path.join(rootDir, '.tmp-action-sync')
+  if (fs.existsSync(tempDir)) {
+    fs.rmSync(tempDir, { recursive: true, force: true })
+  }
+  fs.mkdirSync(tempDir, { recursive: true })
+
+  // Minimal but schema-valid config. actionSourceMode 'source' makes generation
+  // emit to actions/ (the directory this script keeps in sync).
+  const minimalConfig = {
+    ciProvider: 'github',
+    mergeStrategy: 'fast-forward',
+    requireConventionalCommits: true,
+    actionSourceMode: 'source',
+    initialBranch: 'develop',
+    finalBranch: 'main',
+    branchFlow: ['develop', 'main'],
+    domains: {
+      api: { paths: ['apps/api/**'], description: 'API service' }
+    }
+  }
+  // Canonical filename; JSON content is valid for .pipecraftrc
+  fs.writeFileSync(path.join(tempDir, '.pipecraftrc'), JSON.stringify(minimalConfig, null, 2))
+
+  // git init (some templates inspect git state)
+  execSync('git init', { cwd: tempDir, stdio: 'ignore' })
+
+  // Run the built CLI with cwd=tempDir (Node uses the real cwd, not $PWD),
+  // referencing dist by absolute path so output lands in tempDir/actions.
+  const cliPath = path.join(rootDir, 'dist/cli/index.js')
+  execSync(`node "${cliPath}" generate --skip-checks --force`, { cwd: tempDir, stdio: 'pipe' })
+
+  return tempDir
+}
+
 function generateActionsFromTemplates(): void {
   console.log('📝 Generating actions from templates...\n')
-
+  let tempDir: string | undefined
   try {
-    // Create a temporary test directory
-    const tempDir = path.join(rootDir, '.tmp-action-sync')
-
-    // Clean up any existing temp directory
-    if (fs.existsSync(tempDir)) {
-      fs.rmSync(tempDir, { recursive: true, force: true })
-    }
-
-    fs.mkdirSync(tempDir, { recursive: true })
-
-    // Create a minimal .pipecraftrc.json for generation
-    const minimalConfig = {
-      packageManager: 'pnpm',
-      strategy: 'path-based',
-      domains: { api: ['api/**'], web: ['web/**'] },
-      branchFlow: ['develop', 'main'],
-      autoPromote: { main: false }
-    }
-
-    fs.writeFileSync(
-      path.join(tempDir, '.pipecraftrc.json'),
-      JSON.stringify(minimalConfig, null, 2)
-    )
-
-    // Initialize git (required for some templates)
-    execSync('git init', { cwd: tempDir, stdio: 'ignore' })
-
-    // Run PipeCraft generator in temp directory
-    console.log('   Running PipeCraft generator...')
-    execSync('node dist/cli/index.js generate --force', {
-      cwd: rootDir,
-      env: { ...process.env, PWD: tempDir },
-      stdio: 'pipe'
-    })
-
-    // Copy generated actions to root /actions directory
+    tempDir = generateActionsToTemp()
     const generatedActionsDir = path.join(tempDir, 'actions')
     const targetActionsDir = path.join(rootDir, 'actions')
 
-    if (!checkMode) {
-      console.log('   Copying generated actions to /actions/...')
+    if (!fs.existsSync(targetActionsDir)) {
+      fs.mkdirSync(targetActionsDir, { recursive: true })
+    }
 
-      // Ensure target directory exists
-      if (!fs.existsSync(targetActionsDir)) {
-        fs.mkdirSync(targetActionsDir, { recursive: true })
-      }
-
-      // Copy each action
-      for (const action of ACTION_TEMPLATES) {
-        const actionName = action.name
-        const sourceDir = path.join(generatedActionsDir, actionName)
-        const targetDir = path.join(targetActionsDir, actionName)
-
-        if (fs.existsSync(sourceDir)) {
-          // Remove existing target directory
-          if (fs.existsSync(targetDir)) {
-            fs.rmSync(targetDir, { recursive: true, force: true })
-          }
-
-          // Copy new version
-          fs.cpSync(sourceDir, targetDir, { recursive: true })
-          console.log(`   ✅ ${actionName}`)
+    for (const action of ACTION_TEMPLATES) {
+      const sourceDir = path.join(generatedActionsDir, action.name)
+      const targetDir = path.join(targetActionsDir, action.name)
+      if (fs.existsSync(sourceDir)) {
+        if (fs.existsSync(targetDir)) {
+          fs.rmSync(targetDir, { recursive: true, force: true })
         }
+        fs.cpSync(sourceDir, targetDir, { recursive: true })
+        console.log(`   ✅ ${action.name}`)
       }
     }
 
-    // Clean up temp directory
-    fs.rmSync(tempDir, { recursive: true, force: true })
-
-    if (!checkMode) {
-      console.log('\n✅ Actions regenerated successfully!\n')
-    }
+    console.log('\n✅ Actions regenerated successfully!\n')
   } catch (error) {
     console.error('\n❌ Error generating actions:', error)
     process.exit(2)
+  } finally {
+    if (tempDir && fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true })
+    }
   }
 }
 
@@ -136,38 +126,42 @@ function generateActionsFromTemplates(): void {
 function verifySync(): boolean {
   console.log('🔍 Verifying sync between templates and /actions/...\n')
 
-  const actionsDir = path.join(rootDir, 'actions')
+  let tempDir: string | undefined
   let allMatch = true
+  try {
+    tempDir = generateActionsToTemp()
+    const generatedActionsDir = path.join(tempDir, 'actions')
 
-  for (const action of ACTION_TEMPLATES) {
-    const actionPath = path.join(rootDir, action.path)
+    for (const action of ACTION_TEMPLATES) {
+      const generatedPath = path.join(generatedActionsDir, action.name, 'action.yml')
+      const committedPath = path.join(rootDir, action.path)
 
-    if (!fs.existsSync(actionPath)) {
-      if ((action as any).optional) {
-        console.log(`   ⚠️  ${action.name}: Optional (not generated)`)
+      if (!fs.existsSync(generatedPath)) {
+        console.log(`   ⚠️  ${action.name}: not generated (skipped)`)
         continue
       }
-      console.log(`   ❌ ${action.name}: Missing (action file not found)`)
-      allMatch = false
-      continue
+      if (!fs.existsSync(committedPath)) {
+        console.log(`   ❌ ${action.name}: missing committed action file`)
+        allMatch = false
+        continue
+      }
+
+      // Compare CONTENT (mtimes are unreliable after a fresh checkout)
+      const generated = fs.readFileSync(generatedPath, 'utf-8')
+      const committed = fs.readFileSync(committedPath, 'utf-8')
+      if (generated === committed) {
+        console.log(`   ✅ ${action.name}`)
+      } else {
+        console.log(`   ❌ ${action.name}: out of sync with template`)
+        allMatch = false
+      }
     }
-
-    const templatePath = path.join(rootDir, 'src/templates/actions', `${action.name}.yml.tpl.ts`)
-
-    if (!fs.existsSync(templatePath)) {
-      console.log(`   ⚠️  ${action.name}: Template not found`)
-      continue
-    }
-
-    // Check file modification times
-    const actionStat = fs.statSync(actionPath)
-    const templateStat = fs.statSync(templatePath)
-
-    if (templateStat.mtime > actionStat.mtime) {
-      console.log(`   ❌ ${action.name}: Template newer than action`)
-      allMatch = false
-    } else {
-      console.log(`   ✅ ${action.name}`)
+  } catch (error) {
+    console.error('\n❌ Error verifying actions:', error)
+    return false
+  } finally {
+    if (tempDir && fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true })
     }
   }
 
