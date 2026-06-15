@@ -22,6 +22,7 @@ export interface VersionContext {
  */
 export function createVersionJobOperation(ctx: VersionContext): PathOperationConfig {
   const { testJobNames, baseRef = 'main', config = {} } = ctx
+  const finalBranch = config.finalBranch || 'main'
 
   // Get the action reference based on configuration
   const actionRef = getActionReference('calculate-version', config)
@@ -69,6 +70,11 @@ export function createVersionJobOperation(ctx: VersionContext): PathOperationCon
           version: \${{ inputs.version }}
           node-version: \${{ env.NODE_VERSION }}
           commitSha: \${{ inputs.commitSha }}
+      - name: Warn if no version resolved on the final branch
+        if: \${{ github.ref_name == '${finalBranch}' && steps.version.outputs.version == '' }}
+        shell: bash
+        run: |
+          echo "::warning title=pipecraft::No version resolved on final branch '${finalBranch}' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD."
     outputs:
       version: \${{ steps.version.outputs.version }}
   `)
