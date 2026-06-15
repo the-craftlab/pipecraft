@@ -101,10 +101,12 @@ function generateActionsFromTemplates(): void {
       const sourceDir = path.join(generatedActionsDir, action.name)
       const targetDir = path.join(targetActionsDir, action.name)
       if (fs.existsSync(sourceDir)) {
-        if (fs.existsSync(targetDir)) {
-          fs.rmSync(targetDir, { recursive: true, force: true })
+        // Overwrite only generated files (action.yml); preserve hand-authored
+        // extras like README.md instead of wiping the whole directory.
+        fs.mkdirSync(targetDir, { recursive: true })
+        for (const file of fs.readdirSync(sourceDir)) {
+          fs.cpSync(path.join(sourceDir, file), path.join(targetDir, file), { recursive: true })
         }
-        fs.cpSync(sourceDir, targetDir, { recursive: true })
         console.log(`   ✅ ${action.name}`)
       }
     }

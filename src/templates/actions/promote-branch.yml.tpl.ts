@@ -25,6 +25,10 @@ const promoteBranchActionTemplate = (ctx: any) => {
     description: 'Promote code from source to target branch via temporary branch + PR'
     author: 'PipeCraft'
 
+    branding:
+      icon: 'git-merge'
+      color: 'purple'
+
     inputs:
       sourceBranch:
         description: 'Source branch to promote from (defaults to github.ref_name)'
@@ -56,11 +60,11 @@ const promoteBranchActionTemplate = (ctx: any) => {
 
     outputs:
       prNumber:
-        description: 'The created PR number'
-        value: \${{ steps.create-pr.outputs.prNumber }}
+        description: 'The created or existing PR number'
+        value: \${{ steps.check-pr.outputs.prNumber || steps.create-pr.outputs.prNumber }}
       prUrl:
-        description: 'The created PR URL'
-        value: \${{ steps.create-pr.outputs.prUrl }}
+        description: 'The created or existing PR URL'
+        value: \${{ steps.check-pr.outputs.prUrl || steps.create-pr.outputs.prUrl }}
       tempBranch:
         description: 'The temporary branch name'
         value: \${{ steps.create-temp.outputs.tempBranch }}
