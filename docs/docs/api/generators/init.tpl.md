@@ -2,7 +2,7 @@
 
 Init Template Generator
 
-Generates the initial PipeCraft configuration file (.pipecraftrc.json) with default settings.
+Generates the initial PipeCraft configuration file (.pipecraftrc) with default settings.
 This generator is invoked by the `pipecraft init` command and prompts the user for
 basic project configuration preferences.
 
@@ -14,7 +14,7 @@ import { generate } from './generators/init.tpl.js'
 // Called by CLI with Pinion context
 await generate(pinionContext)
 
-// Creates .pipecraftrc.json with:
+// Creates .pipecraftrc with:
 // - CI provider (GitHub/GitLab)
 // - Merge strategy (fast-forward/merge)
 // - Branch flow configuration
@@ -34,10 +34,10 @@ respect user input and allow customization.
 ### generate()
 
 ```ts
-function generate(ctx): Promise<PinionContext>
+function generate(ctx): Promise<any>
 ```
 
-Defined in: [generators/init.tpl.ts:162](https://github.com/pipecraft-lab/pipecraft/blob/4c8257c45ffc880272b225e3f335e5026e96be2e/src/generators/init.tpl.ts#L162)
+Defined in: [generators/init.tpl.ts:338](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/generators/init.tpl.ts#L338)
 
 Init generator main entry point.
 
@@ -57,7 +57,7 @@ Pinion generator context from CLI
 
 #### Returns
 
-`Promise`\<`PinionContext`\>
+`Promise`\<`any`\>
 
 Updated context after file generation
 

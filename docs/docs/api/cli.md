@@ -7,8 +7,8 @@ trunk-based development workflows. This CLI provides commands for:
 
 - **init**: Initialize PipeCraft configuration interactively or with flags
 - **generate**: Generate GitHub Actions workflows from configuration
-- **validate**: Validate existing workflows and configuration
-- **verify**: Verify pipeline structure and job order
+- **validate**: Validate configuration file schema
+- **doctor**: Run comprehensive diagnostic health checks
 - **setup**: Configure GitHub repository permissions and settings
 - **version**: Display version information
 
@@ -16,7 +16,7 @@ trunk-based development workflows. This CLI provides commands for:
 
 ### init
 
-Creates .pipecraftrc.json configuration file with project settings.
+Creates .pipecraftrc configuration file with project settings.
 Can run interactively or accept flags for automation.
 
 ### generate
@@ -29,11 +29,18 @@ Generates GitHub Actions workflows based on configuration:
 
 ### validate
 
-Validates workflow YAML syntax and structure, checks for common issues.
+Quick validation of configuration file schema.
 
-### verify
+### doctor
 
-Verifies pipeline job order and dependencies are correct.
+Comprehensive diagnostic health check including:
+
+- Configuration validation
+- GitHub workflow permissions
+- Branch existence on remote
+- Generated file verification
+- Workflow semantic validation
+- Domain path validation
 
 ### setup
 
@@ -45,7 +52,7 @@ Configures GitHub repository:
 
 ## Global Options
 
-- `-c, --config <path>`: Path to config file (default: .pipecraftrc.json)
+- `-c, --config <path>`: Path to config file (default: .pipecraftrc)
 - `-v, --verbose`: Verbose output
 - `--debug`: Debug output (maximum detail)
 - `--force`: Force regeneration even if unchanged

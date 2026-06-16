@@ -13,7 +13,7 @@ automating branch promotion in trunk-based development workflows.
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [templates/actions/create-pr.yml.tpl.ts:158](https://github.com/pipecraft-lab/pipecraft/blob/4c8257c45ffc880272b225e3f335e5026e96be2e/src/templates/actions/create-pr.yml.tpl.ts#L158)
+Defined in: [templates/actions/create-pr.yml.tpl.ts:160](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/actions/create-pr.yml.tpl.ts#L160)
 
 Generator entry point for create-pr composite action.
 
@@ -21,7 +21,7 @@ Generator entry point for create-pr composite action.
 
 ##### ctx
 
-`PinionContext`
+`PinionContext` & `object`
 
 Pinion generator context
 

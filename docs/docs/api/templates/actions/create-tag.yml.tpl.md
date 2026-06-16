@@ -13,7 +13,7 @@ GitHub releases. Used after version calculation to tag the codebase with semanti
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [templates/actions/create-tag.yml.tpl.ts:124](https://github.com/pipecraft-lab/pipecraft/blob/4c8257c45ffc880272b225e3f335e5026e96be2e/src/templates/actions/create-tag.yml.tpl.ts#L124)
+Defined in: [templates/actions/create-tag.yml.tpl.ts:126](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/actions/create-tag.yml.tpl.ts#L126)
 
 Generator entry point for create-tag composite action.
 
@@ -21,7 +21,7 @@ Generator entry point for create-tag composite action.
 
 ##### ctx
 
-`PinionContext`
+`PinionContext` & `object`
 
 Pinion generator context
 
