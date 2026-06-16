@@ -10,6 +10,8 @@ to control console output. The logger supports four levels:
 - verbose: Normal + verbose messages (detailed operation info)
 - debug: Verbose + debug messages (maximum detail for troubleshooting)
 
+Note: This is a test change to verify Codecov integration
+
 The log level can be changed at runtime using --verbose or --debug flags
 passed to the CLI commands.
 
@@ -21,7 +23,7 @@ passed to the CLI commands.
 type LogLevel = 'silent' | 'normal' | 'verbose' | 'debug'
 ```
 
-Defined in: [utils/logger.ts:24](https://github.com/pipecraft-lab/pipecraft/blob/4c8257c45ffc880272b225e3f335e5026e96be2e/src/utils/logger.ts#L24)
+Defined in: [utils/logger.ts:26](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/logger.ts#L26)
 
 Available log verbosity levels in ascending order of detail.
 
@@ -38,7 +40,7 @@ Available log verbosity levels in ascending order of detail.
 const logger: Logger
 ```
 
-Defined in: [utils/logger.ts:169](https://github.com/pipecraft-lab/pipecraft/blob/4c8257c45ffc880272b225e3f335e5026e96be2e/src/utils/logger.ts#L169)
+Defined in: [utils/logger.ts:171](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/logger.ts#L171)
 
 Singleton logger instance exported for use throughout the application.
 

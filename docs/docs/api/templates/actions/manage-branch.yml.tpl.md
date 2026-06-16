@@ -13,7 +13,7 @@ branch creation, and deletion. Core utility for trunk-based development workflow
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [templates/actions/manage-branch.yml.tpl.ts:143](https://github.com/pipecraft-lab/pipecraft/blob/4c8257c45ffc880272b225e3f335e5026e96be2e/src/templates/actions/manage-branch.yml.tpl.ts#L143)
+Defined in: [templates/actions/manage-branch.yml.tpl.ts:145](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/actions/manage-branch.yml.tpl.ts#L145)
 
 Generator entry point for manage-branch composite action.
 
@@ -21,7 +21,7 @@ Generator entry point for manage-branch composite action.
 
 ##### ctx
 
-`PinionContext`
+`PinionContext` & `object`
 
 Pinion generator context
 

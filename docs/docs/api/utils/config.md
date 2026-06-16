@@ -5,13 +5,29 @@ Configuration Loading and Validation Utilities
 This module provides functions to load and validate PipeCraft configuration files.
 It uses cosmiconfig to search for configuration in multiple locations:
 
+- .pipecraftrc (YAML or JSON, recommended)
 - .pipecraftrc.json
-- .pipecraftrc (JSON or YAML)
+- .pipecraftrc.yaml
+- .pipecraftrc.yml
+- .pipecraftrc.js
 - pipecraft.config.js
 - package.json (pipecraft key)
 
 The configuration is validated to ensure all required fields are present
 and have valid values before being used to generate workflows.
+
+## Variables
+
+### RESERVED_JOB_NAMES
+
+```ts
+const RESERVED_JOB_NAMES: readonly ['version', 'changes', 'gate', 'tag', 'promote', 'release']
+```
+
+Defined in: [utils/config.ts:27](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/config.ts#L27)
+
+Reserved job names that cannot be used as domain names.
+These are managed by Pipecraft and would conflict with generated workflow jobs.
 
 ## Functions
 
@@ -21,7 +37,7 @@ and have valid values before being used to generate workflows.
 function loadConfig(configPath?): any
 ```
 
-Defined in: [utils/config.ts:44](https://github.com/pipecraft-lab/pipecraft/blob/4c8257c45ffc880272b225e3f335e5026e96be2e/src/utils/config.ts#L44)
+Defined in: [utils/config.ts:63](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/config.ts#L63)
 
 Load PipeCraft configuration from filesystem.
 
@@ -29,10 +45,13 @@ Uses cosmiconfig to search for configuration files in standard locations.
 If no path is provided, searches the current directory and ancestors for
 configuration files in this order:
 
-1. .pipecraftrc.json
-2. .pipecraftrc
-3. pipecraft.config.js
-4. package.json (pipecraft key)
+1. .pipecraftrc (YAML or JSON, recommended)
+2. .pipecraftrc.json
+3. .pipecraftrc.yaml
+4. .pipecraftrc.yml
+5. .pipecraftrc.js
+6. pipecraft.config.js
+7. package.json (pipecraft key)
 
 #### Parameters
 
@@ -70,7 +89,7 @@ const config = loadConfig('./my-config.json')
 function validateConfig(config): boolean
 ```
 
-Defined in: [utils/config.ts:79](https://github.com/pipecraft-lab/pipecraft/blob/4c8257c45ffc880272b225e3f335e5026e96be2e/src/utils/config.ts#L79)
+Defined in: [utils/config.ts:113](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/config.ts#L113)
 
 Validate PipeCraft configuration structure and values.
 

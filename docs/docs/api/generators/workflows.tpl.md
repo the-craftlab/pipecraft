@@ -37,6 +37,8 @@ await generate({
 // actions/create-pr/...          - PR creation action
 // actions/manage-branch/...      - Branch management action
 // actions/promote-branch/...     - Branch promotion action
+// actions/create-release/...     - Release creation action
+// .release-it.cjs                        - Release-it configuration
 ```
 
 ## Functions
@@ -47,7 +49,7 @@ await generate({
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [generators/workflows.tpl.ts:136](https://github.com/pipecraft-lab/pipecraft/blob/4c8257c45ffc880272b225e3f335e5026e96be2e/src/generators/workflows.tpl.ts#L136)
+Defined in: [generators/workflows.tpl.ts:137](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/generators/workflows.tpl.ts#L137)
 
 Workflows generator main entry point.
 
@@ -103,10 +105,11 @@ await generate({
 
 #### Note
 
-The generator creates 7 files:
+The generator creates 9 files:
 
 - 1 main workflow (pipeline.yml)
-- 6 composite actions (in actions/)
+- 7 composite actions (in actions/)
+- 1 release-it configuration (.release-it.cjs)
 
 All actions are generated in parallel for performance, followed by
 the main pipeline which may reference the actions.
