@@ -220,6 +220,36 @@ export interface PipecraftConfig {
   packageManager?: 'npm' | 'yarn' | 'pnpm'
 
   /**
+   * Runtime tool versions for generated CI/CD workflows.
+   *
+   * Controls the `NODE_VERSION` / `PNPM_VERSION` workflow env vars (and the
+   * version job's `node-version`) without hand-editing generated files. When a
+   * value is set here it is authoritative — regeneration overwrites the env var
+   * with the configured value; when unset, the existing value is preserved and
+   * falls back to the defaults.
+   *
+   * @example
+   * ```typescript
+   * runtime: { nodeVersion: '22', pnpmVersion: '10' }
+   * ```
+   */
+  runtime?: {
+    /**
+     * Node.js version for workflows. Accepts a major (e.g. `'22'`) or an exact
+     * version (e.g. `'22.18.0'`).
+     * @default '22'
+     */
+    nodeVersion?: string
+
+    /**
+     * pnpm version for workflows (used when the project installs with pnpm).
+     * Accepts a major (e.g. `'10'`) or an exact version (e.g. `'10.6.2'`).
+     * @default '10'
+     */
+    pnpmVersion?: string
+  }
+
+  /**
    * How workflows should reference PipeCraft actions.
    *
    * - 'local': Actions copied to ./.github/actions/ (default, full control)

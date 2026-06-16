@@ -142,6 +142,40 @@ Use explicit configuration when:
 }
 ```
 
+### runtime
+
+**Type**: `object`
+**Required**: No
+**Default**: `{ nodeVersion: '22', pnpmVersion: '10' }`
+
+Controls the Node.js and pnpm versions used in generated CI/CD workflows, so you can pin or bump them from config instead of hand-editing `pipeline.yml`.
+
+```json
+{
+  "runtime": {
+    "nodeVersion": "22",
+    "pnpmVersion": "10"
+  }
+}
+```
+
+**Properties:**
+
+- **nodeVersion** (`string`, optional): Node.js version for workflows. Accepts a major (e.g. `'22'`, `'24'`) or an exact version (e.g. `'22.18.0'`). Default: `'22'`.
+- **pnpmVersion** (`string`, optional): pnpm version for workflows (used when the project installs with pnpm). Accepts a major (e.g. `'10'`) or an exact version (e.g. `'10.6.2'`). Default: `'10'`.
+
+**Impact on generated workflows:**
+
+- Sets the `NODE_VERSION` and `PNPM_VERSION` env vars in `pipeline.yml`
+- The `version` job passes `NODE_VERSION` into the `calculate-version` action
+
+**Authority and preservation:**
+
+- When a value is set in `runtime`, it is **authoritative** — regeneration overwrites the corresponding env var with the configured value.
+- When unset, the existing value in `pipeline.yml` is **preserved**, falling back to the defaults on first generation.
+
+> Tip: pin `pnpmVersion` (e.g. `'10'`) to avoid `pnpm/action-setup`'s `latest` pulling a major release with breaking changes into CI.
+
 ### initialBranch
 
 **Type**: `string`

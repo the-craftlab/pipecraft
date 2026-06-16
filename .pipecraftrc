@@ -12,6 +12,11 @@ mergeStrategy: fast-forward
 # Enforce conventional commit messages (feat:, fix:, etc.)
 requireConventionalCommits: true
 
+# Runtime tool versions for generated CI/CD workflows
+runtime:
+  nodeVersion: '22'
+  pnpmVersion: '10.6.2' # pin pnpm 10.x; pnpm 11 changed build-script approval (ERR_PNPM_IGNORED_BUILDS)
+
 # Branch flow configuration
 initialBranch: develop  # Where features land
 finalBranch: main       # Production branch
