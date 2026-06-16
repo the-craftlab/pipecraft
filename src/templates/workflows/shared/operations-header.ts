@@ -11,22 +11,30 @@ import type { PathOperationConfig } from '../../../utils/ast-path-operations.js'
 export interface HeaderContext {
   branchFlow: string[]
   /**
-   * Existing node version from the pipeline, if present.
+   * Node version for the pipeline (from config.runtime, or the existing file).
    * Falls back to PipeCraft defaults when not provided.
    */
   nodeVersion?: string
   /**
-   * Existing pnpm version from the pipeline, if present.
+   * pnpm version for the pipeline (from config.runtime, or the existing file).
    * Falls back to PipeCraft defaults when not provided.
    */
   pnpmVersion?: string
+  /**
+   * When true, nodeVersion came from config.runtime and is authoritative:
+   * regeneration overwrites env.NODE_VERSION instead of preserving the existing
+   * value. When false/undefined the existing value is preserved.
+   */
+  nodeVersionFromConfig?: boolean
+  /** As nodeVersionFromConfig, for env.PNPM_VERSION. */
+  pnpmVersionFromConfig?: boolean
 }
 
 /**
  * Create workflow header operations (name, run-name, on triggers)
  */
 export function createHeaderOperations(ctx: HeaderContext): PathOperationConfig[] {
-  const { branchFlow, nodeVersion, pnpmVersion } = ctx
+  const { branchFlow, nodeVersion, pnpmVersion, nodeVersionFromConfig, pnpmVersionFromConfig } = ctx
   // Provide sensible defaults if branchFlow is invalid
   const validBranchFlow =
     branchFlow && Array.isArray(branchFlow) && branchFlow.length > 0 ? branchFlow : ['main']
@@ -34,7 +42,7 @@ export function createHeaderOperations(ctx: HeaderContext): PathOperationConfig[
   const normalizedNodeVersion =
     typeof nodeVersion === 'string' && nodeVersion.trim().length > 0 ? nodeVersion.trim() : '22'
   const normalizedPnpmVersion =
-    typeof pnpmVersion === 'string' && pnpmVersion.trim().length > 0 ? pnpmVersion.trim() : '9'
+    typeof pnpmVersion === 'string' && pnpmVersion.trim().length > 0 ? pnpmVersion.trim() : '10'
 
   return [
     // =============================================================================
@@ -116,14 +124,15 @@ Runtime versions
       required: true
     },
     {
+      // config.runtime is authoritative (overwrite); otherwise preserve existing
       path: 'env.NODE_VERSION',
-      operation: 'preserve',
+      operation: nodeVersionFromConfig ? 'overwrite' : 'preserve',
       value: new Scalar(normalizedNodeVersion),
       required: true
     },
     {
       path: 'env.PNPM_VERSION',
-      operation: 'preserve',
+      operation: pnpmVersionFromConfig ? 'overwrite' : 'preserve',
       value: new Scalar(normalizedPnpmVersion),
       required: true
     },

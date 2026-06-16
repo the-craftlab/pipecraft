@@ -226,8 +226,13 @@ export const generate = (ctx: PathBasedPipelineContext) =>
         // Header (name, run-name, on triggers)
         ...createHeaderOperations({
           branchFlow,
-          nodeVersion: (existingEnv?.NODE_VERSION as string | undefined) ?? undefined,
-          pnpmVersion: (existingEnv?.PNPM_VERSION as string | undefined) ?? undefined
+          // config.runtime is authoritative; fall back to the existing file's env
+          nodeVersion:
+            config.runtime?.nodeVersion ?? (existingEnv?.NODE_VERSION as string | undefined),
+          pnpmVersion:
+            config.runtime?.pnpmVersion ?? (existingEnv?.PNPM_VERSION as string | undefined),
+          nodeVersionFromConfig: typeof config.runtime?.nodeVersion === 'string',
+          pnpmVersionFromConfig: typeof config.runtime?.pnpmVersion === 'string'
         }),
 
         // Changes detection (path-based)
