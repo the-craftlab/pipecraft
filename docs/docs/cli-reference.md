@@ -191,6 +191,25 @@ If you prefer to configure settings manually or need to audit what the command w
 
 See the [Security](security.md) documentation for more details on why these permissions are needed and how to manage them safely.
 
+## Running diagnostics
+
+The `doctor` command checks your PipeCraft setup for common configuration problems and permission issues:
+
+```bash
+pipecraft doctor
+```
+
+It requires a `GITHUB_TOKEN` (or `GH_TOKEN`, or `gh` CLI auth) to check GitHub-side settings.
+
+Doctor runs these checks:
+
+- **Configuration**: config file exists, required fields are set, `branchFlow` order is valid
+- **Workflow files**: generated workflows are present and structurally valid
+- **GitHub permissions**: repository Actions permissions allow write access and PR creation
+- **Org-level lock**: detects when an organization admin has disabled "Allow GitHub Actions to create and approve pull requests" — a common cause of promotion failures in enterprise repos (see [Troubleshooting](troubleshooting.md) for remediation)
+
+Run `pipecraft doctor` any time promotions fail unexpectedly or after making changes to your repository or org settings.
+
 ## Example workflow
 
 Here's a typical workflow when adding PipeCraft to an existing project:
