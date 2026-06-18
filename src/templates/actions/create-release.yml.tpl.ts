@@ -68,6 +68,15 @@ const releaseActionTemplate = (ctx: any) => {
             GH_TOKEN: \${{ inputs.token }}
           run: |
             VERSION="\${{ inputs.version }}"
+
+            # A missing version is a real failure (e.g. calculate-version errored), not a
+            # silent no-op. Refuse rather than create an empty/garbage release.
+            if [ -z "$VERSION" ]; then
+              echo "❌ No version provided to create-release - refusing to create an empty release."
+              echo "   (Check the version/calculate-version step output.)"
+              exit 1
+            fi
+
             echo "📦 Creating GitHub release for $VERSION"
 
             # Generate release notes from commits since last tag
@@ -99,6 +108,15 @@ const releaseActionTemplate = (ctx: any) => {
               echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
 
               echo "✅ Release created successfully"
+              echo "🔗 URL: $RELEASE_URL"
+            elif echo "$RELEASE_OUTPUT" | grep -qiE 'already exists'; then
+              # Idempotent re-run: the release for this version already exists. Treat as
+              # success and surface the existing release's URL/ID instead of failing.
+              echo "ℹ️  Release $VERSION already exists - treating as success (idempotent)."
+              RELEASE_URL=$(gh release view "$VERSION" --json url --jq '.url' 2>/dev/null || echo "")
+              echo "release_url=$RELEASE_URL" >> $GITHUB_OUTPUT
+              RELEASE_ID=$(gh api repos/\${{ github.repository }}/releases/tags/$VERSION --jq '.id' 2>/dev/null || echo "")
+              echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
               echo "🔗 URL: $RELEASE_URL"
             else
               echo "❌ Failed to create release"
