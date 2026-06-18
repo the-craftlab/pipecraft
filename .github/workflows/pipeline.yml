@@ -215,6 +215,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Verify actions are in sync and free of stale tooling
+        run: pnpm sync-actions:check
+
       - name: Validate pipeline workflow
         run: node tests/tools/validation/validate-pipeline.cjs
 
@@ -392,11 +401,14 @@ jobs:
   # Example: needs: [changes, version, test-myapp, build-myapp]
   gate:
     runs-on: ubuntu-latest
+    needs: [ version, lint, test-cicd, test-core, test-docs, deploy-docs, remote-test-docs ]
+    if: "${{ always() }}"
     steps:
+      - name: Fail if any prerequisite job failed
+        if: "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}"
+        run: echo "::error::A prerequisite job failed - blocking progression" && exit 1
       - name: Gate passed
         run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression"
-    needs: [ version, lint, test-cicd, test-core, test-docs, deploy-docs, remote-test-docs ]
-    if: "${{ always() && needs.version.result == 'success' && ( needs.lint.result != 'failure' && needs.test-cicd.result != 'failure' && needs.test-core.result != 'failure' && needs.test-docs.result != 'failure' && needs.deploy-docs.result != 'failure' && needs.remote-test-docs.result != 'failure' ) && ( needs.lint.result == 'success' || needs.test-cicd.result == 'success' || needs.test-core.result == 'success' || needs.test-docs.result == 'success' || needs.deploy-docs.result == 'success' || needs.remote-test-docs.result == 'success' ) }}"
 
   #=============================================================================
   # TAG (⚠️  Managed by Pipecraft - customizable needs and if)

@@ -30,14 +30,43 @@ function buildNeedsSequence(jobNames: string[]): YAMLSeq {
   return seq
 }
 
-function buildIfExpression(jobNames: string[]): Scalar {
-  const clauses = jobNames.map(
-    name => `(needs['${name}'].result == 'success' || needs['${name}'].result == 'skipped')`
-  )
-  const expression = clauses.length > 0 ? `always() && ${clauses.join(' && ')}` : 'always()'
-  const scalar = new Scalar(`\${{ ${expression} }}`)
+/**
+ * The gate always runs. An `if` that can evaluate false would make the gate *skip* on a
+ * prerequisite failure, and GitHub treats a skipped required check as passed — so a
+ * conditional gate cannot actually block. Instead the gate runs unconditionally and
+ * fails in-step (see buildGateSteps).
+ */
+function buildGateIf(): Scalar {
+  const scalar = new Scalar('${{ always() }}')
   scalar.type = Scalar.QUOTE_DOUBLE
   return scalar
+}
+
+const GATE_FAIL_IF =
+  "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}"
+const GATE_FAIL_RUN = 'echo "::error::A prerequisite job failed - blocking progression" && exit 1'
+
+/**
+ * Build the gate's steps: first a step that FAILS the job when any prerequisite failed or
+ * was cancelled (skipped/path-filtered prerequisites are allowed), then a success marker.
+ * `needs.*.result` automatically includes any jobs the user added to `needs`, so custom
+ * test jobs are covered without editing this step.
+ */
+function buildGateSteps(): YAMLSeq {
+  const failStep = new YAMLMap()
+  failStep.set('name', new Scalar('Fail if any prerequisite job failed'))
+  const failIf = new Scalar(GATE_FAIL_IF)
+  failIf.type = Scalar.QUOTE_DOUBLE
+  failStep.set('if', failIf)
+  failStep.set('run', new Scalar(GATE_FAIL_RUN))
+
+  const passStep = new YAMLMap()
+  passStep.set('name', new Scalar('Gate passed'))
+  passStep.set('run', new Scalar(DEFAULT_GATE_STEP_RUN))
+
+  const stepsSeq = new YAMLSeq()
+  stepsSeq.items = [failStep, passStep]
+  return stepsSeq
 }
 
 function ensureDefaultRunsAndSteps(gateMap: YAMLMap) {
@@ -46,12 +75,7 @@ function ensureDefaultRunsAndSteps(gateMap: YAMLMap) {
   }
 
   if (!gateMap.has('steps')) {
-    const stepsSeq = new YAMLSeq()
-    const stepMap = new YAMLMap()
-    stepMap.set('name', new Scalar('Gate passed'))
-    stepMap.set('run', new Scalar(DEFAULT_GATE_STEP_RUN))
-    stepsSeq.items = [stepMap]
-    gateMap.set('steps', stepsSeq)
+    gateMap.set('steps', buildGateSteps())
   }
 }
 
@@ -138,10 +162,11 @@ export function ensureGateJob(doc: Document.Parsed) {
     ensureDefaultRunsAndSteps(gateMap as YAMLMap)
   }
 
-  // Only set needs/if when creating a new gate job - always preserve existing values
-  // This allows users to customize their gate job prerequisites (like the tag job)
+  // Only set needs/if when creating a new gate job - existing values are preserved here
+  // (P0.4 re-asserts the correctness-critical if/steps on existing gates while keeping
+  // user-added needs). This allows users to customize their gate prerequisites.
   if (!gateExisted) {
     ;(gateMap as YAMLMap).set('needs', buildNeedsSequence(prerequisites))
-    ;(gateMap as YAMLMap).set('if', buildIfExpression(prerequisites))
+    ;(gateMap as YAMLMap).set('if', buildGateIf())
   }
 }

@@ -57,7 +57,7 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
     # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
     # the 'if' condition to include them. These fields are preserved on regeneration.
     # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -165,7 +165,7 @@ exports[`Workflow Snapshots > Config: multi-domain > should match snapshot 1`] =
     # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
     # the 'if' condition to include them. These fields are preserved on regeneration.
     # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -263,7 +263,7 @@ exports[`Workflow Snapshots > Config: remote-actions > should match snapshot 1`]
     # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
     # the 'if' condition to include them. These fields are preserved on regeneration.
     # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -357,7 +357,7 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
     # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
     # the 'if' condition to include them. These fields are preserved on regeneration.
     # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -459,7 +459,7 @@ exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] =
     # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
     # the 'if' condition to include them. These fields are preserved on regeneration.
     # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -545,7 +545,7 @@ exports[`Workflow Snapshots > Config: with-auto-merge > should match snapshot 1`
     # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
     # the 'if' condition to include them. These fields are preserved on regeneration.
     # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
