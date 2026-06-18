@@ -12,6 +12,7 @@ import fs from 'fs'
 import { Document, parseDocument, Scalar, stringify, YAMLMap } from 'yaml'
 import type { PipecraftConfig } from '../../types/index.js'
 import { type PathOperationConfig } from '../../utils/ast-path-operations.js'
+import { RESERVED_JOB_NAMES } from '../../utils/config.js'
 import { logger } from '../../utils/logger.js'
 import { formatIfConditions } from '../yaml-format-utils.js'
 import {
@@ -60,6 +61,39 @@ export const MANAGED_WORKFLOW_HEADER = `========================================
 
  📖 Learn more: https://pipecraft.thecraftlab.dev
 =============================================================================`
+
+/**
+ * Detect duplicate keys in the generated workflow (e.g. a custom job whose name collides
+ * with a Pipecraft-managed job: changes/version/gate/tag/promote/release). Duplicate keys
+ * make the workflow unparseable on GitHub.
+ *
+ * Returns the duplicate-key error messages (empty when clean). Callers surface these as a
+ * non-fatal warning rather than throwing: the marker/merge path can produce duplicates in
+ * messy edge cases (jobs scattered outside markers, repeated in-process regenerations), and
+ * hard-failing there would regress existing preservation behavior. See ROADMAP for the
+ * deeper merge-dedup fix.
+ *
+ * @param yamlContent - The fully generated workflow YAML, about to be written
+ * @returns Duplicate-key error messages (empty array when there are none)
+ */
+export function findDuplicateKeyMessages(yamlContent: string): string[] {
+  return parseDocument(yamlContent)
+    .errors.filter(err => err.code === 'DUPLICATE_KEY')
+    .map(err => err.message)
+}
+
+/** Warn (non-fatal) if the generated workflow contains duplicate keys. */
+function warnOnDuplicateKeys(yamlContent: string): void {
+  const duplicates = findDuplicateKeyMessages(yamlContent)
+  if (duplicates.length > 0) {
+    logger.warn(
+      `⚠️  Generated workflow has duplicate keys — usually a custom job name colliding ` +
+        `with a Pipecraft-managed job (${RESERVED_JOB_NAMES.join(', ')}). ` +
+        `Rename the custom job(s) and regenerate.`
+    )
+    for (const message of duplicates) logger.warn(`   ${message}`)
+  }
+}
 
 /**
  * Extract user-customized section between markers from YAML content
@@ -321,7 +355,7 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           existingDoc.contents && (existingDoc.contents as any).get
             ? (existingDoc.contents as any).get('jobs')
             : null
-        const managedJobs = new Set(['changes', 'version', 'gate', 'tag', 'promote', 'release'])
+        const managedJobs = new Set<string>(RESERVED_JOB_NAMES as readonly string[])
 
         // Extract gate job's needs and if for preservation
         if (existingJobs && (existingJobs as any).get) {
@@ -470,6 +504,7 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           logger.verbose('📝 Added placeholder user section markers')
         }
 
+        warnOnDuplicateKeys(yamlContent)
         const formattedContent = formatIfConditions(yamlContent)
         const status = mergedCustomContent ? 'merged' : fileExists ? 'rebuilt' : 'created'
         return { ...ctx, yamlContent: formattedContent, mergeStatus: status }
@@ -530,6 +565,7 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           yamlContent.slice(insertionIndex)
       }
 
+      warnOnDuplicateKeys(yamlContent)
       const formattedContent = formatIfConditions(yamlContent)
       const status = userSection ? 'merged' : 'updated'
       return { ...ctx, yamlContent: formattedContent, mergeStatus: status }
