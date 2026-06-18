@@ -137,6 +137,25 @@
       "deprecated": true,
       "description": "DEPRECATED: This field is no longer used. PipeCraft now supports language-agnostic workflows."
     },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nodeVersion": {
+          "type": "string",
+          "default": "22",
+          "description": "Node.js version for generated workflows. Accepts a major (e.g. '22') or an exact version (e.g. '22.18.0').",
+          "examples": ["22", "22.18.0"]
+        },
+        "pnpmVersion": {
+          "type": "string",
+          "default": "10",
+          "description": "pnpm version for generated workflows. Accepts a major (e.g. '10') or an exact version (e.g. '10.6.2').",
+          "examples": ["10", "10.6.2"]
+        }
+      },
+      "description": "Runtime tool versions for generated CI/CD workflows. Drives the NODE_VERSION / PNPM_VERSION workflow env vars without hand-editing generated files."
+    },
     "actionSourceMode": {
       "type": "string",
       "enum": ["local", "remote", "source"],

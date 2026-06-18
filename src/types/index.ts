@@ -181,6 +181,14 @@ export interface PipecraftConfig {
     | Record<string, 'auto' | 'merge' | 'squash' | 'rebase'>
 
   /**
+   * Auto-merge configuration.
+   *
+   * @deprecated Use `autoPromote` instead. This is a backwards-compatible alias and
+   * has no independent effect.
+   */
+  autoMerge?: boolean | Record<string, boolean>
+
+  /**
    * Semantic versioning configuration.
    * Maps conventional commit types to version bump levels.
    *
@@ -437,3 +445,61 @@ export interface PipecraftContext {
     bumpRules: Record<string, string>
   }
 }
+
+/**
+ * Every recognized top-level config key.
+ *
+ * This is the runtime allowlist counterpart to {@link PipecraftConfig}. It is kept in
+ * lockstep with the interface by the compile-time assertions below (a missing or extra
+ * key fails `tsc`) and with `.pipecraft-schema.json` by
+ * `tests/unit/schema-types-consistency.test.ts`. When you add a config field, add it in
+ * all three places.
+ */
+export const KNOWN_CONFIG_KEYS = [
+  'ciProvider',
+  'mergeStrategy',
+  'requireConventionalCommits',
+  'initialBranch',
+  'finalBranch',
+  'branchFlow',
+  'autoPromote',
+  'mergeMethod',
+  'autoMerge',
+  'semver',
+  'domains',
+  'packageManager',
+  'runtime',
+  'actionSourceMode',
+  'actionVersion',
+  'rebuild',
+  'versioning'
+] as const
+
+/**
+ * Every recognized key inside a single domain entry.
+ * Kept in lockstep with {@link DomainConfig} and the schema's `definitions.DomainConfig`.
+ */
+export const KNOWN_DOMAIN_KEYS = [
+  'paths',
+  'description',
+  'prefixes',
+  'testable',
+  'deployable',
+  'remoteTestable'
+] as const
+
+// Compile-time guards: KNOWN_CONFIG_KEYS must exactly cover keyof PipecraftConfig, and
+// KNOWN_DOMAIN_KEYS must exactly cover keyof DomainConfig. If these fail to compile, a
+// key was added/removed from an interface without updating the constant above.
+type AssertExact<TActual extends string, TExpected extends string> = [
+  Exclude<TActual, TExpected>,
+  Exclude<TExpected, TActual>
+] extends [never, never]
+  ? true
+  : never
+
+const _assertConfigKeys: AssertExact<(typeof KNOWN_CONFIG_KEYS)[number], keyof PipecraftConfig> =
+  true
+const _assertDomainKeys: AssertExact<(typeof KNOWN_DOMAIN_KEYS)[number], keyof DomainConfig> = true
+void _assertConfigKeys
+void _assertDomainKeys
