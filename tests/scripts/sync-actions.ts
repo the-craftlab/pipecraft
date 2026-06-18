@@ -171,6 +171,51 @@ function verifySync(): boolean {
 }
 
 /**
+ * Markers of the removed Nx integration. Nx-based change detection was removed
+ * project-wide; any action.yml still referencing it has drifted (this is exactly how
+ * the stale .github/actions/detect-changes copy went unnoticed). The bare word
+ * "affected" is intentionally excluded to avoid false positives in prose.
+ */
+const STALE_NX_MARKERS = [
+  'useNx',
+  'nxAvailable',
+  'affectedProjects',
+  'npx nx',
+  'nx show',
+  'nx affected',
+  'nx.json'
+]
+
+/**
+ * Verify that no committed action (source mode `actions/` or default `local` mode
+ * `.github/actions/`) references removed Nx tooling. Covers the directory the original
+ * sync gate missed.
+ */
+function verifyNoStaleTooling(): boolean {
+  console.log('\n🔍 Verifying actions are free of removed Nx tooling...\n')
+  const baseDirs = ['actions', '.github/actions']
+  let clean = true
+
+  for (const baseRel of baseDirs) {
+    const base = path.join(rootDir, baseRel)
+    if (!fs.existsSync(base)) continue
+    for (const entry of fs.readdirSync(base)) {
+      const actionYml = path.join(base, entry, 'action.yml')
+      if (!fs.existsSync(actionYml)) continue
+      const content = fs.readFileSync(actionYml, 'utf-8')
+      const hits = STALE_NX_MARKERS.filter(marker => content.includes(marker))
+      if (hits.length > 0) {
+        console.log(`   ❌ ${baseRel}/${entry}: stale Nx references (${hits.join(', ')})`)
+        clean = false
+      }
+    }
+  }
+
+  if (clean) console.log('   ✅ No stale Nx tooling found')
+  return clean
+}
+
+/**
  * Main execution
  */
 function main(): void {
@@ -182,14 +227,22 @@ function main(): void {
     if (checkMode) {
       // Verification mode - check if in sync
       const isInSync = verifySync()
+      const noStaleTooling = verifyNoStaleTooling()
 
-      if (!isInSync) {
-        console.log('\n❌ Actions are out of sync with templates!')
-        console.log('   Run `pnpm sync-actions` to regenerate.\n')
+      if (!isInSync || !noStaleTooling) {
+        if (!isInSync) {
+          console.log('\n❌ Actions are out of sync with templates!')
+          console.log('   Run `pnpm sync-actions` to regenerate.')
+        }
+        if (!noStaleTooling) {
+          console.log('\n❌ Committed actions reference removed Nx tooling.')
+          console.log('   Regenerate the drifted action(s) from the current template.')
+        }
+        console.log('')
         process.exit(1)
       }
 
-      console.log('\n✅ All actions are in sync with templates!\n')
+      console.log('\n✅ All actions are in sync and free of stale tooling!\n')
       process.exit(0)
     } else {
       // Regeneration mode - generate from templates
