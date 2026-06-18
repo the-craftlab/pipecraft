@@ -41,8 +41,11 @@ export function createHeaderOperations(ctx: HeaderContext): PathOperationConfig[
   const branchList = validBranchFlow.join(',')
   const normalizedNodeVersion =
     typeof nodeVersion === 'string' && nodeVersion.trim().length > 0 ? nodeVersion.trim() : '22'
+  // Default to an exact pnpm patch (not a floating major). pnpm 'latest' silently became
+  // pnpm 11 and broke installs (ERR_PNPM_IGNORED_BUILDS); an exact default is reproducible.
+  // Projects can override via config.runtime.pnpmVersion.
   const normalizedPnpmVersion =
-    typeof pnpmVersion === 'string' && pnpmVersion.trim().length > 0 ? pnpmVersion.trim() : '10'
+    typeof pnpmVersion === 'string' && pnpmVersion.trim().length > 0 ? pnpmVersion.trim() : '10.6.2'
 
   return [
     // =============================================================================

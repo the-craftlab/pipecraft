@@ -17,7 +17,7 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ develop, main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ develop ] } },
   jobs:
@@ -107,7 +107,7 @@ exports[`Workflow Snapshots > Config: multi-domain > should match snapshot 1`] =
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ develop, main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ develop ] } },
   jobs:
@@ -219,7 +219,7 @@ exports[`Workflow Snapshots > Config: remote-actions > should match snapshot 1`]
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ develop, main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ develop ] } },
   jobs:
@@ -321,7 +321,7 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ main ] } },
   jobs:
@@ -419,7 +419,7 @@ exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] =
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ develop, staging, main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ develop ] } },
   jobs:
@@ -525,7 +525,7 @@ exports[`Workflow Snapshots > Config: with-auto-merge > should match snapshot 1`
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ develop, staging, main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ develop ] } },
   jobs:
