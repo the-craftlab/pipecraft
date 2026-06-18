@@ -1,252 +1,106 @@
-# Pipecraft Roadmap
+# Pipecraft Roadmap & TODOs
 
-_Last updated: 2026-06-18. Sourced from
-[state review](docs/analysis/2026-06-18-state-review.md) and
-[architecture review](docs/analysis/2026-06-18-architecture-review.md)._
+**Updated:** 2026-06-18 · **Sources:** `docs/analysis/2026-06-18-state-review.md`,
+`docs/analysis/2026-06-18-architecture-review.md`, deferred items from prior work.
 
----
+Authoritative engineering TODO list. **P0** = correctness/trust (system silently does the
+wrong thing); **P1** = important; **P2** = improvements / forward features. Each item:
+_what · why · source_.
 
-## P0 — Fix now (high-severity, user-trust issues)
-
-### P0-1 · Fire-and-forget workflow dispatch
-
-**What:** `promote-branch` dispatches the next pipeline with `gh workflow run` and
-returns success immediately, with no check that the triggered run actually started.
-
-**Why:** A user watching the pipeline sees "promote: ✓ passed" and reasonably assumes
-the target branch is running — but the dispatch may have silently dropped (misconfigured
-branch, transient API error, rate limit). The failure is invisible.
-
-**Fix:** After dispatch, poll `gh run list --workflow=pipeline.yml --branch=<target>`
-for up to ~30 s and assert the triggered run appears. Emit a distinct warning + non-zero
-exit if it doesn't. This is a minimal, non-architectural change.
-
-**Source:** Architecture review P2-A; `promote-branch.yml.tpl.ts` line ~315.
+> User-facing aspirational roadmap (GitLab CI, flow patterns) lives in
+> `docs/docs/roadmap.md`; this file is the internal, gap-driven plan.
 
 ---
 
-### P0-2 · Marketplace publication
+## P0 — Correctness & trust (verified High-severity)
 
-**What:** Actions (`create-tag`, `promote-branch`, `calculate-version`) have been
-readied for the GitHub Marketplace (branding, READMEs, action tests — PRs #206/#207/#217)
-but have not been published.
+1. **Make the merge gate actually gate.** Required checks are path-filtered (a skipped check
+   counts as passed); the `gate` job is inert on PRs (requires the PR-skipped `version` job)
+   and isn't the required check; `test-cicd` runs only `validate-pipeline.cjs`, not the suite.
+   _Why:_ a broken change can merge green. _Source:_ arch Pass 3 (verified F + High).
+   _Fix:_ make `gate` always-run + PR-valid, set it as the sole required check; have
+   `test-cicd` run `pnpm test` + `lint` + `sync-actions:check`.
+2. **Enforce the config schema (reject unknown keys).** `validateConfig` is an allowlist that
+   silently ignores unknown/misspelled keys — root cause of the `autoMerge`/`nx` bugs.
+   _Source:_ Pass 4 (verified C). _Fix:_ validate against `.pipecraft-schema.json` with `ajv` +
+   `additionalProperties:false`; add "did you mean…" hints.
+3. **Sync `.pipecraft-schema.json` with `src/types` + add a consistency test.** `runtime` missing
+   from schema; `mergeMethod`/`mergeStrategy:'merge'` in schema/types but implemented nowhere.
+   _Source:_ Pass 4 (verified D, E). _Fix:_ add `runtime`; resolve mergeMethod (P1.6); add a
+   schema↔types test.
+4. **Managed-section enforcement must work without `--force` (or be documented honestly).**
+   Reproduced: a tampered managed job survives a default `generate`; only `--force` heals it,
+   yet the generated header claims those sections are managed. _Source:_ Pass 2 (verified A).
+   _Fix:_ heal managed jobs in default mode, or correct the header/docs to say managed-section
+   resets require `--force`.
+5. **Fix the stale default action set + extend the drift gate.** `.github/actions/detect-changes`
+   (the **default** `local` mode) still has removed Nx code (59 refs) with a different input
+   contract than the template; `sync-actions` only checks `actions/`. _Source:_ Pass 2 (verified
+   B) + docs audit. _Fix:_ regenerate all `.github/actions/*`; extend `sync-actions:check` to
+   cover `local` mode + `examples/`.
 
-**Why:** This is a stated design goal ("composable actions intended for Marketplace
-publication"). Until published, `remote` action mode is a documentation fiction — users
-cannot actually reference `the-craftlab/pipecraft/actions/[name]@v1`.
+## P1 — Important
 
-**Fix:** Publish the three readied actions to the GitHub Marketplace. Gate publication
-behind action test CI (already in place). Add Marketplace badge links to CLI output
-and docs.
+6. **Decide `mergeMethod` / `mergeStrategy:'merge'`: implement or remove.** Documented in
+   types + schema + 6 doc pages, honored nowhere (promote hardcodes `--ff-only`).
+   _Source:_ Pass 4 (verified D), Pass 1.
+7. **B2 — thread the version through promotion (+ `concurrency:` guard).** Release identity rests
+   on `git describe` tag-reachability (B1), which can pick the wrong tag on merge-commit
+   promotion; no concurrency guard → racing pipelines half-promote. _Source:_ Pass 1.
+   _Fix:_ parse the version from `release/{src}-to-{tgt}-{version}` on the target push; emit
+   `concurrency: { group: pipeline-${{ github.ref_name }} }`.
+8. **Verify promote actually triggered the target run.** `promote-branch` dispatches the next
+   pipeline via `gh workflow run` and reports success immediately; a dropped dispatch
+   (misconfig / API error / rate limit) is invisible. _Source:_ arch review (dispatch finding).
+   _Fix:_ after dispatch, poll `gh run list` for the target branch (~30 s) and warn + non-zero
+   if the run doesn't appear.
+9. **`create-release` idempotency + release-it failure handling.** Re-running a released version
+   fails the job; a transient release-it failure reads as "no version" (silent skip).
+   _Source:_ Pass 1.
+10. **Guard custom-job vs managed-job name collisions.** A custom `release`/`tag`/etc. job emits
+    duplicate keys → unparseable workflow + partial write. _Source:_ Pass 2. _Fix:_ detect
+    reserved names; make generation transactional. (Also fixes the marker-fallback comment loss.)
+11. **Pin generator default `pnpmVersion` to an exact patch + add `packageManager`.** Default is
+    `'10'` (major); `package.json` has no `packageManager`. _Source:_ Pass 3.
+12. **Publish the marketplace actions.** Prepped (#206/#207/#217) + reconciled (#409) but not
+    published — so `remote` action mode is currently unusable. _Source:_ drift assessment.
 
-**Source:** State review §4 ("composable actions / marketplace: in progress").
+## P2 — Improvements & forward features
 
----
-
-## P1 — Next sprint (important, no active workaround)
-
-### P1-1 · Thread version through promotion (B2 durable fix)
-
-**What:** `promote-branch` currently relies on the target branch re-running
-`calculate-version` from scratch after merge. When the promotion is a merge commit
-(not fast-forward), version resolution on the target branch can miss the tag, falling
-back to `git describe`. This is the root cause of the "no release was cut" class of
-issues.
-
-**Why:** B1 (`git describe` fallback, PR #336) is a guard, not the fix. The durable
-solution is to calculate the version on the initial branch, then explicitly pass it
-as an input to the next pipeline dispatch — eliminating the need for re-derivation
-entirely.
-
-**Fix:** Add a `version` input to the `workflow_dispatch` trigger on `pipeline.yml`.
-The `promote-branch` action reads the already-calculated version from the current run
-and passes `--field version=<ver>` to `gh workflow run`. Downstream `calculate-version`
-prefers the provided input over its own derivation.
-
-**Source:** State review §4 drift table ("B2 deferred"); troubleshooting docs.
-
----
-
-### P1-2 · Document promotion rollback
-
-**What:** When a deploy job fails after a promotion PR merges, there is no
-Pipecraft-managed recovery path. Users must manually revert or force-push.
-
-**Why:** No change is needed in the generator — rollback is inherently
-environment-specific. But the silence in the docs creates a trust gap: users expect
-that a production-grade pipeline tool has a rollback story.
-
-**Fix:** Add a "Recovering from a failed promotion" section to the troubleshooting
-docs: explain that the tagged commit is on the target branch, that the recommended
-path is a `git revert` commit + re-promote, and that force-push breaks linear history
-and should be avoided.
-
-**Source:** Architecture review P3-B.
-
----
-
-### P1-3 · Comment-safe fallback preservation
-
-**What:** When the `<--START CUSTOM JOBS-->` / `<--END CUSTOM JOBS-->` markers are
-absent or malformed, the fallback preserves custom jobs by re-serializing through
-the YAML AST. This silently drops inline YAML comments.
-
-**Why:** A user who writes `# TODO: replace with helm chart once cluster is ready`
-above a placeholder step loses that comment on the next regeneration that hits the
-fallback. The loss is permanent and silent.
-
-**Fix:** In the fallback path, capture the raw YAML string for each detected custom
-job (from the prior file text, not the re-serialized AST) and splice it in verbatim.
-Alternatively, emit a warning when the fallback path is taken so users know to
-re-add markers.
-
-**Source:** Architecture review P1-A; `pipeline.yml.tpl.ts` fallback at ~lines 340–380.
+13. **Supply-chain: pin third-party action SHAs + Dependabot (github-actions).** Floating tags
+    (`codecov`, `dorny`, `marocchino`, `amannn`, `pnpm/action-setup`, mixed `checkout@v4/v5`) are
+    the class that already broke CI; worst on `publish.yml`'s OIDC path. _Source:_ Pass 3.
+14. **`detect-changes`: JSON membership, not substring `grep`** (overlapping domain names
+    mis-detect). _Source:_ Pass 3.
+15. **Config value validation:** `runtime.*` semver pattern; `autoPromote` shape (reject
+    string/array); `semver` required + structural; `branchFlow` duplicate/no-op detection; make
+    preflight delegate to `validateConfig`. _Source:_ Pass 4.
+16. **Docs tooling:** migrate docusaurus `onBrokenMarkdownLinks` to the v4 location; add a CI gate
+    running `docs:typedoc` that fails on drift (deterministic since #433). _Source:_ docs audit.
+17. **Forward features (from `docs/docs/roadmap.md`):** GitLab CI generation; flow patterns
+    (GitHub Flow, GitFlow, custom); workflow visualization; matrix builds; deploy environments.
 
 ---
 
-### P1-4 · Consolidate `managedJobs` into a single source
+## Known gaps (state vs intent)
 
-**What:** The list of managed job names (`changes`, `version`, `gate`, `tag`,
-`promote`, `release`) is declared independently in `src/utils/config.ts`
-(`RESERVED_JOB_NAMES`) and in `pipeline.yml.tpl.ts` (`managedJobs`).
+- **Marketplace publication** prepped but not done → `remote` mode unusable.
+- **Durable promote/version threading (B2)** designed but deferred; B1 is a guard, not the fix.
+- **`mergeMethod` / `mergeStrategy:'merge'`** advertised but inert (intent is fast-forward).
+- **Self-CI is not a trustworthy gate** (path-filtered required checks; inert `gate` on PRs).
+- **Config is permissive** — unknown keys silently dropped; schema not enforced.
 
-**Why:** Adding a new managed job requires touching both files. Nothing enforces
-consistency.
+## What's next (sequenced)
 
-**Fix:** Import `RESERVED_JOB_NAMES` from `config.ts` into the pipeline template
-and derive `managedJobs` from it. One source of truth; sync is automatic.
+1. **Trust the gate** (P0.1) — without it, every other fix can regress silently.
+2. **Enforce config + sync schema** (P0.2, P0.3) — stops silent-wrong-config; keeps
+   schema/types/docs honest.
+3. **Heal managed drift + fix the default action set** (P0.4, P0.5) — restores the core
+   preserve/generate guarantee for the default user.
+4. **B2 + concurrency + dispatch verification + release idempotency** (P1.7–9) — make release
+   correct under the recommended manual-prod-promotion path.
+5. **Resolve `mergeMethod`** (P1.6) and **pin pnpm exactly** (P1.11) — remove dead surface,
+   finish retiring the pin.
+6. **Publish marketplace actions** (P1.12), then **forward features** (P2.17).
 
-**Source:** Architecture review P1-B.
-
----
-
-### P1-5 · Verify / fix `mergeMethod` wiring
-
-**What:** `version-management.md` shows per-branch `mergeMethod: squash` /
-`mergeMethod: merge` config examples. `mergeMethod` is a real config field, but
-`promote-branch` always fast-forwards — it is unclear whether the config field
-actually influences the promotion merge behavior.
-
-**Why:** If the config key is read but ignored, users who set `mergeMethod: squash`
-on a branch are configuring something that has no effect.
-
-**Fix:** Trace `mergeMethod` from config parsing through template generation to the
-actual `gh pr merge` call in `promote-branch`. If it is wired: verify docs match
-behavior. If it is not wired: document it as advisory / remove the field from docs
-until it is implemented.
-
-**Source:** State review §3 docs audit (deferred item).
-
----
-
-## P2 — Backlog (valuable, but no urgent pressure)
-
-### P2-1 · GitLab CI support
-
-**What:** The `ciProvider` config field accepts `'github'` and `'gitlab'`, but GitLab
-CI generation is not implemented.
-
-**Why:** Stated in the original intent; a significant fraction of potential users are
-on GitLab.
-
-**Source:** Original intent §1; `faq.md` ("GitLab CI/CD: planned for future").
-
----
-
-### P2-2 · Additional branch flow patterns
-
-**What:** GitHub Flow (feature branches → main) and GitFlow (develop → release → main
-with hotfixes) are listed as "planned" in the FAQ.
-
-**Why:** Trunk-based development is the primary pattern but not universal.
-
-**Source:** `faq.md` §"What branch flows are supported?".
-
----
-
-### P2-3 · Workflow sharding for large monorepos
-
-**What:** All jobs for all domains are emitted into a single `pipeline.yml`. At 20+
-domains this becomes unwieldy; at 255 jobs it hits GitHub's documented per-run limit.
-
-**Why:** Not a current-user problem. Planning for it now shapes template architecture
-(per-domain reusable workflow files, an orchestrator workflow) before the single-file
-assumption is too deeply embedded.
-
-**Source:** Architecture review P3-A.
-
----
-
-### P2-4 · `doctor` validates gate `needs` completeness
-
-**What:** When a domain is added after initial setup, its test job is not automatically
-added to `gate.needs`. `doctor` does not detect this gap.
-
-**Why:** A gate that passes without running all domain tests is worse than no gate —
-it gives false confidence.
-
-**Fix:** Add a `doctor` check: parse the generated workflow, compare `gate.needs`
-against all domain test job names, and warn on any missing entries.
-
-**Source:** Architecture review P3-C.
-
----
-
-### P2-5 · Docusaurus v4 migration (`onBrokenMarkdownLinks`)
-
-**What:** Docusaurus build warns about the deprecated `onBrokenMarkdownLinks` config
-key (renamed in v4 migration).
-
-**Why:** Low urgency — build exits 0 and the warning doesn't affect the site — but
-accumulated warnings create noise and may become errors in a future Docusaurus
-version.
-
-**Source:** State review §3 docs audit (deferred item).
-
----
-
-### P2-6 · pnpm 11 approval (unblock the pin)
-
-**What:** pnpm is pinned at 10.6.2 via the `runtime` config because pnpm 11 dropped
-the `package.json` build-script approval mechanism, causing `ERR_PNPM_IGNORED_BUILDS`
-in CI.
-
-**Why:** The pin is declared (not hidden) but it's a deviation from "use latest."
-Revisit when pnpm 11's approval story stabilizes.
-
-**Source:** State review §4 drift table ("tooling pragmatism").
-
----
-
-## Known Gaps
-
-These are areas where the current implementation is intentionally incomplete or where
-documentation coverage is insufficient. They are not bugs.
-
-| Gap                                       | Impact                                 | Status |
-| ----------------------------------------- | -------------------------------------- | ------ |
-| Marketplace actions not published         | `remote` action mode is non-functional | P0-2   |
-| No promotion rollback path                | Users stranded after failed deploy     | P1-2   |
-| `mergeMethod` config wiring unverified    | Docs may describe a no-op              | P1-5   |
-| GitLab CI not implemented                 | GitHub-only                            | P2-1   |
-| Gate needs not auto-updated on domain add | Silent test gap on domain expansion    | P2-4   |
-| No workflow sharding                      | Scale ceiling ~255 jobs                | P2-3   |
-| B2 (threaded version) deferred            | `git describe` fallback is the guard   | P1-1   |
-
----
-
-## What's Next (sequenced)
-
-1. **P0-1** (fire-and-forget dispatch) — self-contained change to `promote-branch`;
-   no template API changes; highest trust-repair value per effort.
-2. **P0-2** (marketplace publication) — unblocks `remote` mode and the composable
-   action story; dependency: CI for action tests must stay green.
-3. **P1-1** (B2 threaded version) — requires `workflow_dispatch` input + `calculate-version`
-   input-prefer logic; do after marketplace so the updated action versions can be
-   tagged together.
-4. **P1-2** (rollback docs) — purely additive; can be done in parallel with any of
-   the above.
-5. **P1-3 + P1-4** (comment-safe fallback + managedJobs consolidation) — low-risk
-   code quality; bundle into a single PR.
-6. **P1-5** (`mergeMethod` audit) — clarify before adding more branch-config docs.
-7. **P2-1** (GitLab CI) — significant work; gate behind a milestone.
+Each P0/P1 item is independently shippable as its own PR with tests; work top-down.
