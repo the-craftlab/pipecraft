@@ -59,6 +59,23 @@ export function createHeaderOperations(ctx: HeaderContext): PathOperationConfig[
     },
 
     // =============================================================================
+    // CONCURRENCY - One pipeline per branch at a time
+    // =============================================================================
+    // Prevents two rapid pushes / a re-run from racing version -> tag -> promote.
+    // Queued (cancel-in-progress: false) rather than cancelled, so an in-flight
+    // promotion is never interrupted mid-way (which could half-promote).
+    {
+      path: 'concurrency',
+      operation: 'preserve',
+      value: {
+        group: '${{ github.workflow }}-${{ github.ref_name }}',
+        'cancel-in-progress': false
+      },
+      required: true,
+      spaceBefore: true
+    },
+
+    // =============================================================================
     // PERMISSIONS - Required for workflow operations
     // =============================================================================
     // contents: write - For creating tags and pushing changes

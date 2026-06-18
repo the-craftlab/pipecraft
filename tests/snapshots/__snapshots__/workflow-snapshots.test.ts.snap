@@ -4,6 +4,8 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
 "{
   name: { value: Pipeline },
 
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
+
   permissions: write,
 
   run-name: "\${{ github.event_name == 'pull_request' && !contains('develop,main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #\${{ inputs.run_number || github.run_number }}\${{ inputs.version && format(' - {0}', inputs.version) || '' }}",
@@ -93,6 +95,8 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
 exports[`Workflow Snapshots > Config: multi-domain > should match snapshot 1`] = `
 "{
   name: { value: Pipeline },
+
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
 
   permissions: write,
 
@@ -206,6 +210,8 @@ exports[`Workflow Snapshots > Config: remote-actions > should match snapshot 1`]
 "{
   name: { value: Pipeline },
 
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
+
   permissions: write,
 
   run-name: "\${{ github.event_name == 'pull_request' && !contains('develop,main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #\${{ inputs.run_number || github.run_number }}\${{ inputs.version && format(' - {0}', inputs.version) || '' }}",
@@ -308,6 +314,8 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
 "{
   name: { value: Pipeline },
 
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
+
   permissions: write,
 
   run-name: "\${{ github.event_name == 'pull_request' && !contains('main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #\${{ inputs.run_number || github.run_number }}\${{ inputs.version && format(' - {0}', inputs.version) || '' }}",
@@ -405,6 +413,8 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
 exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] = `
 "{
   name: { value: Pipeline },
+
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
 
   permissions: write,
 
@@ -511,6 +521,8 @@ exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] =
 exports[`Workflow Snapshots > Config: with-auto-merge > should match snapshot 1`] = `
 "{
   name: { value: Pipeline },
+
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
 
   permissions: write,
 
