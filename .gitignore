@@ -75,3 +75,6 @@ examples/debug/
 # These are renamed to .git during tests, then back to .git.stored after
 !examples/pipecraft-example-*/.git.stored/
 !examples/pipecraft-example-*/.git.stored/**
+
+# Overnight loop scaffolding (local only)
+.claude/overnight/
