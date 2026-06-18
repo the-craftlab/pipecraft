@@ -89,3 +89,35 @@ Method: docusaurus `build` (broken-anchor/link check) + targeted greps for remov
 | `version-management.md` `mergeMethod` example shows per-branch `squash`/`merge` — `mergeMethod` is a real config field, but whether the promote action honors it (it fast-forwards) is unverified.                                                                                                            | Low        | **Deferred** → roadmap (verify wiring or mark advisory).                                                                                                                                   |
 
 **Build status:** docusaurus `build` exits 0 (no broken anchors/links) after fixes.
+
+---
+
+## 4. Drift Assessment (item 3)
+
+Did the last 3 days drift from pipecraft's original intent (§1)? Per-area verdict.
+
+| Intent principle                           | Verdict                  | Evidence                                                                                                                                                                                                             |
+| ------------------------------------------ | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Generator, not framework (owned YAML)      | ✅ On-track              | No runtime/framework added; all work stayed in the generator/templates and the user still owns the output.                                                                                                           |
+| Trunk-based, fast-forward, linear history  | ✅ On-track (reinforced) | #351 made promote **fast-forward not rebase**; rebase was explicitly rejected. Repo merge methods kept squash-only + ff.                                                                                             |
+| Domain change detection, language-agnostic | ✅ On-track (reinforced) | NX special-casing confirmed removed; docs corrected to match. `dorny/paths-filter` is the one detection mechanism.                                                                                                   |
+| Conventional-commit semver                 | ✅ On-track (hardened)   | #335 (warn on empty version) + #336 (nearest-tag fallback) made the existing model more robust; no manual versioning introduced.                                                                                     |
+| Customization survives regeneration        | ✅ On-track (hardened)   | #333 marker-mismatch detection strengthened the preserve guarantee.                                                                                                                                                  |
+| Composable actions / marketplace           | 🟡 In progress           | #206/#207/#217 prep + #409 reconciled to one canonical template — but **marketplace publication is not actually done** (gap, not drift).                                                                             |
+| Tooling pragmatism (pnpm pin)              | 🟡 Acceptable drift      | Pinning pnpm 10.6.2 is a deviation from "use latest", forced by a pnpm 11 regression. #427 made it **config-driven** (`runtime`), so it's declared, not a hidden hand-edit. Revisit when pnpm 11 approval is sorted. |
+
+### Drift that occurred and was corrected (not outstanding)
+
+- **Two divergent promote-branch implementations** (template `autoPromote`+ff vs the
+  marketplace copy `autoMerge`+rebase from #207) — genuine architectural drift, **corrected**
+  in #409 (single template, one `autoPromote` key, both copies regenerated).
+- **`autoMerge` vs `autoPromote` naming split** across config/docs/action — corrected.
+
+### Process observation (the real drift to flag)
+
+The 3 days were **reactive hardening** (CI breakage, stale bot PRs, action drift) rather than
+roadmap features. The hardening was necessary and high-value, but the **stated roadmap
+(GitLab CI, additional flow patterns) did not advance**, and the **durable promote fix (B2:
+thread the version through promotion) remains deferred** — B1's `git describe` fallback is a
+guard, not the root fix. Net: no drift from product _intent_; some drift from forward
+_momentum_. Re-prioritize in the roadmap.
