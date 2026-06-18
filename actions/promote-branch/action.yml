@@ -285,9 +285,31 @@ runs:
           echo "   Run number: $RUN_NUMBER (for traceability)"
         fi
 
-        gh workflow run pipeline.yml "${WORKFLOW_ARGS[@]}"
+        # Dispatch and fail loudly if the API call itself is rejected (previously the
+        # trailing echo masked a failed dispatch).
+        if ! gh workflow run pipeline.yml "${WORKFLOW_ARGS[@]}"; then
+          echo "::error::Failed to dispatch pipeline workflow on $TARGET"
+          exit 1
+        fi
 
-        echo "✅ Pipeline workflow triggered on $TARGET with version $VERSION at commit $COMMIT_SHA"
+        # 'gh workflow run' returns success once accepted, but a dropped dispatch
+        # (misconfig / rate limit) would otherwise be invisible. Poll briefly to confirm
+        # a run actually started; warn (non-fatal) if it doesn't appear.
+        echo "⏳ Verifying a pipeline run started on $TARGET..."
+        RUN_STARTED=""
+        for _attempt in 1 2 3 4 5 6; do
+          sleep 5
+          if gh run list --workflow=pipeline.yml --branch "$TARGET" --limit 5 \--json status --jq '.[].status' 2>/dev/null \| grep -qE 'queued|in_progress|requested|waiting'; then
+            RUN_STARTED="yes"
+            break
+          fi
+        done
+
+        if [ -n "$RUN_STARTED" ]; then
+          echo "✅ Pipeline workflow triggered on $TARGET with version $VERSION at commit $COMMIT_SHA"
+        else
+          echo "::warning::Dispatched pipeline on $TARGET but no run appeared within ~30s. \Verify the workflow_dispatch trigger and Actions permissions; the promotion may need a manual re-trigger."
+        fi
 
     - name: Close PR and Delete Branch
       if: inputs.autoPromote == 'true'
