@@ -2,22 +2,22 @@
 # PIPECRAFT MANAGED WORKFLOW
 #=============================================================================
 
-# ✅ YOU CAN CUSTOMIZE:
-#   - Custom jobs between the '# <--START CUSTOM JOBS-->' and '# <--END CUSTOM JOBS-->' comment markers
-#   - Workflow name
+# ✅ YOU CAN CUSTOMIZE (preserved across 'pipecraft generate'):
+#   - Custom jobs between the '# <--START CUSTOM JOBS-->' / '# <--END CUSTOM JOBS-->' markers
+#   - The 'needs' list and 'runs-on' of managed jobs
+#   - The workflow name
 
-# ⚠️  PIPECRAFT MANAGES (do not modify):
-#   - Workflow triggers, job dependencies, and conditionals
-#   - Changes detection, version calculation, and tag creation
-#   - Tag, promote, and release jobs
+# 🔒 PIPECRAFT MANAGES (re-asserted on every generate; edits here are reset):
+#   - Workflow triggers and the changes / version / tag / promote / release job logic
+#   - The gate's 'if: always()' and its fail-on-failure step
+
+# ♻️  Regeneration PRESERVES the customizations above. To reset managed sections
+#    (including the gate) to template defaults, run: pipecraft generate --force
 
 # 📌 VERSION PROMOTION BEHAVIOR:
 #   - Only commits that trigger a version bump will promote to staging/main
 #   - Non-versioned commits (test, build, etc.) remain on develop
 #   - This keeps staging/main aligned with tagged releases
-
-# Running 'pipecraft generate' updates managed sections while preserving
-# your customizations in test/deploy/remote-test jobs.
 
 # 📖 Learn more: https://pipecraft.thecraftlab.dev
 #=============================================================================
@@ -391,14 +391,18 @@ jobs:
 
 
   #=============================================================================
-  # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+  # GATE (Managed by Pipecraft)
   #=============================================================================
-  # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-  # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+  # Ensures prerequisite jobs pass before tag/promote/release run.
 
-  # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-  # the 'if' condition to include them. These fields are preserved on regeneration.
-  # Example: needs: [changes, version, test-myapp, build-myapp]
+  # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+  #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+  #    do NOT edit the 'if' or the steps.
+  #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+  # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+  #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+  #    'pipecraft generate --force' to reset the whole gate to template defaults.
   gate:
     runs-on: ubuntu-latest
     needs: [ version, lint, test-cicd, test-core, test-docs, deploy-docs, remote-test-docs ]

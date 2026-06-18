@@ -49,14 +49,18 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
       gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
@@ -157,14 +161,18 @@ exports[`Workflow Snapshots > Config: multi-domain > should match snapshot 1`] =
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
       gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
@@ -255,14 +263,18 @@ exports[`Workflow Snapshots > Config: remote-actions > should match snapshot 1`]
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: the-craftlab/pipecraft/actions/calculate-version@v1, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
       gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
@@ -349,14 +361,18 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
       gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
@@ -451,14 +467,18 @@ exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] =
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
       gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
@@ -537,14 +557,18 @@ exports[`Workflow Snapshots > Config: with-auto-merge > should match snapshot 1`
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
       gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================

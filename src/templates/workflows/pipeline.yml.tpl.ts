@@ -33,6 +33,35 @@ interface PathBasedPipelineContext extends PinionContext {
 }
 
 /**
+ * Header comment written at the top of generated pipelines. It states the managed-section
+ * contract honestly: customizations (custom jobs, managed-job `needs`/`runs-on`, name) are
+ * preserved across `pipecraft generate`; correctness-critical wiring is re-asserted; and
+ * `--force` resets managed sections to defaults.
+ */
+export const MANAGED_WORKFLOW_HEADER = `=============================================================================
+ PIPECRAFT MANAGED WORKFLOW
+=============================================================================
+
+ ✅ YOU CAN CUSTOMIZE (preserved across 'pipecraft generate'):
+   - Custom jobs between the '# <--START CUSTOM JOBS-->' / '# <--END CUSTOM JOBS-->' markers
+   - The 'needs' list and 'runs-on' of managed jobs
+   - The workflow name
+
+ 🔒 PIPECRAFT MANAGES (re-asserted on every generate; edits here are reset):
+   - Workflow triggers and the changes / version / tag / promote / release job logic
+   - The gate's 'if: always()' and its fail-on-failure step
+
+ ♻️  Regeneration PRESERVES the customizations above. To reset managed sections
+    (including the gate) to template defaults, run: pipecraft generate --force
+
+ 📌 VERSION PROMOTION BEHAVIOR:
+   - Only commits that trigger a version bump promote to staging/main
+   - Non-versioned commits (test, build, etc.) remain on develop
+
+ 📖 Learn more: https://pipecraft.thecraftlab.dev
+=============================================================================`
+
+/**
  * Extract user-customized section between markers from YAML content
  * Returns content WITHOUT the markers themselves
  * Uses unique delimiters as YAML comments (indentation-independent)
@@ -373,30 +402,7 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           : '🔄 Force mode: Rebuilding path-based pipeline from scratch'
         logger.verbose(logMessage)
 
-        const headerComment = `=============================================================================
- PIPECRAFT MANAGED WORKFLOW
-=============================================================================
-
- ✅ YOU CAN CUSTOMIZE:
-   - Custom jobs between the '# <--START CUSTOM JOBS-->' and '# <--END CUSTOM JOBS-->' comment markers
-   - Workflow name
-
- ⚠️  PIPECRAFT MANAGES (do not modify):
-   - Workflow triggers, job dependencies, and conditionals
-   - Changes detection, version calculation, and tag creation
-   - Tag, promote, and release jobs
-
- 📌 VERSION PROMOTION BEHAVIOR:
-   - Only commits that trigger a version bump will promote to staging/main
-   - Non-versioned commits (test, build, etc.) remain on develop
-   - This keeps staging/main aligned with tagged releases
-
- Running 'pipecraft generate' updates managed sections while preserving
- your customizations in test/deploy/remote-test jobs.
-
- 📖 Learn more: https://pipecraft.thecraftlab.dev
-=============================================================================`
-        const doc = createManagedWorkflowDocument(headerComment, operations, ctx)
+        const doc = createManagedWorkflowDocument(MANAGED_WORKFLOW_HEADER, operations, ctx)
 
         // Restore preserved gate job needs/if (for force mode)
         if (preservedGateNeeds || preservedGateIf) {
