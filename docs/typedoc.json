@@ -17,6 +17,7 @@
   "includeVersion": false,
   "githubPages": false,
   "disableSources": false,
+  "gitRevision": "main",
   "sourceLinkTemplate": "https://github.com/the-craftlab/pipecraft/blob/{gitRevision}/{path}#L{line}",
   "useCodeBlocks": true,
   "expandObjects": false,

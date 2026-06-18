@@ -20,7 +20,7 @@ This template creates a release-it configuration that:
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [templates/release-it.cjs.tpl.ts:155](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/release-it.cjs.tpl.ts#L155)
+Defined in: [templates/release-it.cjs.tpl.ts:155](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/release-it.cjs.tpl.ts#L155)
 
 Release-It configuration generator
 

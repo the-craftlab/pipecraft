@@ -15,7 +15,7 @@ Performs comprehensive health checks on a Pipecraft setup:
 
 ### CheckCategory
 
-Defined in: [utils/doctor.ts:74](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L74)
+Defined in: [utils/doctor.ts:74](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L74)
 
 #### Properties
 
@@ -25,7 +25,7 @@ Defined in: [utils/doctor.ts:74](https://github.com/the-craftlab/pipecraft/blob/
 name: string
 ```
 
-Defined in: [utils/doctor.ts:75](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L75)
+Defined in: [utils/doctor.ts:75](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L75)
 
 ##### results
 
@@ -33,13 +33,13 @@ Defined in: [utils/doctor.ts:75](https://github.com/the-craftlab/pipecraft/blob/
 results: CheckResult[];
 ```
 
-Defined in: [utils/doctor.ts:76](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L76)
+Defined in: [utils/doctor.ts:76](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L76)
 
 ---
 
 ### CheckResult
 
-Defined in: [utils/doctor.ts:65](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L65)
+Defined in: [utils/doctor.ts:65](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L65)
 
 #### Properties
 
@@ -49,7 +49,7 @@ Defined in: [utils/doctor.ts:65](https://github.com/the-craftlab/pipecraft/blob/
 optional fix: object;
 ```
 
-Defined in: [utils/doctor.ts:68](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L68)
+Defined in: [utils/doctor.ts:68](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L68)
 
 ###### command?
 
@@ -69,7 +69,7 @@ description: string
 message: string
 ```
 
-Defined in: [utils/doctor.ts:67](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L67)
+Defined in: [utils/doctor.ts:67](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L67)
 
 ##### status
 
@@ -77,13 +77,13 @@ Defined in: [utils/doctor.ts:67](https://github.com/the-craftlab/pipecraft/blob/
 status: CheckStatus
 ```
 
-Defined in: [utils/doctor.ts:66](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L66)
+Defined in: [utils/doctor.ts:66](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L66)
 
 ---
 
 ### DoctorResult
 
-Defined in: [utils/doctor.ts:79](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L79)
+Defined in: [utils/doctor.ts:79](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L79)
 
 #### Properties
 
@@ -93,7 +93,7 @@ Defined in: [utils/doctor.ts:79](https://github.com/the-craftlab/pipecraft/blob/
 categories: CheckCategory[];
 ```
 
-Defined in: [utils/doctor.ts:80](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L80)
+Defined in: [utils/doctor.ts:80](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L80)
 
 ##### errorCount
 
@@ -101,7 +101,7 @@ Defined in: [utils/doctor.ts:80](https://github.com/the-craftlab/pipecraft/blob/
 errorCount: number
 ```
 
-Defined in: [utils/doctor.ts:81](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L81)
+Defined in: [utils/doctor.ts:81](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L81)
 
 ##### warningCount
 
@@ -109,7 +109,7 @@ Defined in: [utils/doctor.ts:81](https://github.com/the-craftlab/pipecraft/blob/
 warningCount: number
 ```
 
-Defined in: [utils/doctor.ts:82](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L82)
+Defined in: [utils/doctor.ts:82](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L82)
 
 ## Type Aliases
 
@@ -119,7 +119,7 @@ Defined in: [utils/doctor.ts:82](https://github.com/the-craftlab/pipecraft/blob/
 type CheckStatus = 'success' | 'error' | 'warning'
 ```
 
-Defined in: [utils/doctor.ts:63](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L63)
+Defined in: [utils/doctor.ts:63](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L63)
 
 ## Functions
 
@@ -129,7 +129,7 @@ Defined in: [utils/doctor.ts:63](https://github.com/the-craftlab/pipecraft/blob/
 function checkBranches(): CheckCategory
 ```
 
-Defined in: [utils/doctor.ts:347](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L347)
+Defined in: [utils/doctor.ts:347](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L347)
 
 Check 3: Branches exist on remote
 
@@ -145,7 +145,7 @@ Check 3: Branches exist on remote
 function checkConfiguration(): CheckCategory
 ```
 
-Defined in: [utils/doctor.ts:191](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L191)
+Defined in: [utils/doctor.ts:191](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L191)
 
 Check 1: Configuration validation
 
@@ -161,7 +161,7 @@ Check 1: Configuration validation
 function checkDomainPaths(): Promise<CheckCategory>
 ```
 
-Defined in: [utils/doctor.ts:629](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L629)
+Defined in: [utils/doctor.ts:629](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L629)
 
 Check 6: Domain paths match files
 
@@ -177,7 +177,7 @@ Check 6: Domain paths match files
 function checkGeneratedFiles(): CheckCategory
 ```
 
-Defined in: [utils/doctor.ts:419](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L419)
+Defined in: [utils/doctor.ts:419](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L419)
 
 Check 4: Required actions exist
 
@@ -193,7 +193,7 @@ Check 4: Required actions exist
 function checkGitHubPermissions(): Promise<CheckCategory>
 ```
 
-Defined in: [utils/doctor.ts:237](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L237)
+Defined in: [utils/doctor.ts:237](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L237)
 
 Check 2: GitHub workflow permissions
 
@@ -209,7 +209,7 @@ Check 2: GitHub workflow permissions
 function checkWorkflowSemantics(): CheckCategory
 ```
 
-Defined in: [utils/doctor.ts:557](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L557)
+Defined in: [utils/doctor.ts:557](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L557)
 
 Check 5: Workflow semantic validation
 
@@ -225,7 +225,7 @@ Check 5: Workflow semantic validation
 function formatDoctorOutput(result): string
 ```
 
-Defined in: [utils/doctor.ts:121](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L121)
+Defined in: [utils/doctor.ts:121](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L121)
 
 #### Parameters
 
@@ -245,7 +245,7 @@ Defined in: [utils/doctor.ts:121](https://github.com/the-craftlab/pipecraft/blob
 function runDoctor(): Promise<DoctorResult>
 ```
 
-Defined in: [utils/doctor.ts:701](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/doctor.ts#L701)
+Defined in: [utils/doctor.ts:701](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/doctor.ts#L701)
 
 Run all diagnostic checks and return the results.
 

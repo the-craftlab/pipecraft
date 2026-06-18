@@ -4,7 +4,7 @@
 
 ### InstallOptions
 
-Defined in: [utils/skill-installer.ts:158](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L158)
+Defined in: [utils/skill-installer.ts:158](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L158)
 
 #### Properties
 
@@ -14,7 +14,7 @@ Defined in: [utils/skill-installer.ts:158](https://github.com/the-craftlab/pipec
 optional cwd: string;
 ```
 
-Defined in: [utils/skill-installer.ts:163](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L163)
+Defined in: [utils/skill-installer.ts:163](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L163)
 
 ##### force?
 
@@ -22,7 +22,7 @@ Defined in: [utils/skill-installer.ts:163](https://github.com/the-craftlab/pipec
 optional force: boolean;
 ```
 
-Defined in: [utils/skill-installer.ts:162](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L162)
+Defined in: [utils/skill-installer.ts:162](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L162)
 
 ##### global?
 
@@ -30,7 +30,7 @@ Defined in: [utils/skill-installer.ts:162](https://github.com/the-craftlab/pipec
 optional global: boolean;
 ```
 
-Defined in: [utils/skill-installer.ts:159](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L159)
+Defined in: [utils/skill-installer.ts:159](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L159)
 
 ##### local?
 
@@ -38,7 +38,7 @@ Defined in: [utils/skill-installer.ts:159](https://github.com/the-craftlab/pipec
 optional local: boolean;
 ```
 
-Defined in: [utils/skill-installer.ts:160](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L160)
+Defined in: [utils/skill-installer.ts:160](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L160)
 
 ##### targets?
 
@@ -46,13 +46,13 @@ Defined in: [utils/skill-installer.ts:160](https://github.com/the-craftlab/pipec
 optional targets: string[];
 ```
 
-Defined in: [utils/skill-installer.ts:161](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L161)
+Defined in: [utils/skill-installer.ts:161](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L161)
 
 ---
 
 ### InstallResult
 
-Defined in: [utils/skill-installer.ts:23](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L23)
+Defined in: [utils/skill-installer.ts:23](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L23)
 
 #### Properties
 
@@ -62,7 +62,7 @@ Defined in: [utils/skill-installer.ts:23](https://github.com/the-craftlab/pipecr
 optional error: string;
 ```
 
-Defined in: [utils/skill-installer.ts:27](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L27)
+Defined in: [utils/skill-installer.ts:27](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L27)
 
 ##### path
 
@@ -70,7 +70,7 @@ Defined in: [utils/skill-installer.ts:27](https://github.com/the-craftlab/pipecr
 path: string
 ```
 
-Defined in: [utils/skill-installer.ts:25](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L25)
+Defined in: [utils/skill-installer.ts:25](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L25)
 
 ##### reason?
 
@@ -78,7 +78,7 @@ Defined in: [utils/skill-installer.ts:25](https://github.com/the-craftlab/pipecr
 optional reason: string;
 ```
 
-Defined in: [utils/skill-installer.ts:29](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L29)
+Defined in: [utils/skill-installer.ts:29](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L29)
 
 ##### skipped?
 
@@ -86,7 +86,7 @@ Defined in: [utils/skill-installer.ts:29](https://github.com/the-craftlab/pipecr
 optional skipped: boolean;
 ```
 
-Defined in: [utils/skill-installer.ts:28](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L28)
+Defined in: [utils/skill-installer.ts:28](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L28)
 
 ##### success
 
@@ -94,7 +94,7 @@ Defined in: [utils/skill-installer.ts:28](https://github.com/the-craftlab/pipecr
 success: boolean
 ```
 
-Defined in: [utils/skill-installer.ts:26](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L26)
+Defined in: [utils/skill-installer.ts:26](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L26)
 
 ##### target
 
@@ -102,13 +102,13 @@ Defined in: [utils/skill-installer.ts:26](https://github.com/the-craftlab/pipecr
 target: string
 ```
 
-Defined in: [utils/skill-installer.ts:24](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L24)
+Defined in: [utils/skill-installer.ts:24](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L24)
 
 ---
 
 ### SkillTarget
 
-Defined in: [utils/skill-installer.ts:15](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L15)
+Defined in: [utils/skill-installer.ts:15](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L15)
 
 #### Properties
 
@@ -118,7 +118,7 @@ Defined in: [utils/skill-installer.ts:15](https://github.com/the-craftlab/pipecr
 optional configFile: string;
 ```
 
-Defined in: [utils/skill-installer.ts:20](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L20)
+Defined in: [utils/skill-installer.ts:20](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L20)
 
 ##### displayName
 
@@ -126,7 +126,7 @@ Defined in: [utils/skill-installer.ts:20](https://github.com/the-craftlab/pipecr
 displayName: string
 ```
 
-Defined in: [utils/skill-installer.ts:17](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L17)
+Defined in: [utils/skill-installer.ts:17](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L17)
 
 ##### globalPath
 
@@ -134,7 +134,7 @@ Defined in: [utils/skill-installer.ts:17](https://github.com/the-craftlab/pipecr
 globalPath: string
 ```
 
-Defined in: [utils/skill-installer.ts:18](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L18)
+Defined in: [utils/skill-installer.ts:18](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L18)
 
 ##### localPath
 
@@ -142,7 +142,7 @@ Defined in: [utils/skill-installer.ts:18](https://github.com/the-craftlab/pipecr
 localPath: string
 ```
 
-Defined in: [utils/skill-installer.ts:19](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L19)
+Defined in: [utils/skill-installer.ts:19](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L19)
 
 ##### name
 
@@ -150,7 +150,7 @@ Defined in: [utils/skill-installer.ts:19](https://github.com/the-craftlab/pipecr
 name: string
 ```
 
-Defined in: [utils/skill-installer.ts:16](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L16)
+Defined in: [utils/skill-installer.ts:16](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L16)
 
 ## Variables
 
@@ -160,7 +160,7 @@ Defined in: [utils/skill-installer.ts:16](https://github.com/the-craftlab/pipecr
 const SKILL_TARGETS: SkillTarget[]
 ```
 
-Defined in: [utils/skill-installer.ts:35](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L35)
+Defined in: [utils/skill-installer.ts:35](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L35)
 
 Supported AI coding assistant targets
 
@@ -172,7 +172,7 @@ Supported AI coding assistant targets
 function installSkills(options): InstallResult[]
 ```
 
-Defined in: [utils/skill-installer.ts:169](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L169)
+Defined in: [utils/skill-installer.ts:169](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L169)
 
 Install Pipecraft skills for AI coding assistants
 
@@ -194,7 +194,7 @@ Install Pipecraft skills for AI coding assistants
 function listSkillTargets(): object[]
 ```
 
-Defined in: [utils/skill-installer.ts:226](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L226)
+Defined in: [utils/skill-installer.ts:226](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L226)
 
 List available skill targets and their status
 
@@ -210,7 +210,7 @@ List available skill targets and their status
 function uninstallSkills(options): InstallResult[]
 ```
 
-Defined in: [utils/skill-installer.ts:245](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/skill-installer.ts#L245)
+Defined in: [utils/skill-installer.ts:245](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/skill-installer.ts#L245)
 
 Uninstall skills from all targets
 

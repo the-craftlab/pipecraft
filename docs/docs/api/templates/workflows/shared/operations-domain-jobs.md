@@ -4,7 +4,7 @@
 
 ### DomainJobsContext
 
-Defined in: [templates/workflows/shared/operations-domain-jobs.ts:13](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-domain-jobs.ts#L13)
+Defined in: [templates/workflows/shared/operations-domain-jobs.ts:13](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-domain-jobs.ts#L13)
 
 #### Properties
 
@@ -14,7 +14,7 @@ Defined in: [templates/workflows/shared/operations-domain-jobs.ts:13](https://gi
 domains: Record<string, any>
 ```
 
-Defined in: [templates/workflows/shared/operations-domain-jobs.ts:14](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-domain-jobs.ts#L14)
+Defined in: [templates/workflows/shared/operations-domain-jobs.ts:14](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-domain-jobs.ts#L14)
 
 ## Functions
 
@@ -24,7 +24,7 @@ Defined in: [templates/workflows/shared/operations-domain-jobs.ts:14](https://gi
 function createDomainDeployJobOperations(ctx): PathOperationConfig[]
 ```
 
-Defined in: [templates/workflows/shared/operations-domain-jobs.ts:134](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-domain-jobs.ts#L134)
+Defined in: [templates/workflows/shared/operations-domain-jobs.ts:134](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-domain-jobs.ts#L134)
 
 Create deploy job operations for deployable domains
 
@@ -46,7 +46,7 @@ Create deploy job operations for deployable domains
 function createDomainRemoteTestJobOperations(ctx): PathOperationConfig[]
 ```
 
-Defined in: [templates/workflows/shared/operations-domain-jobs.ts:180](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-domain-jobs.ts#L180)
+Defined in: [templates/workflows/shared/operations-domain-jobs.ts:180](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-domain-jobs.ts#L180)
 
 Create remote test job operations for remotely testable domains
 
@@ -68,7 +68,7 @@ Create remote test job operations for remotely testable domains
 function createDomainTestJobOperations(ctx): PathOperationConfig[]
 ```
 
-Defined in: [templates/workflows/shared/operations-domain-jobs.ts:88](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-domain-jobs.ts#L88)
+Defined in: [templates/workflows/shared/operations-domain-jobs.ts:88](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-domain-jobs.ts#L88)
 
 Create test job operations for each domain
 
@@ -90,7 +90,7 @@ Create test job operations for each domain
 function createPrefixedDomainJobOperations(ctx): PathOperationConfig[]
 ```
 
-Defined in: [templates/workflows/shared/operations-domain-jobs.ts:27](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-domain-jobs.ts#L27)
+Defined in: [templates/workflows/shared/operations-domain-jobs.ts:27](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-domain-jobs.ts#L27)
 
 Create placeholder job operations for domains with custom prefixes
 
@@ -120,7 +120,7 @@ Array of path operations for all prefix-based jobs
 function getDomainJobNames(domains): object
 ```
 
-Defined in: [templates/workflows/shared/operations-domain-jobs.ts:231](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-domain-jobs.ts#L231)
+Defined in: [templates/workflows/shared/operations-domain-jobs.ts:231](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-domain-jobs.ts#L231)
 
 Get list of all domain job names for dependency management
 

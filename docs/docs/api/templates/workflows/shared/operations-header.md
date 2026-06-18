@@ -4,7 +4,7 @@
 
 ### HeaderContext
 
-Defined in: [templates/workflows/shared/operations-header.ts:11](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-header.ts#L11)
+Defined in: [templates/workflows/shared/operations-header.ts:11](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-header.ts#L11)
 
 #### Properties
 
@@ -14,7 +14,7 @@ Defined in: [templates/workflows/shared/operations-header.ts:11](https://github.
 branchFlow: string[];
 ```
 
-Defined in: [templates/workflows/shared/operations-header.ts:12](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-header.ts#L12)
+Defined in: [templates/workflows/shared/operations-header.ts:12](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-header.ts#L12)
 
 ##### nodeVersion?
 
@@ -22,7 +22,7 @@ Defined in: [templates/workflows/shared/operations-header.ts:12](https://github.
 optional nodeVersion: string;
 ```
 
-Defined in: [templates/workflows/shared/operations-header.ts:17](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-header.ts#L17)
+Defined in: [templates/workflows/shared/operations-header.ts:17](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-header.ts#L17)
 
 Node version for the pipeline (from config.runtime, or the existing file).
 Falls back to PipeCraft defaults when not provided.
@@ -33,7 +33,7 @@ Falls back to PipeCraft defaults when not provided.
 optional nodeVersionFromConfig: boolean;
 ```
 
-Defined in: [templates/workflows/shared/operations-header.ts:28](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-header.ts#L28)
+Defined in: [templates/workflows/shared/operations-header.ts:28](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-header.ts#L28)
 
 When true, nodeVersion came from config.runtime and is authoritative:
 regeneration overwrites env.NODE_VERSION instead of preserving the existing
@@ -45,7 +45,7 @@ value. When false/undefined the existing value is preserved.
 optional pnpmVersion: string;
 ```
 
-Defined in: [templates/workflows/shared/operations-header.ts:22](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-header.ts#L22)
+Defined in: [templates/workflows/shared/operations-header.ts:22](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-header.ts#L22)
 
 pnpm version for the pipeline (from config.runtime, or the existing file).
 Falls back to PipeCraft defaults when not provided.
@@ -56,7 +56,7 @@ Falls back to PipeCraft defaults when not provided.
 optional pnpmVersionFromConfig: boolean;
 ```
 
-Defined in: [templates/workflows/shared/operations-header.ts:30](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-header.ts#L30)
+Defined in: [templates/workflows/shared/operations-header.ts:30](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-header.ts#L30)
 
 As nodeVersionFromConfig, for env.PNPM_VERSION.
 
@@ -68,7 +68,7 @@ As nodeVersionFromConfig, for env.PNPM_VERSION.
 function createHeaderOperations(ctx): PathOperationConfig[]
 ```
 
-Defined in: [templates/workflows/shared/operations-header.ts:36](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-header.ts#L36)
+Defined in: [templates/workflows/shared/operations-header.ts:36](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-header.ts#L36)
 
 Create workflow header operations (name, run-name, on triggers)
 

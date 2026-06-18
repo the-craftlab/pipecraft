@@ -24,7 +24,7 @@ and have valid values before being used to generate workflows.
 const RESERVED_JOB_NAMES: readonly ['version', 'changes', 'gate', 'tag', 'promote', 'release']
 ```
 
-Defined in: [utils/config.ts:27](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/config.ts#L27)
+Defined in: [utils/config.ts:27](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/config.ts#L27)
 
 Reserved job names that cannot be used as domain names.
 These are managed by Pipecraft and would conflict with generated workflow jobs.
@@ -37,7 +37,7 @@ These are managed by Pipecraft and would conflict with generated workflow jobs.
 function loadConfig(configPath?): any
 ```
 
-Defined in: [utils/config.ts:63](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/config.ts#L63)
+Defined in: [utils/config.ts:63](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/config.ts#L63)
 
 Load PipeCraft configuration from filesystem.
 
@@ -89,7 +89,7 @@ const config = loadConfig('./my-config.json')
 function validateConfig(config): boolean
 ```
 
-Defined in: [utils/config.ts:113](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/config.ts#L113)
+Defined in: [utils/config.ts:113](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/config.ts#L113)
 
 Validate PipeCraft configuration structure and values.
 

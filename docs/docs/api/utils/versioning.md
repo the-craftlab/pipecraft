@@ -18,7 +18,7 @@ bump versions when code is promoted through the pipeline.
 
 ### VersionManager
 
-Defined in: [utils/versioning.ts:46](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/versioning.ts#L46)
+Defined in: [utils/versioning.ts:46](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/versioning.ts#L46)
 
 Manager for semantic versioning and release automation.
 
@@ -51,7 +51,7 @@ console.log(`Next version: ${version} (${type} bump)`)
 new VersionManager(config): VersionManager;
 ```
 
-Defined in: [utils/versioning.ts:54](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/versioning.ts#L54)
+Defined in: [utils/versioning.ts:54](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/versioning.ts#L54)
 
 Create a new VersionManager instance.
 
@@ -75,7 +75,7 @@ PipeCraft configuration object
 calculateNextVersion(): object;
 ```
 
-Defined in: [utils/versioning.ts:382](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/versioning.ts#L382)
+Defined in: [utils/versioning.ts:382](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/versioning.ts#L382)
 
 Calculate the next version based on conventional commits.
 
@@ -115,7 +115,7 @@ console.log(`Next ${type} version: ${version}`)
 generateCommitlintConfig(): string;
 ```
 
-Defined in: [utils/versioning.ts:162](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/versioning.ts#L162)
+Defined in: [utils/versioning.ts:162](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/versioning.ts#L162)
 
 Generate commitlint configuration file content.
 
@@ -143,7 +143,7 @@ JavaScript module string ready to write to commitlint.config.js
 generateHuskyConfig(): string;
 ```
 
-Defined in: [utils/versioning.ts:201](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/versioning.ts#L201)
+Defined in: [utils/versioning.ts:201](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/versioning.ts#L201)
 
 Generate husky commit-msg hook script.
 
@@ -163,7 +163,7 @@ Shell script string ready to write to .husky/commit-msg
 generateReleaseItConfig(): string;
 ```
 
-Defined in: [utils/versioning.ts:79](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/versioning.ts#L79)
+Defined in: [utils/versioning.ts:79](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/versioning.ts#L79)
 
 Generate release-it configuration file content.
 
@@ -197,7 +197,7 @@ writeFileSync('.release-it.cjs', config)
 getCurrentVersion(): string;
 ```
 
-Defined in: [utils/versioning.ts:353](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/versioning.ts#L353)
+Defined in: [utils/versioning.ts:353](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/versioning.ts#L353)
 
 Get the current version from git tags.
 
@@ -223,7 +223,7 @@ console.log(`Current version: v${currentVersion}`)
 setupVersionManagement(): void;
 ```
 
-Defined in: [utils/versioning.ts:231](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/versioning.ts#L231)
+Defined in: [utils/versioning.ts:231](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/versioning.ts#L231)
 
 Setup version management infrastructure.
 
@@ -259,7 +259,7 @@ versionManager.setupVersionManagement()
 validateConventionalCommits(): boolean;
 ```
 
-Defined in: [utils/versioning.ts:320](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/versioning.ts#L320)
+Defined in: [utils/versioning.ts:320](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/versioning.ts#L320)
 
 Validate that recent commits follow conventional commit format.
 

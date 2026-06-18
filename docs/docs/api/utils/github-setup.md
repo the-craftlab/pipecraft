@@ -59,7 +59,7 @@ Result: develop requires manual review, staging and main auto-merge when checks 
 function configureBranchProtection(repoInfo, token, autoApply): Promise<void>
 ```
 
-Defined in: [utils/github-setup.ts:1171](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L1171)
+Defined in: [utils/github-setup.ts:1171](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L1171)
 
 Configure branch protection for branches that need auto-merge
 
@@ -89,7 +89,7 @@ Configure branch protection for branches that need auto-merge
 function displaySettingsComparison(current, recommended, gaps): void
 ```
 
-Defined in: [utils/github-setup.ts:933](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L933)
+Defined in: [utils/github-setup.ts:933](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L933)
 
 Display a comparison table of current vs recommended settings.
 
@@ -119,7 +119,7 @@ Display a comparison table of current vs recommended settings.
 function enableAutoMerge(owner, repo, token): Promise<boolean>
 ```
 
-Defined in: [utils/github-setup.ts:1125](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L1125)
+Defined in: [utils/github-setup.ts:1125](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L1125)
 
 Enable auto-merge feature for the repository
 
@@ -149,7 +149,7 @@ Enable auto-merge feature for the repository
 function formatOrgActionsLockMessage(owner, apiError?): string
 ```
 
-Defined in: [utils/github-setup.ts:404](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L404)
+Defined in: [utils/github-setup.ts:404](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L404)
 
 Build an actionable, human-readable message explaining that an organization
 policy is blocking the repository's workflow permissions, and exactly how an
@@ -184,7 +184,7 @@ A multi-line actionable message
 function getBranchProtection(owner, repo, branch, token): Promise<BranchProtectionRules | null>
 ```
 
-Defined in: [utils/github-setup.ts:1047](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L1047)
+Defined in: [utils/github-setup.ts:1047](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L1047)
 
 Get branch protection rules
 
@@ -218,7 +218,7 @@ Get branch protection rules
 function getGitHubToken(): string
 ```
 
-Defined in: [utils/github-setup.ts:291](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L291)
+Defined in: [utils/github-setup.ts:291](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L291)
 
 Get GitHub authentication token from environment or GitHub CLI.
 
@@ -262,7 +262,7 @@ const token = getGitHubToken() // Uses gh CLI token
 function getMergeCommitSettings(owner, repo, token): Promise<RepositorySettings>
 ```
 
-Defined in: [utils/github-setup.ts:571](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L571)
+Defined in: [utils/github-setup.ts:571](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L571)
 
 Get current merge commit message settings for the repository.
 
@@ -314,7 +314,7 @@ console.log(settings.squash_merge_commit_title) // 'PR_TITLE' or 'COMMIT_OR_PR_T
 function getOrgWorkflowPermissions(org, token): Promise<WorkflowPermissions | null>
 ```
 
-Defined in: [utils/github-setup.ts:432](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L432)
+Defined in: [utils/github-setup.ts:432](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L432)
 
 Get organization-level workflow permissions.
 
@@ -352,7 +352,7 @@ The org workflow permissions, or null if not determinable
 function getRecommendedRepositorySettings(): RepositorySettings
 ```
 
-Defined in: [utils/github-setup.ts:817](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L817)
+Defined in: [utils/github-setup.ts:817](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L817)
 
 Get Pipecraft's recommended repository settings.
 
@@ -378,7 +378,7 @@ These are the settings that work best with Pipecraft workflows:
 function getRepositoryInfo(): RepositoryInfo
 ```
 
-Defined in: [utils/github-setup.ts:238](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L238)
+Defined in: [utils/github-setup.ts:238](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L238)
 
 Extract GitHub repository information from git remote configuration.
 
@@ -421,7 +421,7 @@ console.log(`Owner: ${info.owner}, Repo: ${info.repo}`)
 function getRepositorySettings(owner, repo, token): Promise<RepositorySettings>
 ```
 
-Defined in: [utils/github-setup.ts:832](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L832)
+Defined in: [utils/github-setup.ts:832](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L832)
 
 Get current repository settings from GitHub API.
 
@@ -451,7 +451,7 @@ Get current repository settings from GitHub API.
 function getRequiredMergeCommitChanges(currentSettings): RepositorySettings | null
 ```
 
-Defined in: [utils/github-setup.ts:665](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L665)
+Defined in: [utils/github-setup.ts:665](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L665)
 
 Determine required merge commit setting changes without prompting.
 
@@ -493,7 +493,7 @@ if (changes) {
 function getRequiredPermissionChanges(currentPermissions): Partial<WorkflowPermissions> | null
 ```
 
-Defined in: [utils/github-setup.ts:456](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L456)
+Defined in: [utils/github-setup.ts:456](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L456)
 
 Determine required permission changes without prompting
 Returns: changes object if changes needed, null if already correct
@@ -516,7 +516,7 @@ Returns: changes object if changes needed, null if already correct
 function getSettingsGaps(current, recommended): Partial<RepositorySettings>
 ```
 
-Defined in: [utils/github-setup.ts:893](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L893)
+Defined in: [utils/github-setup.ts:893](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L893)
 
 Compare current settings with recommended settings and return differences.
 
@@ -542,7 +542,7 @@ Compare current settings with recommended settings and return differences.
 function getWorkflowPermissions(owner, repo, token): Promise<WorkflowPermissions>
 ```
 
-Defined in: [utils/github-setup.ts:319](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L319)
+Defined in: [utils/github-setup.ts:319](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L319)
 
 Get current workflow permissions
 
@@ -572,7 +572,7 @@ Get current workflow permissions
 function isOrgActionsPermissionLock(status): boolean
 ```
 
-Defined in: [utils/github-setup.ts:390](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L390)
+Defined in: [utils/github-setup.ts:390](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L390)
 
 Whether an HTTP status from the Actions workflow-permissions API indicates an
 organization-level policy lock.
@@ -604,7 +604,7 @@ true if the status is the org-policy conflict (409)
 function promptApplySettings(gaps): Promise<'declined' | 'apply'>
 ```
 
-Defined in: [utils/github-setup.ts:1025](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L1025)
+Defined in: [utils/github-setup.ts:1025](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L1025)
 
 Prompt user whether to apply recommended settings.
 
@@ -626,7 +626,7 @@ Prompt user whether to apply recommended settings.
 function promptMergeCommitChanges(currentSettings): Promise<RepositorySettings | 'declined' | null>
 ```
 
-Defined in: [utils/github-setup.ts:707](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L707)
+Defined in: [utils/github-setup.ts:707](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L707)
 
 Display current merge commit settings and prompt for changes.
 
@@ -668,7 +668,7 @@ function promptPermissionChanges(
 ): Promise<Partial<WorkflowPermissions> | 'declined' | null>
 ```
 
-Defined in: [utils/github-setup.ts:484](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L484)
+Defined in: [utils/github-setup.ts:484](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L484)
 
 Display current permissions and prompt for changes
 Returns: changes object if user accepted changes, 'declined' if user declined, null if already correct
@@ -691,7 +691,7 @@ Returns: changes object if user accepted changes, 'declined' if user declined, n
 function setupGitHubPermissions(autoApply): Promise<void>
 ```
 
-Defined in: [utils/github-setup.ts:1261](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L1261)
+Defined in: [utils/github-setup.ts:1261](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L1261)
 
 Main setup function
 
@@ -713,7 +713,7 @@ Main setup function
 function shouldEnableAutoMerge(): boolean
 ```
 
-Defined in: [utils/github-setup.ts:781](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L781)
+Defined in: [utils/github-setup.ts:781](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L781)
 
 Check if auto-merge should be enabled based on .pipecraftrc config.
 
@@ -732,7 +732,7 @@ has autoPromote configured in the config file.
 function updateBranchProtection(owner, repo, branch, token): Promise<void>
 ```
 
-Defined in: [utils/github-setup.ts:1080](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L1080)
+Defined in: [utils/github-setup.ts:1080](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L1080)
 
 Update branch protection rules to enable auto-merge
 
@@ -766,7 +766,7 @@ Update branch protection rules to enable auto-merge
 function updateMergeCommitSettings(owner, repo, token, settings): Promise<void>
 ```
 
-Defined in: [utils/github-setup.ts:622](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L622)
+Defined in: [utils/github-setup.ts:622](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L622)
 
 Update merge commit message settings for the repository.
 
@@ -825,7 +825,7 @@ await updateMergeCommitSettings('owner', 'repo', token, {
 function updateRepositorySettings(owner, repo, token, settings): Promise<void>
 ```
 
-Defined in: [utils/github-setup.ts:867](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L867)
+Defined in: [utils/github-setup.ts:867](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L867)
 
 Update repository settings via GitHub API.
 
@@ -859,7 +859,7 @@ Update repository settings via GitHub API.
 function updateWorkflowPermissions(owner, repo, token, permissions): Promise<void>
 ```
 
-Defined in: [utils/github-setup.ts:346](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/github-setup.ts#L346)
+Defined in: [utils/github-setup.ts:346](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/github-setup.ts#L346)
 
 Update workflow permissions
 

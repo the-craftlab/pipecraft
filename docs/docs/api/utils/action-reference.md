@@ -13,7 +13,7 @@ the configured action source mode (embedded, marketplace, or repository).
 function getActionOutputDir(config): string
 ```
 
-Defined in: [utils/action-reference.ts:76](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/action-reference.ts#L76)
+Defined in: [utils/action-reference.ts:76](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/action-reference.ts#L76)
 
 Get the output directory for action files during generation.
 
@@ -49,7 +49,7 @@ getActionOutputDir({ actionSourceMode: 'source' })
 function getActionReference(actionName, config): string
 ```
 
-Defined in: [utils/action-reference.ts:37](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/action-reference.ts#L37)
+Defined in: [utils/action-reference.ts:37](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/action-reference.ts#L37)
 
 Generate the action reference path based on configuration.
 
@@ -100,7 +100,7 @@ getActionReference('detect-changes', { actionSourceMode: 'source' })
 function getActionSourceDescription(config): string
 ```
 
-Defined in: [utils/action-reference.ts:119](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/action-reference.ts#L119)
+Defined in: [utils/action-reference.ts:119](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/action-reference.ts#L119)
 
 Get human-readable description of the action source mode.
 
@@ -126,7 +126,7 @@ Description string for logging/display
 function shouldGenerateActions(config): boolean
 ```
 
-Defined in: [utils/action-reference.ts:108](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/action-reference.ts#L108)
+Defined in: [utils/action-reference.ts:108](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/action-reference.ts#L108)
 
 Check if actions should be generated locally.
 

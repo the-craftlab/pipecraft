@@ -4,7 +4,7 @@
 
 ### TagPromoteContext
 
-Defined in: [templates/workflows/shared/operations-tag-promote.ts:14](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-tag-promote.ts#L14)
+Defined in: [templates/workflows/shared/operations-tag-promote.ts:14](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-tag-promote.ts#L14)
 
 #### Properties
 
@@ -14,7 +14,7 @@ Defined in: [templates/workflows/shared/operations-tag-promote.ts:14](https://gi
 optional autoPromote: Record<string, boolean>;
 ```
 
-Defined in: [templates/workflows/shared/operations-tag-promote.ts:16](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-tag-promote.ts#L16)
+Defined in: [templates/workflows/shared/operations-tag-promote.ts:16](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-tag-promote.ts#L16)
 
 ##### branchFlow
 
@@ -22,7 +22,7 @@ Defined in: [templates/workflows/shared/operations-tag-promote.ts:16](https://gi
 branchFlow: string[];
 ```
 
-Defined in: [templates/workflows/shared/operations-tag-promote.ts:15](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-tag-promote.ts#L15)
+Defined in: [templates/workflows/shared/operations-tag-promote.ts:15](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-tag-promote.ts#L15)
 
 ##### config?
 
@@ -30,7 +30,7 @@ Defined in: [templates/workflows/shared/operations-tag-promote.ts:15](https://gi
 optional config: Partial<PipecraftConfig>;
 ```
 
-Defined in: [templates/workflows/shared/operations-tag-promote.ts:17](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-tag-promote.ts#L17)
+Defined in: [templates/workflows/shared/operations-tag-promote.ts:17](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-tag-promote.ts#L17)
 
 ## Functions
 
@@ -40,7 +40,7 @@ Defined in: [templates/workflows/shared/operations-tag-promote.ts:17](https://gi
 function createTagPromoteReleaseOperations(ctx): PathOperationConfig[]
 ```
 
-Defined in: [templates/workflows/shared/operations-tag-promote.ts:23](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-tag-promote.ts#L23)
+Defined in: [templates/workflows/shared/operations-tag-promote.ts:23](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-tag-promote.ts#L23)
 
 Create tag, promote, and release job operations
 

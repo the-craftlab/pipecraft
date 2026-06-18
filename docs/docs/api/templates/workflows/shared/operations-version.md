@@ -4,7 +4,7 @@
 
 ### VersionContext
 
-Defined in: [templates/workflows/shared/operations-version.ts:14](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-version.ts#L14)
+Defined in: [templates/workflows/shared/operations-version.ts:14](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-version.ts#L14)
 
 #### Properties
 
@@ -14,7 +14,7 @@ Defined in: [templates/workflows/shared/operations-version.ts:14](https://github
 optional baseRef: string;
 ```
 
-Defined in: [templates/workflows/shared/operations-version.ts:16](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-version.ts#L16)
+Defined in: [templates/workflows/shared/operations-version.ts:16](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-version.ts#L16)
 
 ##### config?
 
@@ -22,7 +22,7 @@ Defined in: [templates/workflows/shared/operations-version.ts:16](https://github
 optional config: Partial<PipecraftConfig>;
 ```
 
-Defined in: [templates/workflows/shared/operations-version.ts:17](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-version.ts#L17)
+Defined in: [templates/workflows/shared/operations-version.ts:17](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-version.ts#L17)
 
 ##### testJobNames
 
@@ -30,7 +30,7 @@ Defined in: [templates/workflows/shared/operations-version.ts:17](https://github
 testJobNames: string[];
 ```
 
-Defined in: [templates/workflows/shared/operations-version.ts:15](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-version.ts#L15)
+Defined in: [templates/workflows/shared/operations-version.ts:15](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-version.ts#L15)
 
 ## Functions
 
@@ -40,7 +40,7 @@ Defined in: [templates/workflows/shared/operations-version.ts:15](https://github
 function createVersionJobOperation(ctx): PathOperationConfig
 ```
 
-Defined in: [templates/workflows/shared/operations-version.ts:23](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-version.ts#L23)
+Defined in: [templates/workflows/shared/operations-version.ts:23](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-version.ts#L23)
 
 Create the version calculation job operation
 

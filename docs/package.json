@@ -13,7 +13,7 @@
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc",
-    "typedoc": "typedoc --options typedoc.json"
+    "typedoc": "typedoc --options typedoc.json && prettier --write \"docs/api/**/*.md\""
   },
   "dependencies": {
     "@docusaurus/core": "3.9.2",
@@ -29,6 +29,7 @@
     "@docusaurus/tsconfig": "3.9.2",
     "@docusaurus/types": "3.9.2",
     "docusaurus-plugin-typedoc": "^1.4.2",
+    "prettier": "2.8.8",
     "typedoc": "^0.28.14",
     "typedoc-plugin-markdown": "^4.9.0",
     "typescript": "~5.6.2"

@@ -34,7 +34,7 @@ await generate({
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [templates/workflows/pr-title-check.yml.tpl.ts:53](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/pr-title-check.yml.tpl.ts#L53)
+Defined in: [templates/workflows/pr-title-check.yml.tpl.ts:53](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/pr-title-check.yml.tpl.ts#L53)
 
 Generates the pr-title-check.yml workflow file.
 

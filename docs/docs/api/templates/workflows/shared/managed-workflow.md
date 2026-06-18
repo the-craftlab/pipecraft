@@ -4,7 +4,7 @@
 
 ### ManagedWorkflowContext
 
-Defined in: [templates/workflows/shared/managed-workflow.ts:22](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/managed-workflow.ts#L22)
+Defined in: [templates/workflows/shared/managed-workflow.ts:22](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/managed-workflow.ts#L22)
 
 #### Extends
 
@@ -18,7 +18,7 @@ Defined in: [templates/workflows/shared/managed-workflow.ts:22](https://github.c
 optional pinion: Configuration & object;
 ```
 
-Defined in: [templates/workflows/shared/managed-workflow.ts:23](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/managed-workflow.ts#L23)
+Defined in: [templates/workflows/shared/managed-workflow.ts:23](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/managed-workflow.ts#L23)
 
 ###### Type Declaration
 
@@ -36,7 +36,7 @@ optional force: boolean;
 const MANAGED_WORKFLOW_STRINGIFY_OPTIONS: object
 ```
 
-Defined in: [templates/workflows/shared/managed-workflow.ts:28](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/managed-workflow.ts#L28)
+Defined in: [templates/workflows/shared/managed-workflow.ts:28](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/managed-workflow.ts#L28)
 
 #### Type Declaration
 
@@ -78,7 +78,7 @@ minContentWidth: number = 0
 function applyManagedWorkflowOperations(doc, operations, _ctx): void
 ```
 
-Defined in: [templates/workflows/shared/managed-workflow.ts:71](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/managed-workflow.ts#L71)
+Defined in: [templates/workflows/shared/managed-workflow.ts:71](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/managed-workflow.ts#L71)
 
 #### Parameters
 
@@ -106,7 +106,7 @@ Defined in: [templates/workflows/shared/managed-workflow.ts:71](https://github.c
 function createManagedWorkflowDocument(headerComment, operations, _ctx): Parsed
 ```
 
-Defined in: [templates/workflows/shared/managed-workflow.ts:50](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/managed-workflow.ts#L50)
+Defined in: [templates/workflows/shared/managed-workflow.ts:50](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/managed-workflow.ts#L50)
 
 #### Parameters
 
@@ -134,7 +134,7 @@ Defined in: [templates/workflows/shared/managed-workflow.ts:50](https://github.c
 function stringifyManagedWorkflow(doc, options): string
 ```
 
-Defined in: [templates/workflows/shared/managed-workflow.ts:79](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/managed-workflow.ts#L79)
+Defined in: [templates/workflows/shared/managed-workflow.ts:79](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/managed-workflow.ts#L79)
 
 #### Parameters
 
@@ -176,7 +176,7 @@ Defined in: [templates/workflows/shared/managed-workflow.ts:79](https://github.c
 function updateManagedWorkflowDocument(existingContent, operations, _ctx): Parsed
 ```
 
-Defined in: [templates/workflows/shared/managed-workflow.ts:61](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/managed-workflow.ts#L61)
+Defined in: [templates/workflows/shared/managed-workflow.ts:61](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/managed-workflow.ts#L61)
 
 #### Parameters
 

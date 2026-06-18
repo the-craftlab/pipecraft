@@ -14,7 +14,7 @@ after successful version calculation and tagging.
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [templates/actions/create-release.yml.tpl.ts:142](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/actions/create-release.yml.tpl.ts#L142)
+Defined in: [templates/actions/create-release.yml.tpl.ts:142](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/actions/create-release.yml.tpl.ts#L142)
 
 Generator entry point for create-release composite action.
 

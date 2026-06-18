@@ -47,7 +47,7 @@ jobs:
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [templates/actions/calculate-version.yml.tpl.ts:233](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/actions/calculate-version.yml.tpl.ts#L233)
+Defined in: [templates/actions/calculate-version.yml.tpl.ts:233](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/actions/calculate-version.yml.tpl.ts#L233)
 
 Generator entry point for calculate-version composite action.
 

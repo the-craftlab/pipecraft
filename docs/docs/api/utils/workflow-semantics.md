@@ -14,7 +14,7 @@ This includes:
 
 ### SemanticError
 
-Defined in: [utils/workflow-semantics.ts:16](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L16)
+Defined in: [utils/workflow-semantics.ts:16](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L16)
 
 #### Properties
 
@@ -24,7 +24,7 @@ Defined in: [utils/workflow-semantics.ts:16](https://github.com/the-craftlab/pip
 code: string
 ```
 
-Defined in: [utils/workflow-semantics.ts:18](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L18)
+Defined in: [utils/workflow-semantics.ts:18](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L18)
 
 ##### location?
 
@@ -32,7 +32,7 @@ Defined in: [utils/workflow-semantics.ts:18](https://github.com/the-craftlab/pip
 optional location: string;
 ```
 
-Defined in: [utils/workflow-semantics.ts:20](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L20)
+Defined in: [utils/workflow-semantics.ts:20](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L20)
 
 ##### message
 
@@ -40,7 +40,7 @@ Defined in: [utils/workflow-semantics.ts:20](https://github.com/the-craftlab/pip
 message: string
 ```
 
-Defined in: [utils/workflow-semantics.ts:19](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L19)
+Defined in: [utils/workflow-semantics.ts:19](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L19)
 
 ##### type
 
@@ -48,13 +48,13 @@ Defined in: [utils/workflow-semantics.ts:19](https://github.com/the-craftlab/pip
 type: 'error'
 ```
 
-Defined in: [utils/workflow-semantics.ts:17](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L17)
+Defined in: [utils/workflow-semantics.ts:17](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L17)
 
 ---
 
 ### SemanticValidationResult
 
-Defined in: [utils/workflow-semantics.ts:30](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L30)
+Defined in: [utils/workflow-semantics.ts:30](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L30)
 
 #### Properties
 
@@ -64,7 +64,7 @@ Defined in: [utils/workflow-semantics.ts:30](https://github.com/the-craftlab/pip
 errors: SemanticError[];
 ```
 
-Defined in: [utils/workflow-semantics.ts:32](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L32)
+Defined in: [utils/workflow-semantics.ts:32](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L32)
 
 ##### valid
 
@@ -72,7 +72,7 @@ Defined in: [utils/workflow-semantics.ts:32](https://github.com/the-craftlab/pip
 valid: boolean
 ```
 
-Defined in: [utils/workflow-semantics.ts:31](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L31)
+Defined in: [utils/workflow-semantics.ts:31](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L31)
 
 ##### warnings
 
@@ -80,13 +80,13 @@ Defined in: [utils/workflow-semantics.ts:31](https://github.com/the-craftlab/pip
 warnings: SemanticWarning[];
 ```
 
-Defined in: [utils/workflow-semantics.ts:33](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L33)
+Defined in: [utils/workflow-semantics.ts:33](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L33)
 
 ---
 
 ### SemanticWarning
 
-Defined in: [utils/workflow-semantics.ts:23](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L23)
+Defined in: [utils/workflow-semantics.ts:23](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L23)
 
 #### Properties
 
@@ -96,7 +96,7 @@ Defined in: [utils/workflow-semantics.ts:23](https://github.com/the-craftlab/pip
 code: string
 ```
 
-Defined in: [utils/workflow-semantics.ts:25](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L25)
+Defined in: [utils/workflow-semantics.ts:25](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L25)
 
 ##### location?
 
@@ -104,7 +104,7 @@ Defined in: [utils/workflow-semantics.ts:25](https://github.com/the-craftlab/pip
 optional location: string;
 ```
 
-Defined in: [utils/workflow-semantics.ts:27](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L27)
+Defined in: [utils/workflow-semantics.ts:27](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L27)
 
 ##### message
 
@@ -112,7 +112,7 @@ Defined in: [utils/workflow-semantics.ts:27](https://github.com/the-craftlab/pip
 message: string
 ```
 
-Defined in: [utils/workflow-semantics.ts:26](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L26)
+Defined in: [utils/workflow-semantics.ts:26](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L26)
 
 ##### type
 
@@ -120,7 +120,7 @@ Defined in: [utils/workflow-semantics.ts:26](https://github.com/the-craftlab/pip
 type: 'warning'
 ```
 
-Defined in: [utils/workflow-semantics.ts:24](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L24)
+Defined in: [utils/workflow-semantics.ts:24](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L24)
 
 ## Functions
 
@@ -130,7 +130,7 @@ Defined in: [utils/workflow-semantics.ts:24](https://github.com/the-craftlab/pip
 function validateJobDependencies(yamlContent): SemanticValidationResult
 ```
 
-Defined in: [utils/workflow-semantics.ts:259](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L259)
+Defined in: [utils/workflow-semantics.ts:259](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L259)
 
 Validate job dependencies in a workflow.
 
@@ -172,7 +172,7 @@ if (!result.valid) {
 function validateWorkflowSemantics(yamlContent): SemanticValidationResult
 ```
 
-Defined in: [utils/workflow-semantics.ts:295](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/workflow-semantics.ts#L295)
+Defined in: [utils/workflow-semantics.ts:295](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/workflow-semantics.ts#L295)
 
 Validate a complete workflow for semantic correctness.
 
