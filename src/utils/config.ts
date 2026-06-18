@@ -24,6 +24,7 @@ import {
   KNOWN_DOMAIN_KEYS,
   PipecraftConfig
 } from '../types/index.js'
+import { logger } from './logger.js'
 
 /**
  * Reserved job names that cannot be used as domain names.
@@ -240,5 +241,40 @@ export const validateConfig = (config: any) => {
     }
   }
 
+  // Surface declared-but-inert / deprecated fields (non-fatal).
+  for (const warning of getConfigWarnings(config)) {
+    logger.warn(`⚠️  ${warning}`)
+  }
+
   return true
+}
+
+/**
+ * Collect non-fatal warnings for config fields that are declared/documented but have no
+ * effect, so the dead surface is visible instead of silently ignored.
+ *
+ * - `mergeMethod` and `mergeStrategy: 'merge'` are consumed nowhere — promotions always
+ *   fast-forward (the promote action hardcodes `--ff-only`).
+ * - `autoMerge` is a deprecated alias for `autoPromote`.
+ *
+ * @param config - A config object (already structurally validated)
+ * @returns Human-readable warning strings (empty when the config is clean)
+ */
+export const getConfigWarnings = (config: any): string[] => {
+  const warnings: string[] = []
+
+  if (config?.mergeStrategy === 'merge') {
+    warnings.push(
+      "mergeStrategy: 'merge' is not implemented; promotions always fast-forward. " +
+        "Use 'fast-forward'."
+    )
+  }
+  if (config?.mergeMethod !== undefined) {
+    warnings.push('mergeMethod is declared but has no effect; promotions always fast-forward.')
+  }
+  if (config?.autoMerge !== undefined) {
+    warnings.push('autoMerge is deprecated; use autoPromote instead.')
+  }
+
+  return warnings
 }
