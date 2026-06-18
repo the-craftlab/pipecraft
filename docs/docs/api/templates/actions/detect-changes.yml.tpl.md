@@ -28,7 +28,7 @@ This allows the same action to work with any domain configuration without regene
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [templates/actions/detect-changes.yml.tpl.ts:210](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/actions/detect-changes.yml.tpl.ts#L210)
+Defined in: [templates/actions/detect-changes.yml.tpl.ts:210](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/actions/detect-changes.yml.tpl.ts#L210)
 
 Generator entry point for detect-changes composite action.
 

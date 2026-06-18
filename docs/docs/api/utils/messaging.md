@@ -36,7 +36,7 @@ and provides clear, actionable feedback during GitHub setup.
 
 ### MessageContext
 
-Defined in: [utils/messaging.ts:38](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L38)
+Defined in: [utils/messaging.ts:38](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L38)
 
 #### Properties
 
@@ -46,7 +46,7 @@ Defined in: [utils/messaging.ts:38](https://github.com/the-craftlab/pipecraft/bl
 autoApply: boolean
 ```
 
-Defined in: [utils/messaging.ts:41](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L41)
+Defined in: [utils/messaging.ts:41](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L41)
 
 ##### persona
 
@@ -54,7 +54,7 @@ Defined in: [utils/messaging.ts:41](https://github.com/the-craftlab/pipecraft/bl
 persona: UserPersona
 ```
 
-Defined in: [utils/messaging.ts:39](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L39)
+Defined in: [utils/messaging.ts:39](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L39)
 
 ##### verbose
 
@@ -62,13 +62,13 @@ Defined in: [utils/messaging.ts:39](https://github.com/the-craftlab/pipecraft/bl
 verbose: boolean
 ```
 
-Defined in: [utils/messaging.ts:40](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L40)
+Defined in: [utils/messaging.ts:40](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L40)
 
 ---
 
 ### SetupSummary
 
-Defined in: [utils/messaging.ts:54](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L54)
+Defined in: [utils/messaging.ts:54](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L54)
 
 #### Properties
 
@@ -78,7 +78,7 @@ Defined in: [utils/messaging.ts:54](https://github.com/the-craftlab/pipecraft/bl
 autoPromote: StatusItem[];
 ```
 
-Defined in: [utils/messaging.ts:59](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L59)
+Defined in: [utils/messaging.ts:59](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L59)
 
 ##### errors
 
@@ -86,7 +86,7 @@ Defined in: [utils/messaging.ts:59](https://github.com/the-craftlab/pipecraft/bl
 errors: string[];
 ```
 
-Defined in: [utils/messaging.ts:62](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L62)
+Defined in: [utils/messaging.ts:62](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L62)
 
 ##### nextSteps
 
@@ -94,7 +94,7 @@ Defined in: [utils/messaging.ts:62](https://github.com/the-craftlab/pipecraft/bl
 nextSteps: string[];
 ```
 
-Defined in: [utils/messaging.ts:60](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L60)
+Defined in: [utils/messaging.ts:60](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L60)
 
 ##### overallStatus
 
@@ -102,7 +102,7 @@ Defined in: [utils/messaging.ts:60](https://github.com/the-craftlab/pipecraft/bl
 overallStatus: 'error' | 'ready' | 'needs-setup' | 'partial'
 ```
 
-Defined in: [utils/messaging.ts:56](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L56)
+Defined in: [utils/messaging.ts:56](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L56)
 
 ##### permissions
 
@@ -110,7 +110,7 @@ Defined in: [utils/messaging.ts:56](https://github.com/the-craftlab/pipecraft/bl
 permissions: StatusItem[];
 ```
 
-Defined in: [utils/messaging.ts:57](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L57)
+Defined in: [utils/messaging.ts:57](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L57)
 
 ##### repository
 
@@ -118,7 +118,7 @@ Defined in: [utils/messaging.ts:57](https://github.com/the-craftlab/pipecraft/bl
 repository: string
 ```
 
-Defined in: [utils/messaging.ts:55](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L55)
+Defined in: [utils/messaging.ts:55](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L55)
 
 ##### settings
 
@@ -126,7 +126,7 @@ Defined in: [utils/messaging.ts:55](https://github.com/the-craftlab/pipecraft/bl
 settings: StatusItem[];
 ```
 
-Defined in: [utils/messaging.ts:58](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L58)
+Defined in: [utils/messaging.ts:58](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L58)
 
 ##### warnings
 
@@ -134,13 +134,13 @@ Defined in: [utils/messaging.ts:58](https://github.com/the-craftlab/pipecraft/bl
 warnings: string[];
 ```
 
-Defined in: [utils/messaging.ts:61](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L61)
+Defined in: [utils/messaging.ts:61](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L61)
 
 ---
 
 ### StatusItem
 
-Defined in: [utils/messaging.ts:44](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L44)
+Defined in: [utils/messaging.ts:44](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L44)
 
 #### Properties
 
@@ -150,7 +150,7 @@ Defined in: [utils/messaging.ts:44](https://github.com/the-craftlab/pipecraft/bl
 optional action: string;
 ```
 
-Defined in: [utils/messaging.ts:51](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L51)
+Defined in: [utils/messaging.ts:51](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L51)
 
 ##### category
 
@@ -158,7 +158,7 @@ Defined in: [utils/messaging.ts:51](https://github.com/the-craftlab/pipecraft/bl
 category: string
 ```
 
-Defined in: [utils/messaging.ts:45](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L45)
+Defined in: [utils/messaging.ts:45](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L45)
 
 ##### current
 
@@ -166,7 +166,7 @@ Defined in: [utils/messaging.ts:45](https://github.com/the-craftlab/pipecraft/bl
 current: string
 ```
 
-Defined in: [utils/messaging.ts:47](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L47)
+Defined in: [utils/messaging.ts:47](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L47)
 
 ##### explanation?
 
@@ -174,7 +174,7 @@ Defined in: [utils/messaging.ts:47](https://github.com/the-craftlab/pipecraft/bl
 optional explanation: string;
 ```
 
-Defined in: [utils/messaging.ts:50](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L50)
+Defined in: [utils/messaging.ts:50](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L50)
 
 ##### name
 
@@ -182,7 +182,7 @@ Defined in: [utils/messaging.ts:50](https://github.com/the-craftlab/pipecraft/bl
 name: string
 ```
 
-Defined in: [utils/messaging.ts:46](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L46)
+Defined in: [utils/messaging.ts:46](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L46)
 
 ##### recommended
 
@@ -190,7 +190,7 @@ Defined in: [utils/messaging.ts:46](https://github.com/the-craftlab/pipecraft/bl
 recommended: string | null
 ```
 
-Defined in: [utils/messaging.ts:48](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L48)
+Defined in: [utils/messaging.ts:48](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L48)
 
 ##### status
 
@@ -198,7 +198,7 @@ Defined in: [utils/messaging.ts:48](https://github.com/the-craftlab/pipecraft/bl
 status: 'error' | 'correct' | 'needs-change' | 'missing'
 ```
 
-Defined in: [utils/messaging.ts:49](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L49)
+Defined in: [utils/messaging.ts:49](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L49)
 
 ## Type Aliases
 
@@ -208,7 +208,7 @@ Defined in: [utils/messaging.ts:49](https://github.com/the-craftlab/pipecraft/bl
 type MessageSeverity = 'critical' | 'warning' | 'info' | 'success'
 ```
 
-Defined in: [utils/messaging.ts:36](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L36)
+Defined in: [utils/messaging.ts:36](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L36)
 
 ---
 
@@ -218,7 +218,7 @@ Defined in: [utils/messaging.ts:36](https://github.com/the-craftlab/pipecraft/bl
 type UserPersona = 'startup' | 'team-lead' | 'platform-engineer'
 ```
 
-Defined in: [utils/messaging.ts:34](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L34)
+Defined in: [utils/messaging.ts:34](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L34)
 
 ## Functions
 
@@ -228,7 +228,7 @@ Defined in: [utils/messaging.ts:34](https://github.com/the-craftlab/pipecraft/bl
 function createSetupSummary(repository, permissions, settings, autoPromote, context): SetupSummary
 ```
 
-Defined in: [utils/messaging.ts:193](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L193)
+Defined in: [utils/messaging.ts:193](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L193)
 
 Create setup summary
 
@@ -266,7 +266,7 @@ Create setup summary
 function detectPersona(context): UserPersona
 ```
 
-Defined in: [utils/messaging.ts:68](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L68)
+Defined in: [utils/messaging.ts:68](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L68)
 
 Detect user persona based on context clues
 
@@ -302,7 +302,7 @@ Detect user persona based on context clues
 function formatMessage(message, severity, context): string
 ```
 
-Defined in: [utils/messaging.ts:91](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L91)
+Defined in: [utils/messaging.ts:91](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L91)
 
 Format message based on persona and severity
 
@@ -332,7 +332,7 @@ Format message based on persona and severity
 function formatNextSteps(steps, context): string
 ```
 
-Defined in: [utils/messaging.ts:170](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L170)
+Defined in: [utils/messaging.ts:170](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L170)
 
 Format next steps based on persona
 
@@ -358,7 +358,7 @@ Format next steps based on persona
 function formatQuickSuccess(repository, context): string
 ```
 
-Defined in: [utils/messaging.ts:309](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L309)
+Defined in: [utils/messaging.ts:309](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L309)
 
 Simple success message for when everything is already configured
 
@@ -384,7 +384,7 @@ Simple success message for when everything is already configured
 function formatSetupSummary(summary, context): string
 ```
 
-Defined in: [utils/messaging.ts:248](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L248)
+Defined in: [utils/messaging.ts:248](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L248)
 
 Format the complete setup summary
 
@@ -410,7 +410,7 @@ Format the complete setup summary
 function formatStatusTable(items, context): string
 ```
 
-Defined in: [utils/messaging.ts:121](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/utils/messaging.ts#L121)
+Defined in: [utils/messaging.ts:121](https://github.com/the-craftlab/pipecraft/blob/main/src/utils/messaging.ts#L121)
 
 Create a clean status table
 

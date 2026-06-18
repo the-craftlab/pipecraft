@@ -4,7 +4,7 @@
 
 ### ChangesContext
 
-Defined in: [templates/workflows/shared/operations-changes.ts:21](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-changes.ts#L21)
+Defined in: [templates/workflows/shared/operations-changes.ts:21](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-changes.ts#L21)
 
 #### Properties
 
@@ -14,7 +14,7 @@ Defined in: [templates/workflows/shared/operations-changes.ts:21](https://github
 optional baseRef: string;
 ```
 
-Defined in: [templates/workflows/shared/operations-changes.ts:23](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-changes.ts#L23)
+Defined in: [templates/workflows/shared/operations-changes.ts:23](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-changes.ts#L23)
 
 ##### config?
 
@@ -22,7 +22,7 @@ Defined in: [templates/workflows/shared/operations-changes.ts:23](https://github
 optional config: Partial<PipecraftConfig>;
 ```
 
-Defined in: [templates/workflows/shared/operations-changes.ts:24](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-changes.ts#L24)
+Defined in: [templates/workflows/shared/operations-changes.ts:24](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-changes.ts#L24)
 
 ##### domains
 
@@ -30,7 +30,7 @@ Defined in: [templates/workflows/shared/operations-changes.ts:24](https://github
 domains: Record<string, any>
 ```
 
-Defined in: [templates/workflows/shared/operations-changes.ts:22](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-changes.ts#L22)
+Defined in: [templates/workflows/shared/operations-changes.ts:22](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-changes.ts#L22)
 
 ## Functions
 
@@ -40,7 +40,7 @@ Defined in: [templates/workflows/shared/operations-changes.ts:22](https://github
 function createChangesJobOperation(ctx): PathOperationConfig
 ```
 
-Defined in: [templates/workflows/shared/operations-changes.ts:33](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/shared/operations-changes.ts#L33)
+Defined in: [templates/workflows/shared/operations-changes.ts:33](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/shared/operations-changes.ts#L33)
 
 Create the changes detection job operation.
 

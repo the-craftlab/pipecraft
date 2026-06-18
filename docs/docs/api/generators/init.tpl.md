@@ -37,7 +37,7 @@ respect user input and allow customization.
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [generators/init.tpl.ts:338](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/generators/init.tpl.ts#L338)
+Defined in: [generators/init.tpl.ts:338](https://github.com/the-craftlab/pipecraft/blob/main/src/generators/init.tpl.ts#L338)
 
 Init generator main entry point.
 

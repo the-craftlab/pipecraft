@@ -10,7 +10,7 @@ for generating CI/CD pipelines with trunk-based development workflows.
 
 ### DomainConfig
 
-Defined in: [types/index.ts:27](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L27)
+Defined in: [types/index.ts:27](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L27)
 
 Configuration for a single domain (monorepo workspace) in a PipeCraft project.
 
@@ -36,7 +36,7 @@ const apiDomain: DomainConfig = {
 optional deployable: boolean;
 ```
 
-Defined in: [types/index.ts:71](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L71)
+Defined in: [types/index.ts:71](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L71)
 
 Whether this domain should be deployed.
 If true, generates deployment jobs for this domain.
@@ -57,7 +57,7 @@ Use `prefixes: ['deploy']` instead for more flexibility
 description: string
 ```
 
-Defined in: [types/index.ts:38](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L38)
+Defined in: [types/index.ts:38](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L38)
 
 Human-readable description of the domain's purpose.
 Used in workflow comments and documentation.
@@ -68,7 +68,7 @@ Used in workflow comments and documentation.
 paths: string[];
 ```
 
-Defined in: [types/index.ts:32](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L32)
+Defined in: [types/index.ts:32](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L32)
 
 Glob patterns matching files in this domain.
 Changes to these paths will trigger domain-specific jobs.
@@ -79,7 +79,7 @@ Changes to these paths will trigger domain-specific jobs.
 optional prefixes: string[];
 ```
 
-Defined in: [types/index.ts:55](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L55)
+Defined in: [types/index.ts:55](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L55)
 
 Job prefixes to generate for this domain.
 Each prefix generates a customizable placeholder job named `{prefix}-{domain}`.
@@ -109,7 +109,7 @@ Prefixes provide more flexibility than the boolean flags (testable, deployable, 
 optional remoteTestable: boolean;
 ```
 
-Defined in: [types/index.ts:79](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L79)
+Defined in: [types/index.ts:79](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L79)
 
 Whether this domain should be tested remotely after deployment.
 If true, generates remote test jobs for this domain.
@@ -130,7 +130,7 @@ Use `prefixes: ['remote-test']` instead for more flexibility
 optional testable: boolean;
 ```
 
-Defined in: [types/index.ts:63](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L63)
+Defined in: [types/index.ts:63](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L63)
 
 Whether this domain has tests that should be run.
 If true, generates test jobs for this domain.
@@ -149,7 +149,7 @@ Use `prefixes: ['test']` instead for more flexibility
 
 ### PipecraftConfig
 
-Defined in: [types/index.ts:113](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L113)
+Defined in: [types/index.ts:113](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L113)
 
 Complete PipeCraft configuration schema.
 
@@ -190,7 +190,7 @@ const config: PipecraftConfig = {
 optional actionSourceMode: "local" | "remote" | "source";
 ```
 
-Defined in: [types/index.ts:276](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L276)
+Defined in: [types/index.ts:276](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L276)
 
 How workflows should reference PipeCraft actions.
 
@@ -227,7 +227,7 @@ actionSourceMode: 'source'
 optional actionVersion: string;
 ```
 
-Defined in: [types/index.ts:285](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L285)
+Defined in: [types/index.ts:285](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L285)
 
 Version/tag to use when actionSourceMode is 'remote'.
 Pins workflows to a specific marketplace action version.
@@ -250,7 +250,7 @@ Pins workflows to a specific marketplace action version.
 optional autoPromote: boolean | Record<string, boolean>;
 ```
 
-Defined in: [types/index.ts:164](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L164)
+Defined in: [types/index.ts:164](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L164)
 
 Auto-promote configuration for branch promotions.
 
@@ -273,7 +273,7 @@ false
 branchFlow: string[];
 ```
 
-Defined in: [types/index.ts:152](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L152)
+Defined in: [types/index.ts:152](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L152)
 
 Ordered list of branches in the promotion flow from initial to final.
 Must start with initialBranch and end with finalBranch.
@@ -290,7 +290,7 @@ Must start with initialBranch and end with finalBranch.
 ciProvider: 'github' | 'gitlab'
 ```
 
-Defined in: [types/index.ts:118](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L118)
+Defined in: [types/index.ts:118](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L118)
 
 CI/CD provider platform.
 Currently 'github' is fully supported, 'gitlab' support is planned.
@@ -301,7 +301,7 @@ Currently 'github' is fully supported, 'gitlab' support is planned.
 domains: Record<string, DomainConfig>
 ```
 
-Defined in: [types/index.ts:210](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L210)
+Defined in: [types/index.ts:210](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L210)
 
 Domain definitions for monorepo path-based change detection.
 Each domain represents a logical part of the codebase with its own
@@ -313,7 +313,7 @@ test and deployment requirements.
 finalBranch: string
 ```
 
-Defined in: [types/index.ts:144](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L144)
+Defined in: [types/index.ts:144](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L144)
 
 The final production branch (typically 'main' or 'master').
 This is the last branch in the promotion flow.
@@ -324,7 +324,7 @@ This is the last branch in the promotion flow.
 initialBranch: string
 ```
 
-Defined in: [types/index.ts:138](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L138)
+Defined in: [types/index.ts:138](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L138)
 
 The first branch in the promotion flow (typically 'develop' or 'dev').
 All feature branches merge into this branch.
@@ -340,7 +340,7 @@ optional mergeMethod:
 | Record<string, "merge" | "auto" | "squash" | "rebase">;
 ```
 
-Defined in: [types/index.ts:176](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L176)
+Defined in: [types/index.ts:176](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L176)
 
 Git merge method for auto-merge operations.
 
@@ -363,7 +363,7 @@ Can be set globally or per-branch.
 mergeStrategy: 'fast-forward' | 'merge'
 ```
 
-Defined in: [types/index.ts:125](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L125)
+Defined in: [types/index.ts:125](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L125)
 
 Git merge strategy for branch promotions.
 
@@ -376,7 +376,7 @@ Git merge strategy for branch promotions.
 optional packageManager: "npm" | "yarn" | "pnpm";
 ```
 
-Defined in: [types/index.ts:220](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L220)
+Defined in: [types/index.ts:220](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L220)
 
 Package manager used for dependency installation.
 
@@ -393,7 +393,7 @@ configs with this field will continue to work, but it has no effect.
 optional rebuild: object;
 ```
 
-Defined in: [types/index.ts:291](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L291)
+Defined in: [types/index.ts:291](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L291)
 
 Idempotency and rebuild configuration.
 Controls when workflows should be regenerated based on config/template changes.
@@ -462,7 +462,7 @@ Enable watch mode for automatic regeneration on config changes.
 requireConventionalCommits: boolean
 ```
 
-Defined in: [types/index.ts:132](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L132)
+Defined in: [types/index.ts:132](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L132)
 
 Whether to enforce conventional commit message format.
 If true, commit messages must follow the Conventional Commits specification.
@@ -477,7 +477,7 @@ https://www.conventionalcommits.org/
 optional runtime: object;
 ```
 
-Defined in: [types/index.ts:236](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L236)
+Defined in: [types/index.ts:236](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L236)
 
 Runtime tool versions for generated CI/CD workflows.
 
@@ -529,7 +529,7 @@ runtime: { nodeVersion: '22', pnpmVersion: '10' }
 semver: object
 ```
 
-Defined in: [types/index.ts:198](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L198)
+Defined in: [types/index.ts:198](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L198)
 
 Semantic versioning configuration.
 Maps conventional commit types to version bump levels.
@@ -560,7 +560,7 @@ semver: {
 optional versioning: object;
 ```
 
-Defined in: [types/index.ts:334](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/types/index.ts#L334)
+Defined in: [types/index.ts:334](https://github.com/the-craftlab/pipecraft/blob/main/src/types/index.ts#L334)
 
 Version management configuration using release-it.
 Enables automatic version bumping, tagging, and changelog generation.

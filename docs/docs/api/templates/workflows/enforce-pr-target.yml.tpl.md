@@ -35,7 +35,7 @@ await generate({
 function generate(ctx): Promise<any>
 ```
 
-Defined in: [templates/workflows/enforce-pr-target.yml.tpl.ts:54](https://github.com/the-craftlab/pipecraft/blob/b7312a6766bca4e83d219560237c5ba10f0b57b8/src/templates/workflows/enforce-pr-target.yml.tpl.ts#L54)
+Defined in: [templates/workflows/enforce-pr-target.yml.tpl.ts:54](https://github.com/the-craftlab/pipecraft/blob/main/src/templates/workflows/enforce-pr-target.yml.tpl.ts#L54)
 
 Generates the enforce-pr-target.yml workflow file.
 
