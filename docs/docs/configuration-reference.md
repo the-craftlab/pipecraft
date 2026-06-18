@@ -119,7 +119,6 @@ Specifies which package manager to use for dependency installation in generated 
 
 **Impact on generated workflows:**
 
-- **Nx workflows**: Uses the configured package manager for dependency installation
 - **Install commands** with automatic fallback:
   - `npm`: `npm ci || npm install`
   - `yarn`: `yarn install --frozen-lockfile || yarn install`
@@ -135,10 +134,7 @@ Use explicit configuration when:
 
 ```json
 {
-  "packageManager": "pnpm",
-  "nx": {
-    "enabled": true
-  }
+  "packageManager": "pnpm"
 }
 ```
 
