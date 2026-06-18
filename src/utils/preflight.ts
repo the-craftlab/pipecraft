@@ -18,6 +18,7 @@
 
 import { execSync } from 'child_process'
 import { cosmiconfigSync } from 'cosmiconfig'
+import { validateConfig } from './config.js'
 import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
@@ -156,6 +157,19 @@ export function checkConfigValid(): PreflightResult {
         passed: false,
         message: 'Config has no domains configured',
         suggestion: 'Add at least one domain to your config file'
+      }
+    }
+
+    // Delegate to the full validator so preflight and `pipecraft validate` agree:
+    // catches unknown/misspelled keys, invalid enums, and branch-flow ordering that the
+    // lightweight checks above do not cover.
+    try {
+      validateConfig(config)
+    } catch (error: any) {
+      return {
+        passed: false,
+        message: error.message,
+        suggestion: "Fix the reported issue, or run 'pipecraft init --force' to recreate config"
       }
     }
 

@@ -18,7 +18,12 @@
  */
 
 import { cosmiconfigSync } from 'cosmiconfig'
-import { type DomainConfig, PipecraftConfig } from '../types/index.js'
+import {
+  type DomainConfig,
+  KNOWN_CONFIG_KEYS,
+  KNOWN_DOMAIN_KEYS,
+  PipecraftConfig
+} from '../types/index.js'
 
 /**
  * Reserved job names that cannot be used as domain names.
@@ -111,6 +116,25 @@ export const loadConfig = (configPath?: string) => {
  * ```
  */
 export const validateConfig = (config: any) => {
+  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+    throw new Error('Configuration must be an object')
+  }
+
+  // Reject unknown / misspelled top-level keys. Silently ignoring them was the root
+  // cause of the historical autoMerge / nx bugs: a wrong key passed validation and was
+  // dropped at generation time. KNOWN_CONFIG_KEYS is kept in lockstep with the types
+  // (compile-time) and the JSON schema (schema-types-consistency.test.ts). `$schema` is
+  // allowed as an editor-only meta key.
+  const allowedTopLevel = new Set<string>([...KNOWN_CONFIG_KEYS, '$schema'])
+  const unknownTopLevel = Object.keys(config).filter(key => !allowedTopLevel.has(key))
+  if (unknownTopLevel.length > 0) {
+    throw new Error(
+      `Unknown config key${unknownTopLevel.length > 1 ? 's' : ''}: ` +
+        `${unknownTopLevel.map(k => `"${k}"`).join(', ')}. ` +
+        `Allowed keys: ${KNOWN_CONFIG_KEYS.join(', ')}.`
+    )
+  }
+
   // Check for all required top-level fields
   const requiredFields = [
     'ciProvider',
@@ -185,6 +209,17 @@ export const validateConfig = (config: any) => {
   ][]) {
     if (!domainConfig || typeof domainConfig !== 'object') {
       throw new Error(`Domain "${domainName}" must be an object`)
+    }
+
+    // Reject unknown / misspelled domain keys.
+    const allowedDomainKeys = new Set<string>(KNOWN_DOMAIN_KEYS)
+    const unknownDomainKeys = Object.keys(domainConfig).filter(key => !allowedDomainKeys.has(key))
+    if (unknownDomainKeys.length > 0) {
+      throw new Error(
+        `Domain "${domainName}" has unknown key${unknownDomainKeys.length > 1 ? 's' : ''}: ` +
+          `${unknownDomainKeys.map(k => `"${k}"`).join(', ')}. ` +
+          `Allowed keys: ${KNOWN_DOMAIN_KEYS.join(', ')}.`
+      )
     }
 
     if (!domainConfig.paths || !Array.isArray(domainConfig.paths)) {

@@ -4,6 +4,7 @@
   "title": "PipeCraft Configuration",
   "description": "Configuration schema for PipeCraft CI/CD workflow generator. Supports trunk-based development with domain-based change detection, semantic versioning, and branch promotion.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "ciProvider",
     "mergeStrategy",
@@ -263,6 +264,7 @@
   "definitions": {
     "DomainConfig": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["paths", "description"],
       "properties": {
         "paths": {
