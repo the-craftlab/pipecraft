@@ -10,6 +10,24 @@ _what · why · source_.
 > User-facing aspirational roadmap (GitLab CI, flow patterns) lives in
 > `docs/docs/roadmap.md`; this file is the internal, gap-driven plan.
 
+## Status (2026-06-18)
+
+**✅ Shipped in #436** (squash `f9c4396` on `develop`): all of **P0 (1–5)** and **P1
+items 6, 7 (concurrency only), 8, 9, 10, 11**. Each landed as its own tested commit.
+
+**Still open:**
+
+- **P1.7 / B2** — thread the version through promotion (only the `concurrency:` guard
+  shipped; the durable version-threading remains).
+- **P1.10 follow-up** — rework the custom-jobs merge to dedup managed-named jobs so the
+  duplicate-key detection (currently a non-fatal warning) can become a hard error.
+- **P1.12** — publish the marketplace actions (out-of-band release step).
+- **P2 (12–17)** — improvements & forward features (below).
+- **Out-of-band (not code):** set branch protection's required check to `gate` so the
+  now-robust gate is actually enforced at merge.
+
+Items below are kept for history/context; see the strikethrough/✅ markers.
+
 ---
 
 ## P0 — Correctness & trust (verified High-severity)
