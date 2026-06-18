@@ -46,6 +46,7 @@ describe('runtime config -> pipeline env versions', () => {
     expect(node?.operation).toBe('preserve')
     expect(scalarValue(node)).toBe('22')
     expect(pnpm?.operation).toBe('preserve')
-    expect(scalarValue(pnpm)).toBe('10')
+    // Default pnpm is pinned to an exact patch (not a floating major) for reproducibility.
+    expect(scalarValue(pnpm)).toBe('10.6.2')
   })
 })

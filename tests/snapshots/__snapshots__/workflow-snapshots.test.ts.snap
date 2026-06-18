@@ -4,6 +4,8 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
 "{
   name: { value: Pipeline },
 
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
+
   permissions: write,
 
   run-name: "\${{ github.event_name == 'pull_request' && !contains('develop,main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #\${{ inputs.run_number || github.run_number }}\${{ inputs.version && format(' - {0}', inputs.version) || '' }}",
@@ -17,7 +19,7 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ develop, main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ develop ] } },
   jobs:
@@ -49,15 +51,19 @@ exports[`Workflow Snapshots > Config: minimal > should match snapshot 1`] = `
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -90,6 +96,8 @@ exports[`Workflow Snapshots > Config: multi-domain > should match snapshot 1`] =
 "{
   name: { value: Pipeline },
 
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
+
   permissions: write,
 
   run-name: "\${{ github.event_name == 'pull_request' && !contains('develop,main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #\${{ inputs.run_number || github.run_number }}\${{ inputs.version && format(' - {0}', inputs.version) || '' }}",
@@ -103,7 +111,7 @@ exports[`Workflow Snapshots > Config: multi-domain > should match snapshot 1`] =
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ develop, main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ develop ] } },
   jobs:
@@ -157,15 +165,19 @@ exports[`Workflow Snapshots > Config: multi-domain > should match snapshot 1`] =
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -198,6 +210,8 @@ exports[`Workflow Snapshots > Config: remote-actions > should match snapshot 1`]
 "{
   name: { value: Pipeline },
 
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
+
   permissions: write,
 
   run-name: "\${{ github.event_name == 'pull_request' && !contains('develop,main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #\${{ inputs.run_number || github.run_number }}\${{ inputs.version && format(' - {0}', inputs.version) || '' }}",
@@ -211,7 +225,7 @@ exports[`Workflow Snapshots > Config: remote-actions > should match snapshot 1`]
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ develop, main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ develop ] } },
   jobs:
@@ -255,15 +269,19 @@ exports[`Workflow Snapshots > Config: remote-actions > should match snapshot 1`]
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: the-craftlab/pipecraft/actions/calculate-version@v1, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -296,6 +314,8 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
 "{
   name: { value: Pipeline },
 
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
+
   permissions: write,
 
   run-name: "\${{ github.event_name == 'pull_request' && !contains('main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #\${{ inputs.run_number || github.run_number }}\${{ inputs.version && format(' - {0}', inputs.version) || '' }}",
@@ -309,7 +329,7 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ main ] } },
   jobs:
@@ -349,15 +369,19 @@ exports[`Workflow Snapshots > Config: single-branch > should match snapshot 1`] 
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -390,6 +414,8 @@ exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] =
 "{
   name: { value: Pipeline },
 
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
+
   permissions: write,
 
   run-name: "\${{ github.event_name == 'pull_request' && !contains('develop,staging,main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #\${{ inputs.run_number || github.run_number }}\${{ inputs.version && format(' - {0}', inputs.version) || '' }}",
@@ -403,7 +429,7 @@ exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] =
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ develop, staging, main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ develop ] } },
   jobs:
@@ -451,15 +477,19 @@ exports[`Workflow Snapshots > Config: three-branch > should match snapshot 1`] =
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)
@@ -492,6 +522,8 @@ exports[`Workflow Snapshots > Config: with-auto-merge > should match snapshot 1`
 "{
   name: { value: Pipeline },
 
+  concurrency: { group: "\${{ github.workflow }}-\${{ github.ref_name }}", cancel-in-progress: false },
+
   permissions: write,
 
   run-name: "\${{ github.event_name == 'pull_request' && !contains('develop,staging,main', github.head_ref) && github.event.pull_request.title || github.ref_name }} #\${{ inputs.run_number || github.run_number }}\${{ inputs.version && format(' - {0}', inputs.version) || '' }}",
@@ -505,7 +537,7 @@ exports[`Workflow Snapshots > Config: with-auto-merge > should match snapshot 1`
 
 #Runtime versions
 # Update these to match your project's requirements without regenerating workflows
-  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: "10" } },
+  env: { FETCH_DEPTH_AFFECTED: { value: "100" }, FETCH_DEPTH_VERSIONING: { value: "0" }, NODE_VERSION: { value: "22" }, PNPM_VERSION: { value: 10.6.2 } },
 
   on: { workflow_dispatch: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, workflow_call: { inputs: { version: { description: The version to deploy, required: false, type: string }, baseRef: { description: The base reference for comparison, required: false, type: string }, run_number: { description: The original run number from develop branch, required: false, type: string }, commitSha: { description: The exact commit SHA to checkout and test, required: false, type: string }, beforeSha: { description: The commit SHA before promotion (for change detection), required: false, type: string } } }, push: { branches: [ develop, staging, main ] }, pull_request: { types: [ opened, synchronize, reopened ], branches: [ develop ] } },
   jobs:
@@ -537,15 +569,19 @@ exports[`Workflow Snapshots > Config: with-auto-merge > should match snapshot 1`
       version: { needs: [ changes ], if: "\${{ always() && github.event_name != 'pull_request' }}", runs-on: ubuntu-latest, steps: [ { uses: actions/checkout@v5, with: { ref: "\${{ inputs.commitSha || github.sha }}", fetch-depth: "\${{ env.FETCH_DEPTH_VERSIONING }}" } }, { uses: ./.github/actions/calculate-version, id: version, with: { baseRef: "\${{ inputs.baseRef || 'main' }}", version: "\${{ inputs.version }}", node-version: "\${{ env.NODE_VERSION }}", commitSha: "\${{ inputs.commitSha }}" } }, { name: Warn if no version resolved on the final branch, if: "\${{ github.ref_name == 'main' && steps.version.outputs.version == '' }}", shell: bash, run: "echo \\"::warning title=pipecraft::No version resolved on final branch 'main' — tag/release will be skipped. This usually means the promote PR was merged as a merge commit, leaving the version tag off HEAD. Merge promote PRs with fast-forward or rebase so the tag lands on HEAD.\\"\\n" } ], outputs: { version: "\${{ steps.version.outputs.version }}" } },
 
       #=============================================================================
-    # GATE (⚠️  Managed by Pipecraft - customizable needs and if)
+    # GATE (Managed by Pipecraft)
     #=============================================================================
-    # Gate job that ensures prior jobs succeed before allowing tag/promote/release.
-    # Uses pattern: allow only SUCCESS or SKIPPED results (failures block progression).
+    # Ensures prerequisite jobs pass before tag/promote/release run.
 
-    # ⚡ CUSTOMIZATION: Add your custom test/build jobs to 'needs' array and update
-    # the 'if' condition to include them. These fields are preserved on regeneration.
-    # Example: needs: [changes, version, test-myapp, build-myapp]
-      gate: { runs-on: ubuntu-latest, steps: [ { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() && (needs['changes'].result == 'success' || needs['changes'].result == 'skipped') && (needs['version'].result == 'success' || needs['version'].result == 'skipped') }}" },
+    # ✅ CUSTOMIZABLE (preserved on regeneration): add your test/build jobs to 'needs'.
+    #    The gate checks every job in 'needs' automatically (via needs.*.result), so you
+    #    do NOT edit the 'if' or the steps.
+    #    Example: needs: [changes, version, test-myapp, build-myapp]
+
+    # 🔒 MANAGED (re-asserted on every 'pipecraft generate'): 'if: always()' and the
+    #    fail-on-failure step. This keeps the gate from being silently disabled. Run
+    #    'pipecraft generate --force' to reset the whole gate to template defaults.
+      gate: { runs-on: ubuntu-latest, steps: [ { name: Fail if any prerequisite job failed, if: "\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}", run: echo "::error::A prerequisite job failed - blocking progression" && exit 1 }, { name: Gate passed, run: echo "All prerequisite jobs succeeded or were skipped - gate allows progression" } ], needs: [ changes, version ], if: "\${{ always() }}" },
 
       #=============================================================================
     # TAG (⚠️  Managed by Pipecraft - customizable needs and if)

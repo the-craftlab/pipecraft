@@ -4,6 +4,7 @@
   "title": "PipeCraft Configuration",
   "description": "Configuration schema for PipeCraft CI/CD workflow generator. Supports trunk-based development with domain-based change detection, semantic versioning, and branch promotion.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "ciProvider",
     "mergeStrategy",
@@ -137,6 +138,25 @@
       "deprecated": true,
       "description": "DEPRECATED: This field is no longer used. PipeCraft now supports language-agnostic workflows."
     },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nodeVersion": {
+          "type": "string",
+          "default": "22",
+          "description": "Node.js version for generated workflows. Accepts a major (e.g. '22') or an exact version (e.g. '22.18.0').",
+          "examples": ["22", "22.18.0"]
+        },
+        "pnpmVersion": {
+          "type": "string",
+          "default": "10",
+          "description": "pnpm version for generated workflows. Accepts a major (e.g. '10') or an exact version (e.g. '10.6.2').",
+          "examples": ["10", "10.6.2"]
+        }
+      },
+      "description": "Runtime tool versions for generated CI/CD workflows. Drives the NODE_VERSION / PNPM_VERSION workflow env vars without hand-editing generated files."
+    },
     "actionSourceMode": {
       "type": "string",
       "enum": ["local", "remote", "source"],
@@ -244,6 +264,7 @@
   "definitions": {
     "DomainConfig": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["paths", "description"],
       "properties": {
         "paths": {

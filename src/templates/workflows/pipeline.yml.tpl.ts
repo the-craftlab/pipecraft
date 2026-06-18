@@ -12,6 +12,7 @@ import fs from 'fs'
 import { Document, parseDocument, Scalar, stringify, YAMLMap } from 'yaml'
 import type { PipecraftConfig } from '../../types/index.js'
 import { type PathOperationConfig } from '../../utils/ast-path-operations.js'
+import { RESERVED_JOB_NAMES } from '../../utils/config.js'
 import { logger } from '../../utils/logger.js'
 import { formatIfConditions } from '../yaml-format-utils.js'
 import {
@@ -30,6 +31,68 @@ interface PathBasedPipelineContext extends PinionContext {
   branchFlow: string[]
   domains: Record<string, any>
   outputPipelinePath?: string
+}
+
+/**
+ * Header comment written at the top of generated pipelines. It states the managed-section
+ * contract honestly: customizations (custom jobs, managed-job `needs`/`runs-on`, name) are
+ * preserved across `pipecraft generate`; correctness-critical wiring is re-asserted; and
+ * `--force` resets managed sections to defaults.
+ */
+export const MANAGED_WORKFLOW_HEADER = `=============================================================================
+ PIPECRAFT MANAGED WORKFLOW
+=============================================================================
+
+ ✅ YOU CAN CUSTOMIZE (preserved across 'pipecraft generate'):
+   - Custom jobs between the '# <--START CUSTOM JOBS-->' / '# <--END CUSTOM JOBS-->' markers
+   - The 'needs' list and 'runs-on' of managed jobs
+   - The workflow name
+
+ 🔒 PIPECRAFT MANAGES (re-asserted on every generate; edits here are reset):
+   - Workflow triggers and the changes / version / tag / promote / release job logic
+   - The gate's 'if: always()' and its fail-on-failure step
+
+ ♻️  Regeneration PRESERVES the customizations above. To reset managed sections
+    (including the gate) to template defaults, run: pipecraft generate --force
+
+ 📌 VERSION PROMOTION BEHAVIOR:
+   - Only commits that trigger a version bump promote to staging/main
+   - Non-versioned commits (test, build, etc.) remain on develop
+
+ 📖 Learn more: https://pipecraft.thecraftlab.dev
+=============================================================================`
+
+/**
+ * Detect duplicate keys in the generated workflow (e.g. a custom job whose name collides
+ * with a Pipecraft-managed job: changes/version/gate/tag/promote/release). Duplicate keys
+ * make the workflow unparseable on GitHub.
+ *
+ * Returns the duplicate-key error messages (empty when clean). Callers surface these as a
+ * non-fatal warning rather than throwing: the marker/merge path can produce duplicates in
+ * messy edge cases (jobs scattered outside markers, repeated in-process regenerations), and
+ * hard-failing there would regress existing preservation behavior. See ROADMAP for the
+ * deeper merge-dedup fix.
+ *
+ * @param yamlContent - The fully generated workflow YAML, about to be written
+ * @returns Duplicate-key error messages (empty array when there are none)
+ */
+export function findDuplicateKeyMessages(yamlContent: string): string[] {
+  return parseDocument(yamlContent)
+    .errors.filter(err => err.code === 'DUPLICATE_KEY')
+    .map(err => err.message)
+}
+
+/** Warn (non-fatal) if the generated workflow contains duplicate keys. */
+function warnOnDuplicateKeys(yamlContent: string): void {
+  const duplicates = findDuplicateKeyMessages(yamlContent)
+  if (duplicates.length > 0) {
+    logger.warn(
+      `⚠️  Generated workflow has duplicate keys — usually a custom job name colliding ` +
+        `with a Pipecraft-managed job (${RESERVED_JOB_NAMES.join(', ')}). ` +
+        `Rename the custom job(s) and regenerate.`
+    )
+    for (const message of duplicates) logger.warn(`   ${message}`)
+  }
 }
 
 /**
@@ -292,7 +355,7 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           existingDoc.contents && (existingDoc.contents as any).get
             ? (existingDoc.contents as any).get('jobs')
             : null
-        const managedJobs = new Set(['changes', 'version', 'gate', 'tag', 'promote', 'release'])
+        const managedJobs = new Set<string>(RESERVED_JOB_NAMES as readonly string[])
 
         // Extract gate job's needs and if for preservation
         if (existingJobs && (existingJobs as any).get) {
@@ -373,30 +436,7 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           : '🔄 Force mode: Rebuilding path-based pipeline from scratch'
         logger.verbose(logMessage)
 
-        const headerComment = `=============================================================================
- PIPECRAFT MANAGED WORKFLOW
-=============================================================================
-
- ✅ YOU CAN CUSTOMIZE:
-   - Custom jobs between the '# <--START CUSTOM JOBS-->' and '# <--END CUSTOM JOBS-->' comment markers
-   - Workflow name
-
- ⚠️  PIPECRAFT MANAGES (do not modify):
-   - Workflow triggers, job dependencies, and conditionals
-   - Changes detection, version calculation, and tag creation
-   - Tag, promote, and release jobs
-
- 📌 VERSION PROMOTION BEHAVIOR:
-   - Only commits that trigger a version bump will promote to staging/main
-   - Non-versioned commits (test, build, etc.) remain on develop
-   - This keeps staging/main aligned with tagged releases
-
- Running 'pipecraft generate' updates managed sections while preserving
- your customizations in test/deploy/remote-test jobs.
-
- 📖 Learn more: https://pipecraft.thecraftlab.dev
-=============================================================================`
-        const doc = createManagedWorkflowDocument(headerComment, operations, ctx)
+        const doc = createManagedWorkflowDocument(MANAGED_WORKFLOW_HEADER, operations, ctx)
 
         // Restore preserved gate job needs/if (for force mode)
         if (preservedGateNeeds || preservedGateIf) {
@@ -464,6 +504,7 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           logger.verbose('📝 Added placeholder user section markers')
         }
 
+        warnOnDuplicateKeys(yamlContent)
         const formattedContent = formatIfConditions(yamlContent)
         const status = mergedCustomContent ? 'merged' : fileExists ? 'rebuilt' : 'created'
         return { ...ctx, yamlContent: formattedContent, mergeStatus: status }
@@ -524,6 +565,7 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           yamlContent.slice(insertionIndex)
       }
 
+      warnOnDuplicateKeys(yamlContent)
       const formattedContent = formatIfConditions(yamlContent)
       const status = userSection ? 'merged' : 'updated'
       return { ...ctx, yamlContent: formattedContent, mergeStatus: status }

@@ -18,7 +18,13 @@
  */
 
 import { cosmiconfigSync } from 'cosmiconfig'
-import { type DomainConfig, PipecraftConfig } from '../types/index.js'
+import {
+  type DomainConfig,
+  KNOWN_CONFIG_KEYS,
+  KNOWN_DOMAIN_KEYS,
+  PipecraftConfig
+} from '../types/index.js'
+import { logger } from './logger.js'
 
 /**
  * Reserved job names that cannot be used as domain names.
@@ -111,6 +117,25 @@ export const loadConfig = (configPath?: string) => {
  * ```
  */
 export const validateConfig = (config: any) => {
+  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+    throw new Error('Configuration must be an object')
+  }
+
+  // Reject unknown / misspelled top-level keys. Silently ignoring them was the root
+  // cause of the historical autoMerge / nx bugs: a wrong key passed validation and was
+  // dropped at generation time. KNOWN_CONFIG_KEYS is kept in lockstep with the types
+  // (compile-time) and the JSON schema (schema-types-consistency.test.ts). `$schema` is
+  // allowed as an editor-only meta key.
+  const allowedTopLevel = new Set<string>([...KNOWN_CONFIG_KEYS, '$schema'])
+  const unknownTopLevel = Object.keys(config).filter(key => !allowedTopLevel.has(key))
+  if (unknownTopLevel.length > 0) {
+    throw new Error(
+      `Unknown config key${unknownTopLevel.length > 1 ? 's' : ''}: ` +
+        `${unknownTopLevel.map(k => `"${k}"`).join(', ')}. ` +
+        `Allowed keys: ${KNOWN_CONFIG_KEYS.join(', ')}.`
+    )
+  }
+
   // Check for all required top-level fields
   const requiredFields = [
     'ciProvider',
@@ -187,6 +212,17 @@ export const validateConfig = (config: any) => {
       throw new Error(`Domain "${domainName}" must be an object`)
     }
 
+    // Reject unknown / misspelled domain keys.
+    const allowedDomainKeys = new Set<string>(KNOWN_DOMAIN_KEYS)
+    const unknownDomainKeys = Object.keys(domainConfig).filter(key => !allowedDomainKeys.has(key))
+    if (unknownDomainKeys.length > 0) {
+      throw new Error(
+        `Domain "${domainName}" has unknown key${unknownDomainKeys.length > 1 ? 's' : ''}: ` +
+          `${unknownDomainKeys.map(k => `"${k}"`).join(', ')}. ` +
+          `Allowed keys: ${KNOWN_DOMAIN_KEYS.join(', ')}.`
+      )
+    }
+
     if (!domainConfig.paths || !Array.isArray(domainConfig.paths)) {
       throw new Error(`Domain "${domainName}" must have a "paths" array`)
     }
@@ -205,5 +241,40 @@ export const validateConfig = (config: any) => {
     }
   }
 
+  // Surface declared-but-inert / deprecated fields (non-fatal).
+  for (const warning of getConfigWarnings(config)) {
+    logger.warn(`⚠️  ${warning}`)
+  }
+
   return true
+}
+
+/**
+ * Collect non-fatal warnings for config fields that are declared/documented but have no
+ * effect, so the dead surface is visible instead of silently ignored.
+ *
+ * - `mergeMethod` and `mergeStrategy: 'merge'` are consumed nowhere — promotions always
+ *   fast-forward (the promote action hardcodes `--ff-only`).
+ * - `autoMerge` is a deprecated alias for `autoPromote`.
+ *
+ * @param config - A config object (already structurally validated)
+ * @returns Human-readable warning strings (empty when the config is clean)
+ */
+export const getConfigWarnings = (config: any): string[] => {
+  const warnings: string[] = []
+
+  if (config?.mergeStrategy === 'merge') {
+    warnings.push(
+      "mergeStrategy: 'merge' is not implemented; promotions always fast-forward. " +
+        "Use 'fast-forward'."
+    )
+  }
+  if (config?.mergeMethod !== undefined) {
+    warnings.push('mergeMethod is declared but has no effect; promotions always fast-forward.')
+  }
+  if (config?.autoMerge !== undefined) {
+    warnings.push('autoMerge is deprecated; use autoPromote instead.')
+  }
+
+  return warnings
 }
