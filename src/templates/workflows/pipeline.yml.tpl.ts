@@ -82,6 +82,57 @@ export function findDuplicateKeyMessages(yamlContent: string): string[] {
     .map(err => err.message)
 }
 
+/**
+ * Strip top-level job blocks whose name is a Pipecraft-managed job (changes/version/
+ * gate/tag/promote/release) from a custom-jobs section.
+ *
+ * Managed jobs are emitted by the managed operations, never by the custom section. If one
+ * leaks into the extracted custom section (e.g. a workflow edited so a managed job landed
+ * between the markers), keeping it would duplicate the key. This is a no-op on the normal
+ * case (the custom section never legitimately contains managed jobs), so preservation
+ * behaviour is unchanged — it only removes the abnormal duplicate source.
+ *
+ * Top-level job keys sit at two-space indent; a block runs until the next top-level key.
+ *
+ * @param section - The custom-jobs section text (between markers), or null
+ * @returns The cleaned section and the names of any managed jobs removed
+ */
+export function stripReservedJobBlocks(section: string | null): {
+  cleaned: string | null
+  removed: string[]
+} {
+  if (!section) return { cleaned: section, removed: [] }
+
+  const reserved = new Set<string>(RESERVED_JOB_NAMES as readonly string[])
+  const lines = section.split('\n')
+  const jobStart = /^ {2}([A-Za-z0-9_-]+):/
+
+  // Index of every top-level job key line.
+  const starts: Array<{ name: string; idx: number }> = []
+  lines.forEach((line, idx) => {
+    const match = line.match(jobStart)
+    if (match) starts.push({ name: match[1], idx })
+  })
+
+  const drop = new Array<boolean>(lines.length).fill(false)
+  const removed: string[] = []
+  starts.forEach((start, s) => {
+    if (!reserved.has(start.name.toLowerCase())) return
+    removed.push(start.name)
+    const end = s + 1 < starts.length ? starts[s + 1].idx : lines.length
+    for (let k = start.idx; k < end; k++) drop[k] = true
+  })
+
+  if (removed.length === 0) return { cleaned: section, removed: [] }
+
+  const cleaned = lines
+    .filter((_, idx) => !drop[idx])
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+  return { cleaned: cleaned.length > 0 ? cleaned : null, removed: [...new Set(removed)] }
+}
+
 /** Warn (non-fatal) if the generated workflow contains duplicate keys. */
 function warnOnDuplicateKeys(yamlContent: string): void {
   const duplicates = findDuplicateKeyMessages(yamlContent)
@@ -427,6 +478,18 @@ export const generate = (ctx: PathBasedPipelineContext) =>
         } else {
           logger.warn('⚠️  No custom jobs found in existing pipeline')
         }
+      }
+
+      // Managed jobs are emitted separately; if any leaked into the extracted custom
+      // section, drop them here so they can't duplicate the managed key in the output.
+      const stripped = stripReservedJobBlocks(userSection)
+      if (stripped.removed.length > 0) {
+        logger.warn(
+          `⚠️  Dropped ${stripped.removed.length} managed-named job(s) from the custom ` +
+            `section (${stripped.removed.join(', ')}); these are managed by Pipecraft. ` +
+            `Rename them if they were meant to be custom jobs.`
+        )
+        userSection = stripped.cleaned
       }
 
       // In force mode or new file, create fresh document to ensure correct structure
