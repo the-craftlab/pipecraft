@@ -277,10 +277,14 @@ jobs:
     needs:
       - changes
       - version
+    # always() so a skipped `version` dependency (version is skipped on pull_request
+    # events) doesn't cascade-skip this job — without it, docs PRs never run the docs
+    # build, and the gate treats the skip as a pass.
     if: ${{
-        needs.changes.outputs.docs == 'true' ||
+        always() &&
+        (needs.changes.outputs.docs == 'true' ||
         (needs.version.result == 'success' &&
-        needs.version.outputs.version != '')
+        needs.version.outputs.version != ''))
       }}
     runs-on: ubuntu-latest
     steps:
