@@ -50,26 +50,19 @@ No! PipeCraft works great for both monorepos and single-application projects:
 
 - **Monorepos**: Domain-based change detection shines here—only test affected parts
 - **Single repos**: Still benefit from semantic versioning, branch flow automation, and workflow generation
-- **Nx monorepos**: Full integration with Nx dependency graphs
+- **Any monorepo toolchain** (Nx, Turborepo, etc.): map projects to domains via path globs — PipeCraft is tool-agnostic
 
 Even a simple project benefits from having a production-ready workflow with versioning and release automation built-in.
 
-### Can I use PipeCraft without Nx?
+### Do I need Nx (or any specific monorepo tool)?
 
-Yes! PipeCraft has two modes:
+No. PipeCraft is language- and tool-agnostic. Change detection is **path-based**
+(via `dorny/paths-filter`): you define domains with glob patterns and only affected
+domains run.
 
-1. **Path-based detection** (default): Uses glob patterns to detect changes
-
-   - Works with any project structure
-   - No additional dependencies
-   - Configure domains with path patterns
-
-2. **Nx-based detection** (optional): Leverages Nx dependency graphs
-   - Automatically detects Nx workspaces
-   - Maps Nx projects to domains
-   - Uses `nx affected` for smarter change detection
-
-You choose which mode fits your project. Most users start with path-based detection.
+- Works with any project structure (single repo, Nx, Turborepo, plain monorepo)
+- No required dependencies or tool-specific integration
+- For an Nx/Turborepo repo, map each project to a domain using its path globs
 
 ---
 
@@ -334,7 +327,7 @@ Common causes:
 
 3. **Branch comparison**: Verify correct base branch
    - Default: origin/main
-   - Configure with `baseRef` in Nx mode
+   - Configure with `baseRef`
 
 **Debug with:**
 
@@ -440,44 +433,17 @@ Vote on [roadmap issues](https://github.com/the-craftlab/pipecraft/issues) to pr
 
 ---
 
-## Nx Integration
+## Monorepo / Nx repositories
 
-### How does PipeCraft detect Nx?
+PipeCraft does not special-case Nx (or any build tool). It detects changes with
+path globs, so any monorepo works the same way:
 
-PipeCraft automatically detects Nx by looking for:
+- Define one domain per project (or logical area), with `paths` matching that
+  project's directory.
+- Only domains whose paths changed will run — the same outcome Nx's affected graph
+  gives you, expressed as configuration you own.
 
-- `nx.json` in repository root
-- `@nx/` or `@nrwl/` packages in package.json
-
-If found, it offers Nx integration during `pipecraft init`.
-
-### What's the difference between path-based and Nx-based detection?
-
-**Path-based detection:**
-
-- Uses glob patterns to match files
-- Simple and works everywhere
-- Doesn't understand dependencies
-
-**Nx-based detection:**
-
-- Uses Nx dependency graph
-- Automatically detects affected projects
-- Smarter about shared libraries
-- Leverages Nx caching
-
-If you have Nx, use Nx-based detection—it's more accurate and faster.
-
-### Can I use PipeCraft with Nx Cloud?
-
-Yes! They complement each other:
-
-- **PipeCraft**: Generates the workflow orchestration
-- **Nx Cloud**: Provides distributed caching and task distribution
-
-Configure Nx Cloud separately and PipeCraft workflows will use it automatically.
-
----
+There is no `nx` config block, Nx auto-detection, or `nx affected` integration.
 
 ## Cost & Performance
 
@@ -516,10 +482,9 @@ This adds up quickly in active repositories.
 ### How can I optimize workflow performance?
 
 1. **Use caching**: PipeCraft workflows include dependency caching
-2. **Enable Nx**: If you have Nx, use Nx-based detection for faster builds
-3. **Parallelize domains**: Multiple domains test concurrently
-4. **Use matrix strategies**: Test across Node versions in parallel
-5. **Skip unnecessary jobs**: Use `testable: false` for non-testable domains
+2. **Parallelize domains**: Multiple domains test concurrently
+3. **Use matrix strategies**: Test across Node versions in parallel
+4. **Skip unnecessary jobs**: Use `testable: false` for non-testable domains
 
 ---
 

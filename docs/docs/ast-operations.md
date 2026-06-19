@@ -42,7 +42,7 @@ applyPathOperations(doc.contents, operations)
 - [Examples](#examples)
 - [Best Practices](#best-practices)
 
-## ✨ Features
+## ✨ Features {#features}
 
 - **🎯 Path-based targeting**: Use dot notation to target specific YAML paths
 - **🔧 Multiple operation types**: Set, merge, overwrite, or preserve values
@@ -51,7 +51,7 @@ applyPathOperations(doc.contents, operations)
 - **⚡ Context injection**: Dynamic values can be injected at build time
 - **🔄 Intelligent merging**: Smart merge logic for objects and arrays
 
-## 🔧 Operation Types
+## 🔧 Operation Types {#operation-types}
 
 ### `set`
 
@@ -105,7 +105,7 @@ Keep existing value, ignore template value
 }
 ```
 
-## 📦 Value Types
+## 📦 Value Types {#value-types}
 
 ### Objects
 
@@ -172,7 +172,7 @@ const parsedJob = parseDocument(`
 }
 ```
 
-## 📚 API Reference
+## 📚 API Reference {#api-reference}
 
 ### Core Functions
 
@@ -219,7 +219,7 @@ Create a YAML node from a JavaScript object
 
 Create a YAML node from a JavaScript array
 
-## 💡 Examples
+## 💡 Examples {#examples}
 
 ### Basic Workflow Configuration
 
@@ -311,7 +311,7 @@ const operations = [
 ]
 ```
 
-## 🎯 Best Practices
+## 🎯 Best Practices {#best-practices}
 
 ### 1. Use Appropriate Value Types
 

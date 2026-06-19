@@ -115,6 +115,26 @@ pipecraft generate --force
 
 Or manually add the permissions block after the `name:` field in your workflow file.
 
+## Promotion PRs fail with "Cannot create pull request" (org-level lock)
+
+If promotion fails with an error like:
+
+```
+HTTP 409: Cannot create pull request
+```
+
+and the `setup-github` command reports "blocked by organization policy", your GitHub organization has disabled "Allow GitHub Actions to create and approve pull requests" at the **org level**. Repository-level settings cannot override this.
+
+**Diagnosis:** Run `pipecraft doctor` — it detects this lock and reports it explicitly.
+
+**Remediation:** An org admin must enable this setting at the org level:
+
+1. Go to your GitHub organization's **Settings → Actions → General**
+2. Under "Workflow permissions", check **"Allow GitHub Actions to create and approve pull requests"**
+3. Save
+
+Once enabled at the org level, the repository-level setting (configured by `pipecraft setup-github`) takes effect.
+
 ## Regeneration says "No changes detected"
 
 PipeCraft caches your configuration to avoid unnecessary regeneration. If you see this message but want to regenerate anyway, use the `--force` flag:

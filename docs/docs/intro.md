@@ -17,7 +17,7 @@ PipeCraft eliminates these debugging cycles by providing battle-tested templates
 
 When customizations become complex or you need to incorporate updates, regenerate from templates. PipeCraft's smart merging preserves your custom jobs and deployment steps while updating the core workflow structure. This gives you the best of both worlds: the speed of templates with the flexibility of full ownership.
 
-The templates include best practices for monorepos where different parts of your codebase need independent testing. PipeCraft's domain-based change detection ensures only affected code gets tested, reducing CI costs and runtime. For Nx workspaces, PipeCraft automatically detects your setup and generates optimized workflows that use Nx's dependency graph for even more precise change detection. The workflows also handle semantic versioning, changelog generation, and automated branch promotions—common requirements that are tedious to implement correctly from scratch.
+The templates include best practices for monorepos where different parts of your codebase need independent testing. PipeCraft's domain-based change detection ensures only affected code gets tested, reducing CI costs and runtime. Monorepos of any kind (Nx, Turborepo, plain) work the same way: map each project to a domain with path globs and only affected domains run. The workflows also handle semantic versioning, changelog generation, and automated branch promotions—common requirements that are tedious to implement correctly from scratch.
 
 ## Your first workflow
 
@@ -57,12 +57,10 @@ For domains, you can select from:
 
 - **API + Web** (common monorepo pattern)
 - **Frontend + Backend** (full-stack pattern)
-- **Apps + Libs** (Nx-style monorepo)
+- **Apps + Libs** (monorepo, any toolchain)
 - **Custom domains** (enter your own comma-separated list)
 
 If you choose custom domains, PipeCraft will warn you that you'll need to edit the paths in the generated configuration to match your actual project structure.
-
-PipeCraft also auto-detects Nx workspaces and will enable Nx integration if found.
 
 After answering these questions, you'll have a `.pipecraftrc.json` file:
 
@@ -109,8 +107,6 @@ After answering these questions, you'll have a `.pipecraftrc.json` file:
 
 **Note:** The domains are generated based on your selection during init. If you chose custom domains, you'll need to edit the paths in `.pipecraftrc.json` to match your actual project structure. You can always add, remove, or modify domains after generation.
 
-If PipeCraft detects an Nx workspace, it will also add an `nx` configuration section with detected tasks and optimization settings.
-
 This configuration tells PipeCraft everything it needs to know about your project structure.
 
 ### Generate workflows
@@ -145,10 +141,6 @@ PipeCraft creates:
 **Configuration:**
 
 - `.release-it.cjs` - Release-it configuration for version management
-
-If you have an Nx workspace, PipeCraft also generates:
-
-- `actions/detect-changes-nx/action.yml` - Nx-optimized change detection
 
 Open `.github/workflows/pipeline.yml` and you'll see a complete workflow with jobs for testing, versioning, and deploying both domains. The workflow is ready to use - you just need to add your specific test and deploy commands.
 
