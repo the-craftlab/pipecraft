@@ -1,4 +1,4 @@
-# CLI Reference
+# Quickstart
 
 PipeCraft is a command-line tool that generates CI/CD workflows for your project. This guide covers the essential commands you'll use day-to-day.
 

@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# Commands
+# CLI Reference
 
 PipeCraft provides a focused set of commands designed to get you from zero to a working CI/CD pipeline with minimal friction. Each command serves a specific purpose in your workflow, from initial setup through ongoing maintenance and troubleshooting.
 
