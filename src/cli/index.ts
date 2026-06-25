@@ -491,12 +491,17 @@ program
           }
         }
 
-        // Push branch to remote if it doesn't exist there
-        try {
-          console.log(`📤 Checking if '${branch}' exists on remote...`)
-          execSync(`git ls-remote --heads origin ${branch}`, { stdio: 'pipe' })
+        // Push branch to remote if it doesn't exist there.
+        // NOTE: `git ls-remote --heads origin <branch>` exits 0 even when the branch is
+        // absent (empty output) — so we must check the OUTPUT, not whether it throws.
+        // The previous `try/catch` always took the "exists" path and never pushed.
+        console.log(`📤 Checking if '${branch}' exists on remote...`)
+        const remoteRef = execSync(`git ls-remote --heads origin ${branch}`, {
+          encoding: 'utf8'
+        }).trim()
+        if (remoteRef.length > 0) {
           console.log(`✅ Branch '${branch}' already exists on remote`)
-        } catch (error: any) {
+        } else {
           console.log(`🚀 Pushing branch '${branch}' to remote...`)
           execSync(`git push -u origin ${branch}`, { stdio: 'inherit' })
           console.log(`✅ Pushed branch '${branch}' to remote`)
