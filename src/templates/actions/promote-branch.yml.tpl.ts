@@ -20,7 +20,7 @@ import type { PipecraftConfig } from '../../types/index.js'
  * @param {any} ctx - Context (not currently used)
  * @returns {string} YAML content for the composite action
  */
-const promoteBranchActionTemplate = (ctx: any) => {
+export const promoteBranchActionTemplate = (ctx: any) => {
   return dedent`name: 'Promote Branch'
     description: 'Promote code from source to target branch via temporary branch + PR'
     author: 'PipeCraft'
@@ -131,19 +131,16 @@ const promoteBranchActionTemplate = (ctx: any) => {
             # Ensure we're on the source branch
             git checkout "\$SOURCE"
 
-            # Check if temp branch already exists locally or remotely
-            if git show-ref --verify --quiet refs/heads/"\$TEMP_BRANCH" || git ls-remote --heads origin "\$TEMP_BRANCH" | grep -q "\$TEMP_BRANCH"; then
-              echo "⚠️  Temp branch \$TEMP_BRANCH already exists, using existing branch"
-              # Fetch and checkout existing branch
-              git fetch origin "\$TEMP_BRANCH" 2>/dev/null || true
-              git checkout "\$TEMP_BRANCH" 2>/dev/null || git checkout -b "\$TEMP_BRANCH" origin/"\$TEMP_BRANCH"
-            else
-              echo "📝 Creating new temp branch \$TEMP_BRANCH"
-              # Create temp branch from current commit
-              git checkout -b "\$TEMP_BRANCH"
-              # Push temp branch to remote
-              git push origin "\$TEMP_BRANCH"
-            fi
+            # Always (re)create the temp branch at SOURCE's current tip. A branch of the
+            # same name may linger from an earlier no-op promotion pointing at an OLD commit
+            # (the manual-gate path leaves its temp branch behind). Reusing it as-is makes
+            # 'gh pr create' report "No commits between" and silently no-op, so a genuine
+            # promotion produces no gate PR. Forcing the temp branch to SOURCE keeps the
+            # promotion honest and stays idempotent on legitimate re-runs of the same version.
+            echo "📝 (Re)creating temp branch \$TEMP_BRANCH at \$SOURCE tip"
+            git branch -f "\$TEMP_BRANCH" "\$SOURCE"
+            git checkout "\$TEMP_BRANCH"
+            git push --force origin "\$TEMP_BRANCH"
 
             echo "tempBranch=\$TEMP_BRANCH" >> \$GITHUB_OUTPUT
             echo "✅ Temporary branch ready"
@@ -223,6 +220,9 @@ const promoteBranchActionTemplate = (ctx: any) => {
               echo "ℹ️  '\$TARGET' is already up to date with '\$SOURCE' — nothing to promote."
               echo "prNumber=" >> \$GITHUB_OUTPUT
               echo "prUrl=" >> \$GITHUB_OUTPUT
+              # No PR was opened against this temp branch, so delete it. Leaving it behind is
+              # what caused the stale-reuse no-op on the next same-version promotion.
+              git push origin --delete "\$TEMP_BRANCH" 2>/dev/null || true
             else
               echo "❌ Failed to create PR"
               echo "Error output:"

@@ -13,7 +13,7 @@ import type { PipecraftConfig } from '../../../types/index.js'
 
 export interface TagPromoteContext {
   branchFlow: string[]
-  autoPromote?: Record<string, boolean> // autoPromote settings per branch
+  autoPromote?: boolean | Record<string, boolean> // global boolean, or per-target map
   mergeStrategy?: 'fast-forward' | 'merge' // how promotions land on the target branch
   config?: Partial<PipecraftConfig>
 }
@@ -246,15 +246,22 @@ function buildTargetBranchExpression(branchFlow: string[]): string {
  */
 function buildAutoPromoteExpression(
   branchFlow: string[],
-  autoPromote?: Record<string, boolean>
+  autoPromote?: boolean | Record<string, boolean>
 ): string {
   if (!autoPromote || branchFlow.length === 1) return `'false'`
+
+  // autoPromote may be a global boolean (true = auto-promote every hop) or a per-target
+  // map ({ staging: true, main: false }). A bare `true` must enable every hop — indexing
+  // it as `true[targetBranch]` yields undefined, which previously made `autoPromote: true`
+  // silently behave as all-manual.
+  const allHops = autoPromote === true
+  const map = typeof autoPromote === 'object' ? autoPromote : {}
 
   const clauses: string[] = []
   for (let i = 0; i < branchFlow.length - 1; i += 1) {
     const sourceBranch = branchFlow[i]
     const targetBranch = branchFlow[i + 1]
-    const isEnabled = autoPromote[targetBranch] ? 'true' : 'false'
+    const isEnabled = allHops || map[targetBranch] ? 'true' : 'false'
     clauses.push(`(github.ref_name == '${sourceBranch}' && '${isEnabled}')`)
   }
 
