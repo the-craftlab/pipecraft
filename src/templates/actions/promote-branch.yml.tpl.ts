@@ -52,7 +52,7 @@ const promoteBranchActionTemplate = (ctx: any) => {
       tempBranchPattern:
         description: 'Pattern for temp branch name'
         required: false
-        default: 'release/{source}-to-{target}-{version}'
+        default: 'pipecraft-promote/{source}-to-{target}-{version}'
       token:
         description: 'GitHub token for authentication'
         required: false
@@ -212,6 +212,13 @@ const promoteBranchActionTemplate = (ctx: any) => {
               echo "prUrl=\$PR_URL" >> \$GITHUB_OUTPUT
               echo "✅ Created PR #\$PR_NUMBER"
               echo "🔗 URL: \$PR_URL"
+            elif echo "\$PR_URL" | grep -qiE "No commits between"; then
+              # '\$TARGET' is already even with '\$SOURCE' — there is nothing to promote.
+              # This is a no-op success (also covers re-runs), not a failure. Downstream
+              # steps tolerate an empty PR number (the ff-merge is a no-op when even).
+              echo "ℹ️  '\$TARGET' is already up to date with '\$SOURCE' — nothing to promote."
+              echo "prNumber=" >> \$GITHUB_OUTPUT
+              echo "prUrl=" >> \$GITHUB_OUTPUT
             else
               echo "❌ Failed to create PR"
               echo "Error output:"
