@@ -106,7 +106,11 @@ program
 
 // Global options
 program
-  .option('-c, --config <path>', 'path to config file', '.pipecraftrc')
+  // No default: when omitted, loadConfig() lets cosmiconfig search and discover any
+  // supported format (.pipecraftrc, .pipecraftrc.json/.yml/.yaml/.js, pipecraft.config.js,
+  // package.json#pipecraft). A hardcoded '.pipecraftrc' default would force an exact-file
+  // load and ENOENT on the common .pipecraftrc.json case.
+  .option('-c, --config <path>', 'path to config file (default: auto-discovered)')
   .option(
     '-p, --pipeline <path>',
     'path to existing pipeline file for merging',
