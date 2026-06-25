@@ -14,6 +14,7 @@ import type { PipecraftConfig } from '../../../types/index.js'
 export interface TagPromoteContext {
   branchFlow: string[]
   autoPromote?: Record<string, boolean> // autoPromote settings per branch
+  mergeStrategy?: 'fast-forward' | 'merge' // how promotions land on the target branch
   config?: Partial<PipecraftConfig>
 }
 
@@ -26,6 +27,8 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
   const validBranchFlow =
     branchFlow && Array.isArray(branchFlow) && branchFlow.length > 0 ? branchFlow : ['main']
   const initialBranch = validBranchFlow[0]
+  // How promotions land on the target branch (default fast-forward for linear history).
+  const mergeStrategy = ctx.mergeStrategy === 'merge' ? 'merge' : 'fast-forward'
 
   // Get action references based on configuration
   const tagActionRef = getActionReference('create-tag', config)
@@ -136,6 +139,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
           sourceBranch: \${{ github.ref_name }}
           targetBranch: \${{ ${buildTargetBranchExpression(validBranchFlow)} }}
           autoPromote: \${{ ${buildAutoPromoteExpression(validBranchFlow, ctx.autoPromote)} }}
+          mergeStrategy: ${mergeStrategy}
           run_number: \${{ inputs.run_number || github.run_number }}
   `)
     },

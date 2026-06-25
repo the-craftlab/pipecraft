@@ -370,6 +370,7 @@ export const generate = (ctx: PathBasedPipelineContext) =>
         ...createTagPromoteReleaseOperations({
           branchFlow,
           autoPromote: typeof config.autoPromote === 'object' ? config.autoPromote : {},
+          mergeStrategy: config.mergeStrategy,
           config
         })
       ]

@@ -263,12 +263,7 @@ export const validateConfig = (config: any) => {
 export const getConfigWarnings = (config: any): string[] => {
   const warnings: string[] = []
 
-  if (config?.mergeStrategy === 'merge') {
-    warnings.push(
-      "mergeStrategy: 'merge' is not implemented; promotions always fast-forward. " +
-        "Use 'fast-forward'."
-    )
-  }
+  // Note: mergeStrategy 'merge' is now implemented (merge-commit promotion) — no warning.
   if (config?.mergeMethod !== undefined) {
     warnings.push('mergeMethod is declared but has no effect; promotions always fast-forward.')
   }
