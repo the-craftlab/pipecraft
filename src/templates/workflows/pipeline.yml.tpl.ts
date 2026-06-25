@@ -369,7 +369,10 @@ export const generate = (ctx: PathBasedPipelineContext) =>
         // Tag, promote, release
         ...createTagPromoteReleaseOperations({
           branchFlow,
-          autoPromote: typeof config.autoPromote === 'object' ? config.autoPromote : {},
+          // Pass autoPromote through as-is: a global boolean (true = every hop) or a
+          // per-target map. Coercing the boolean to {} here is what made `autoPromote:
+          // true` silently behave as all-manual.
+          autoPromote: config.autoPromote,
           mergeStrategy: config.mergeStrategy,
           config
         })
