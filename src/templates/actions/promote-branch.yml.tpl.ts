@@ -46,9 +46,13 @@ const promoteBranchActionTemplate = (ctx: any) => {
         required: false
         default: ''
       autoPromote:
-        description: 'Whether to automatically promote (fast-forward) to the target branch'
+        description: 'Whether to automatically promote to the target branch'
         required: false
         default: 'false'
+      mergeStrategy:
+        description: "How to land the promotion: 'fast-forward' (linear history) or 'merge' (merge commit)"
+        required: false
+        default: 'fast-forward'
       tempBranchPattern:
         description: 'Pattern for temp branch name'
         required: false
@@ -239,7 +243,7 @@ const promoteBranchActionTemplate = (ctx: any) => {
             echo "⚠️  Auto-merge is disabled for this branch."
             echo "   Please review and merge the PR manually when ready."
 
-        - name: Fast-Forward Merge (Immediate Auto-Merge)
+        - name: Promote to Target (Immediate Auto-Promote)
           id: fast-forward
           if: inputs.autoPromote == 'true'
           shell: bash
@@ -247,37 +251,43 @@ const promoteBranchActionTemplate = (ctx: any) => {
             SOURCE="\${{ inputs.sourceBranch }}"
             TARGET="\${{ inputs.targetBranch }}"
             VERSION="\${{ steps.get-version.outputs.version }}"
+            STRATEGY="\${{ inputs.mergeStrategy }}"
 
-            echo "🚀 Fast-forwarding \$TARGET to \$SOURCE (maintaining linear history)"
-
-            # Get the commit SHA from source branch
             COMMIT_SHA=\$(git rev-parse \$SOURCE)
-            echo "Source commit: \$COMMIT_SHA"
+            echo "Source commit: \$COMMIT_SHA  (strategy: \$STRATEGY)"
 
             # Fetch target branch
             git fetch origin \$TARGET:\$TARGET 2>/dev/null || true
 
-            # Capture the target branch's current SHA BEFORE fast-forward (for change detection)
+            # Capture the target branch's current SHA BEFORE promotion (for change detection)
             BEFORE_SHA=\$(git rev-parse \$TARGET)
             echo "beforeSha=\$BEFORE_SHA" >> \$GITHUB_OUTPUT
             echo "Target before: \$BEFORE_SHA"
 
-            # Checkout target branch
             git checkout \$TARGET
 
-            # Verify we can fast-forward (no divergent commits)
-            if git merge-base --is-ancestor \$TARGET \$SOURCE; then
-              echo "✅ Fast-forward is possible (linear history maintained)"
+            if [ "\$STRATEGY" = "merge" ]; then
+              # Merge strategy: create a merge commit on the target. The release tag stays on
+              # the source tip (the merge's 2nd parent); calculate-version resolves it there.
+              if git merge-base --is-ancestor \$SOURCE \$TARGET; then
+                echo "ℹ️  \$TARGET already contains \$SOURCE — nothing to promote."
+              else
+                echo "🔀 Merging \$SOURCE into \$TARGET (merge commit)"
+                git merge --no-ff "\$SOURCE" -m "chore: promote \$VERSION from \$SOURCE to \$TARGET"
+              fi
             else
-              echo "❌ Cannot fast-forward - branches have diverged"
-              echo "Target branch has commits not in source branch"
-              exit 1
+              # Fast-forward strategy: linear history, no merge commit.
+              if git merge-base --is-ancestor \$TARGET \$SOURCE; then
+                echo "🚀 Fast-forwarding \$TARGET to \$SOURCE (linear history)"
+                git merge --ff-only "\$SOURCE"
+              else
+                echo "❌ Cannot fast-forward - \$TARGET has commits not in \$SOURCE (diverged)."
+                echo "   Use mergeStrategy: merge to promote across diverged branches."
+                exit 1
+              fi
             fi
 
-            # Fast-forward merge (no merge commit)
-            git merge --ff-only \$SOURCE
-
-            # Push to remote
+            # Push to remote (no-op if nothing changed)
             git push origin \$TARGET
 
             echo "✅ Fast-forwarded \$TARGET to \$COMMIT_SHA"
