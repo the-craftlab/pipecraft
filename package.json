@@ -77,6 +77,7 @@
     "e2e:reset": "tsx scripts/e2e/harness.ts reset",
     "e2e:prove": "tsx scripts/e2e/harness.ts prove",
     "e2e:run": "tsx scripts/e2e/harness.ts run",
+    "sync-examples": "tsx scripts/sync-examples.ts",
     "prepare": "husky"
   },
   "devDependencies": {
