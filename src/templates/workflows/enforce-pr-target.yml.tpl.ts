@@ -64,6 +64,9 @@ on:
 
 jobs:
   check-pr-target:
+    # Skip PipeCraft's own promotion PRs (pipecraft-promote/*). They legitimately target
+    # downstream/final branches as part of the flow; this guard is for human-authored PRs.
+    if: \${{ !startsWith(github.head_ref, 'pipecraft-promote/') }}
     runs-on: ubuntu-latest
     steps:
       - name: Check PR base branch

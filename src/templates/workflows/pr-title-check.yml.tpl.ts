@@ -108,6 +108,9 @@ permissions:
 jobs:
   main:
     name: Validate PR title
+    # Skip PipeCraft's own promotion PRs (pipecraft-promote/*): their titles are release
+    # messages ("🚀 Release X to Y"), not conventional commits, so the check shouldn't gate them.
+    if: \${{ !startsWith(github.head_ref, 'pipecraft-promote/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: amannn/action-semantic-pull-request@v5
