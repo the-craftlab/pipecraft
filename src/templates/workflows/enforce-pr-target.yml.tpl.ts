@@ -61,6 +61,12 @@ export const generate = (ctx: PinionContext) =>
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
+    # Only PRs targeting the final branch matter here (the rule rejects human PRs to it).
+    # Scoping the trigger keeps PipeCraft's own promotion PRs to intermediate branches from
+    # spawning approval-gated runs at all; the job-level guard below covers promotion PRs
+    # that do target the final branch.
+    branches:
+      - ${finalBranch}
 
 jobs:
   check-pr-target:

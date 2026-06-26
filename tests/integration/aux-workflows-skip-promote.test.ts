@@ -48,7 +48,12 @@ describe('auxiliary workflows skip promotion PRs', () => {
           env: { ...process.env, CI: 'true' }
         })
         const yaml = readFileSync(join(workspace, '.github/workflows', file), 'utf-8')
+        // Defense-in-depth guard: skip pipecraft-promote head branches.
         expect(yaml).toContain(GUARD)
+        // Trigger scoping: promote PRs target downstream branches, so neither check fires.
+        // pr-title-check is scoped to the initial branch; enforce-pr-target to the final.
+        const expectedBranch = file === 'pr-title-check.yml' ? 'develop' : 'main'
+        expect(yaml).toMatch(new RegExp(`branches:\\s*\\n\\s*-\\s*${expectedBranch}`))
       })
     }
   )

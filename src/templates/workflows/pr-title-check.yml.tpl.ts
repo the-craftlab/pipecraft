@@ -60,6 +60,9 @@ export const generate = (ctx: PinionContext) =>
     }
 
     return renderTemplate((ctx: any) => {
+      // Contributor PRs land on the initial branch; scope the trigger there so PipeCraft's
+      // own promotion PRs (which target downstream branches) never spawn this check.
+      const initialBranch = ctx.initialBranch || ctx.config?.initialBranch || 'develop'
       // Get all commit types from bumpRules config
       const bumpRules = ctx.config?.semver?.bumpRules || ctx.config?.versioning?.bumpRules || {}
       const allTypes = Object.keys(bumpRules)
@@ -100,6 +103,8 @@ on:
       - edited
       - synchronize
       - reopened
+    branches:
+      - ${initialBranch}
 
 permissions:
   pull-requests: write
