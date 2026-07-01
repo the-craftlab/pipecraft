@@ -21,11 +21,17 @@ Skip the debugging cycles. Generate battle-tested CI/CD workflows into your repo
 
 ---
 
-## 📚 Complete Documentation
+## 📚 Documentation
 
-**[Read the full documentation at pipecraft.thecraftlab.dev →](https://pipecraft.thecraftlab.dev)**
+**For users — [pipecraft.thecraftlab.dev →](https://pipecraft.thecraftlab.dev)**
 
-The documentation site includes comprehensive guides, real-world examples, configuration references, and troubleshooting help.
+The documentation site is the product manual: get-started + quickstart, guides (workflow generation, patterns, versioning, examples), reference (CLI, configuration, action modes), how-it-works, and help (troubleshooting, error reference, FAQ).
+
+**For contributors — develop Pipecraft itself:**
+
+- [CONTRIBUTING.md](./CONTRIBUTING.md) — setup, workflow, and how to contribute
+- [docs-dev/testing.md](./docs-dev/testing.md) — testing philosophy and how to run/write tests
+- [docs-dev/ast-operations.md](./docs-dev/ast-operations.md) — how the generator manipulates YAML (AST path operations)
 
 ---
 
