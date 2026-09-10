@@ -1,0 +1,48 @@
+```yaml
+rung: epic
+id: ten-goals
+title: ship the 2026-09-04 ten-goal list, adoption first
+status: active
+owner: james
+updated: 2026-09-08
+tracker: local
+```
+
+# Epic ten-goals: ship the 2026-09-04 ten-goal list, adoption first
+
+Ten goals ranked by value times feasibility on 2026-09-04: run the adoption channels (dev.to, tweet, SkillMD), publish the skill package through OIDC, reject `--ci-provider gitlab` at init, refresh both roadmaps, then decide and where warranted build deployment environments, matrix builds, version threading, rollback, GitFlow hotfix branches, and GitLab CI output. Each of goals 5 through 10 gets a spec under reqts/ with a build, defer, or drop decision.
+
+## Done when
+- James: the dev.to post and tweet are live and SKILL.md is submitted to SkillMD. James writes and posts this himself; no agent drafts or submits it (see MEMORY.md devto-post-no-redraft).
+- cmd: a release run on main publishes @thecraftlab/pipecraft-skill through OIDC and the skill step log shows the published version. `npm view @thecraftlab/pipecraft-skill version` returned `0.47.21` on 2026-09-08.
+- test: `pipecraft init --ci-provider gitlab` exits non-zero with a test at the CLI boundary.
+- cmd: ROADMAP.md and docs/docs/roadmap.md match the code on P0-1 and P0-2. Confirmed 2026-09-06 (docs/tmp/handoff.md, that thread's DECISIONS).
+- cmd: reqts/goal-*.md exists for goals 5 through 10 with a decision each; every "build" ships behind a flavor-covered e2e run. `ls reqts/goal-*.md` on 2026-09-08 shows all six: deployment-environments, gitflow-hotfix, gitlab-ci, matrix-builds, rollback, version-threading.
+
+## Won't
+- An agent drafting, rewriting, or posting the dev.to piece, tweet, or SkillMD submission. James rejected an agent rewrite on 2026-09-04 and does that leg of goal 1 himself.
+- Any change to the-craftlab org or repo settings via Pulumi or manual API calls as part of this epic. Confirmed non-infra: the merge-commit-recommendation story traced a real revert to this repo's own `setup-github` code, not an org policy (docs/tmp/story-merge-commit-recommendation.md, ASSUMPTION LEDGER #1).
+- A committed file per story. This repo's tracker is `local`: a story's record is its line below plus its (gitignored) `docs/tmp/story-<id>.md` or `docs/tmp/issue-<N>.md` task file, never a second committed file under `docs/goals/`.
+
+## Stories
+1. 607 · done · 2026-09 · reject `ciProvider: "gitlab"` at the generate boundary · tasks 1/1
+2. 608 · done · 2026-09 · packageManager field + stale pnpmVersion default doc · tasks 1/1
+3. 609 · done · 2026-09 · gate deploy-{domain} jobs on version + the domain's test job · tasks 1/1
+4. 618 · done · 2026-09 · rewrite .release-it.cjs on a bumpRules change · tasks 1/1
+5. 631 · done · 2026-09 · prove promotion version-threading (goal 7) is already wired · tasks 1/1
+6. merge-commit-recommendation · done · 2026-09 · setup-github recommends allow_merge_commit from mergeStrategy (#641) · tasks 1/1
+7. adoption-channels · blocked · 2026-09 · dev.to post, tweet, SkillMD submission (goal 1) · tasks 0/1
+
+## Threads
+- 2026-09-04, session 3c8517ac: wrote the ranking (next-goals.md) and the review pass that preceded it; v0.47.9 released.
+- 2026-09-04, session 916aac56, docs/tmp/goal-ten.md: built goals 3, 4, 5 in worktrees, diagnosed the skill publish 404, rewrote the dev.to post; stopped awaiting approvals.
+- 2026-09-04, session 7f132c6a, docs/tmp/issue-goal-ten.md: verified branches current, requested six approvals, ran goal 5 build to the Define gate and parked it (spec's mechanism cannot hold; domain jobs are preserved verbatim).
+- 2026-09-04, session 6c201827, docs/tmp/issue-goal-ten.md: merged #604 #605 #606 and opened #607-#609; goal 10 paused for a test bed, goal 5 reduced to a docs recipe; found that generate never rewrites an existing pipeline.yml (issue drafted, fix first).
+- 2026-09-05, session 4acb477d, docs/tmp/issue-goal-ten.md: fixed regenerate (generate never rewrote pipeline.yml; #620 merged with the goal 5 recipe), merged the goal 10 pause (#619), opened #616 #617 #618; Publish v0.47.12 re-run failed before the skill step (main package already published), then #625 (idempotent main publish) and James's Trusted Publisher fix (workflow filename pipeline.yml -> publish.yml); Publish v0.47.18 published the skill package through OIDC. Goals 2, 3, 4, 5 shipped.
+- 2026-09-06, docs/tmp/handoff.md: built and verified #607, #609, and a fix/regenerate-release-it merge candidate (PR #628) but left all three unpushed/unopened/unmerged awaiting isolated approval; confirmed the gitlab-init and roadmap-P0-1/P0-2 and OIDC-publish Done-when lines already hold; found goal 7 (version threading) is already substantially built (undocumented in either reqts/goal-version-threading.md or the June design note) and started a test-only proof, still running at cutover.
+- 2026-09-06 (same day, continued), docs/tmp/handoff.md: James approved all five pending items; merged #628, opened and pushed #629 (closes #607), #630 (closes #609), #631 (goal 7 proof) — all after discovering the worktrees held only uncommitted work, not actual commits. Started #608 (narrow scope: packageManager field + stale JSDoc) via a background child, unreviewed at cutover.
+- 2026-09-06 (cutover thread), docs/tmp/issue-goal-ten.md: James approved merging #629/#630/#631/#634; all four squash-merged into develop (needed per-PR branch updates against a moving base). Ran the goal 7 live e2e dispatch per James's standing consent: `basic` proved input-threading directly (run log "Using input version: v0.2.0"); first `gated` attempt (squash merges) proved no regression but not B2, wrongly diagnosed as an org-wide policy block.
+- 2026-09-07: James asked to fix the merge-commit setting properly rather than accept the gap. Corrected the prior diagnosis: no org policy exists; `allow_merge_commit` is a per-repo setting that does toggle, it just reverts on its own after roughly a minute of inactivity (cause unconfirmed). Re-patched it before each of the four promotion-chain merges on `pipecraft-example-gated` and reran the flavor end to end: production run 34119377386 shows calculate-version's B2 "Get version from promotion merge" step actually firing and falling through correctly to the nearest-tag fallback (v0.1.0, release succeeded). Both goal 7 Done-when clauses now have direct run-log evidence.
+- 2026-09-07 (same day, continued), docs/tmp/story-merge-commit-recommendation.md: James named the real cause — `pipecraft setup-github --apply` (called by the e2e harness's `reset()`) hardcoded `allow_merge_commit: false`, ignoring `mergeStrategy` in `.pipecraftrc.json`; not an org policy at all. Ran a full issue-loop story (routed through conductor: Sonnet BUILD child, then a pooled code-reviewer pass) for `getRecommendedRepositorySettings()`/`getSettingsGaps()` in src/utils/github-setup.ts. The review child caught a dead-code gap (title recommended but never diffed); live verification against pipecraft-example-gated then caught a second, more load-bearing bug the tests and review both missed — GitHub 422s a lone `merge_commit_title` without a paired `merge_commit_message`. Fixed both, reverified live (forced the setting wrong, ran the harness's `reset()`, confirmed it self-corrects with no manual patch). PR #641 opened against develop with James's approval, awaiting CI + merge decision next thread. Session hit the 250-turn conductor cap; cutover to a fresh thread from here.
+- 2026-09-08, docs/tmp/story-merge-commit-recommendation.md: resumed at SHIP after cutover. CI on PR #641 was green; two ambiguous "Continue." replies were correctly not treated as merge approval (R8), then James approved explicitly via AskUserQuestion. Squash-merged #641 into develop (61e8309), removed the worktree and local+remote branch, pulled develop, and re-ran the `gated` e2e flavor from the merged build: forced `allow_merge_commit` to `false` on `pipecraft-example-gated`, confirmed `reset()` restores `{allow_merge_commit, merge_commit_title, merge_commit_message}` to `{true, PR_TITLE, PR_BODY}` with no manual patch. Story merge-commit-recommendation closed (Phase: DONE).
+- 2026-09-08 (same day, continued): James reported `cutover-prep show` returned `TRACKER=` empty for this repo. Cause: `docs/goals/` held only `ten-goals.md`, untracked, without the `EPICS.md` index or the `epic-*.md` header block the ladder spec (`~/Sites/system/claude-conductor/reqts/goal-ladder.md`) requires; `docs/tmp/story-618.md` had already hit this same gap on 2026-09-06 and worked around it locally rather than fixing the ladder. Renamed `ten-goals.md` to `epic-ten-goals.md`, added the rung header block and `## Won't`/`## Stories` sections, and added `docs/goals/EPICS.md` declaring `tracker: local` with this epic in `## Active`. Both files are new to git (docs/goals/ was never gitignored but also never committed); opened as a docs-only PR per R7/R8 rather than committing to develop directly.
