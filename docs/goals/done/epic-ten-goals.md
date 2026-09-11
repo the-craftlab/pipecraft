@@ -2,9 +2,9 @@
 rung: epic
 id: ten-goals
 title: ship the 2026-09-04 ten-goal list, adoption first
-status: active
+status: done
 owner: james
-updated: 2026-09-08
+updated: 2026-09-11
 tracker: local
 ```
 
@@ -13,7 +13,7 @@ tracker: local
 Ten goals ranked by value times feasibility on 2026-09-04: run the adoption channels (dev.to, tweet, SkillMD), publish the skill package through OIDC, reject `--ci-provider gitlab` at init, refresh both roadmaps, then decide and where warranted build deployment environments, matrix builds, version threading, rollback, GitFlow hotfix branches, and GitLab CI output. Each of goals 5 through 10 gets a spec under reqts/ with a build, defer, or drop decision.
 
 ## Done when
-- James: the dev.to post and tweet are live and SKILL.md is submitted to SkillMD. James writes and posts this himself; no agent drafts or submits it (see MEMORY.md devto-post-no-redraft).
+- James: the dev.to post and tweet are live and SKILL.md is submitted to SkillMD. James writes and posts this himself; no agent drafts or submits it (see MEMORY.md devto-post-no-redraft). James confirmed done, 2026-09-11.
 - cmd: a release run on main publishes @thecraftlab/pipecraft-skill through OIDC and the skill step log shows the published version. `npm view @thecraftlab/pipecraft-skill version` returned `0.47.21` on 2026-09-08.
 - test: `pipecraft init --ci-provider gitlab` exits non-zero with a test at the CLI boundary. `tests/integration/init-ci-provider.test.ts` (`spawnSync` on the real CLI) covers this: confirmed 2026-09-11, `pnpm vitest run tests/integration/init-ci-provider.test.ts --exclude '.worktrees/**'` → `PASS (2) FAIL (0)`.
 - cmd: ROADMAP.md and docs/docs/roadmap.md match the code on P0-1 and P0-2. Confirmed 2026-09-06 (docs/tmp/handoff.md, that thread's DECISIONS).
@@ -48,4 +48,4 @@ Ten goals ranked by value times feasibility on 2026-09-04: run the adoption chan
 - 2026-09-08 (same day, continued): James reported `cutover-prep show` returned `TRACKER=` empty for this repo. Cause: `docs/goals/` held only `ten-goals.md`, untracked, without the `EPICS.md` index or the `epic-*.md` header block the ladder spec (`~/Sites/system/claude-conductor/reqts/goal-ladder.md`) requires; `docs/tmp/story-618.md` had already hit this same gap on 2026-09-06 and worked around it locally rather than fixing the ladder. Renamed `ten-goals.md` to `epic-ten-goals.md`, added the rung header block and `## Won't`/`## Stories` sections, and added `docs/goals/EPICS.md` declaring `tracker: local` with this epic in `## Active`. Both files are new to git (docs/goals/ was never gitignored but also never committed); opened as a docs-only PR per R7/R8 rather than committing to develop directly.
 - 2026-09-10, PR #642: James approved the merge (squash into develop, 5084272). Removed the worktree and branch, pulled develop, and deleted the now-superseded untracked `docs/goals/ten-goals.md` in the main checkout.
 - 2026-09-10 (same day, continued): a fresh session found the ladder fix incomplete: `docs/tmp/handoff.md` (gitignored, dated 2026-09-07, never cleared after PR #641 merged) still carried a stale `Epic: docs/goals/ten-goals.md` line, which `cutover-prep`'s HANDOFF-first lookup used ahead of the `epic-*.md` glob, so `EPIC` resolved to a path that no longer existed. Deleted the stale handoff; `cutover-prep show` now resolves `EPIC=docs/goals/epic-ten-goals.md` correctly. Also deleted eleven fully-merged, superseded `docs/tmp` files (story-607/609/618/goal7-tests.md, issue-goal-ten.md, three pr-*-draft.md files, goal-deploy-envs.md, goal-ten.md, handoff-fallback.md), leaving `TASK_CANDIDATES=1` (story-merge-commit-recommendation.md, Phase: DONE) instead of 6. Verified the `reqts/goal-*.md` Done-when line directly (see that line's own edit) rather than trusting the earlier file-existence-only check.
-- 2026-09-11, docs/tmp/story-epic-ten-goals-closeout.md: closeout story for the epic's two remaining agent-checkable Done-when lines. Verified the gitlab-init line directly: `tests/integration/init-ci-provider.test.ts` already exists and passes (`PASS (2) FAIL (0)`, real CLI via `spawnSync`), so only the epic file's own annotation was missing, not the behavior or its test. Every Done-when line in this epic that an agent can check now holds with evidence recorded in place. The two `James:` lines (goal 1 status, approval to move this epic to `docs/goals/done/`) remain open.
+- 2026-09-11, docs/tmp/story-epic-ten-goals-closeout.md: closeout story for the epic's two remaining agent-checkable Done-when lines. Verified the gitlab-init line directly: `tests/integration/init-ci-provider.test.ts` already exists and passes (`PASS (2) FAIL (0)`, real CLI via `spawnSync`), so only the epic file's own annotation was missing, not the behavior or its test. James confirmed goal 1 (dev.to post, tweet, SkillMD) done and approved archiving. Every Done-when line now holds. Epic moved to `docs/goals/done/epic-ten-goals.md`, `status: done`, `EPICS.md` line moved to `## Done`. Closed.
