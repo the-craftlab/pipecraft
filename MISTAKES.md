@@ -2,6 +2,16 @@
 
 Repo-specific failures and what would have prevented them. Newest first.
 
+## 2026-09-12 — Prettier silently rewrote a literal asterisk to an underscore in a markdown doc
+
+**What happened:** Fixing a pre-existing `lint` (Prettier) failure on `docs/goals/done/epic-ten-goals.md`, an initial `prettier --write` on the real file changed the meaning of two glob patterns written as plain text: `reqts/goal-*.md` became `reqts/goal-_.md`, and `three pr-*-draft.md files` became `three pr-_-draft.md files`. Exit code was 0 and the only signal was "reformatted" — nothing flagged the text change.
+
+**Root cause:** the file has two bare, unescaped `*` characters outside any code span. CommonMark's delimiter-run algorithm paired them as an (unintended) emphasis span across the whole document; Prettier's markdown printer re-serialized that span using `_` as the emphasis marker, which touches only the delimiter characters, not the content between them, so the diff looked like two isolated, unrelated single-character swaps rather than one obvious formatting change.
+
+**Consequence:** would have merged a factually wrong glob pattern into an archived, done epic's evidence record, with no test or reviewer likely to catch a single silently-swapped character in prose.
+
+**Prevention:** before running `prettier --write` on a markdown file with untested output, diff the result and read every changed line, not just confirm exit 0. A bare `*` or `_` in plain markdown text that is meant literally must be escaped (`\*`) before formatting, especially in file-path or glob text. `command grep -n '\*'` (or `_`) across a doc before formatting it surfaces every candidate quickly.
+
 ## 2026-09-05 — Recommended re-running a Publish run whose main package had already shipped
 
 **What happened:** Publish v0.47.12 had published `pipecraft` and failed only on the skill
