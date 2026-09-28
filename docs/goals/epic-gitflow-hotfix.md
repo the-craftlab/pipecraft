@@ -1,6 +1,7 @@
 ```yaml
 rung: epic
 id: gitflow-hotfix
+name: GitFlow with hotfix branches
 title: GitFlow with hotfix branches
 status: proposed
 owner: james

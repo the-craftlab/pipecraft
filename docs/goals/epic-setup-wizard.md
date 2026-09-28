@@ -1,6 +1,7 @@
 ```yaml
 rung: epic
 id: setup-wizard
+name: interactive .pipecraftrc setup wizard
 title: interactive .pipecraftrc setup wizard
 status: proposed
 owner: james

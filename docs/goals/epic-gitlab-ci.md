@@ -1,6 +1,7 @@
 ```yaml
 rung: epic
 id: gitlab-ci
+name: GitLab CI generator
 title: GitLab CI generator
 status: active
 owner: james
