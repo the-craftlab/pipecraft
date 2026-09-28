@@ -1,6 +1,7 @@
 ```yaml
 rung: epic
 id: mock-flow-test
+name: pipecraft test / local flow simulation
 title: pipecraft test / local flow simulation
 status: proposed
 owner: james

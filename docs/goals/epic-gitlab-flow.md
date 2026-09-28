@@ -1,6 +1,7 @@
 ```yaml
 rung: epic
 id: gitlab-flow
+name: GitLab Flow topology support
 title: GitLab Flow topology support
 status: proposed
 owner: james
