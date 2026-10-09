@@ -1,5 +1,4 @@
 ```yaml
-tracker: local
 ```
 
 # Epics

@@ -6,7 +6,6 @@ title: interactive .pipecraftrc setup wizard
 status: proposed
 owner: james
 updated: 2026-09-11
-tracker: local
 parent: docs/goals/VISION.md#defer-backlog
 ```
 

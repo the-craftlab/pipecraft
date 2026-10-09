@@ -6,7 +6,6 @@ title: pipecraft test / local flow simulation
 status: proposed
 owner: james
 updated: 2026-09-11
-tracker: local
 parent: docs/goals/VISION.md#defer-backlog
 ```
 

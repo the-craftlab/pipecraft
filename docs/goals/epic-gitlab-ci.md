@@ -6,7 +6,6 @@ title: GitLab CI generator
 status: active
 owner: james
 updated: 2026-09-11
-tracker: local
 parent: docs/goals/VISION.md#provider-coverage
 ```
 

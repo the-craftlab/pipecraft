@@ -6,7 +6,6 @@ title: GitLab Flow topology support
 status: proposed
 owner: james
 updated: 2026-09-11
-tracker: local
 parent: docs/goals/VISION.md#flow-topology-coverage
 ```
 

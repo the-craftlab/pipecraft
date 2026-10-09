@@ -5,7 +5,6 @@ title: ship the 2026-09-04 ten-goal list, adoption first
 status: done
 owner: james
 updated: 2026-09-11
-tracker: local
 ```
 
 # Epic ten-goals: ship the 2026-09-04 ten-goal list, adoption first
