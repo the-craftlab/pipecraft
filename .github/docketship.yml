@@ -1,0 +1,7 @@
+# Policy keys this repo overrides. Every other key inherits the workspace default config.
+merge_hold:
+  hold:
+    - publish
+    - release
+  hold_paths:
+    - .github/workflows/publish.yml
