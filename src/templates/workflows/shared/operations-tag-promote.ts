@@ -25,10 +25,19 @@ const PROMOTION_SOURCE_GATE =
   "(github.event.head_commit.committer.email == 'noreply@github.com' || " +
   "github.event_name == 'workflow_dispatch')"
 
+/** Removes PROMOTION_SOURCE_GATE and one joining `&&` from an `if` string, matching any whitespace. */
+export function stripPromotionSourceGate(condition: string): string {
+  const gate = PROMOTION_SOURCE_GATE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+')
+  return condition
+    .replace(new RegExp(`${gate}\\s*&&\\s*`), '')
+    .replace(new RegExp(`\\s*&&\\s*${gate}`), '')
+}
+
 export interface TagPromoteContext {
   branchFlow: string[]
   autoPromote?: boolean | Record<string, boolean> // global boolean, or per-target map
   mergeStrategy?: 'fast-forward' | 'merge' // how promotions land on the target branch
+  promoteDirectPushes?: boolean // true drops PROMOTION_SOURCE_GATE from tag and promote
   config?: Partial<PipecraftConfig>
 }
 
@@ -43,6 +52,8 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
   const initialBranch = validBranchFlow[0]
   // How promotions land on the target branch (default fast-forward for linear history).
   const mergeStrategy = ctx.mergeStrategy === 'merge' ? 'merge' : 'fast-forward'
+  // promoteDirectPushes: true lets any push to the initial branch tag and promote.
+  const sourceGate = ctx.promoteDirectPushes === true ? [] : [PROMOTION_SOURCE_GATE]
 
   // Get action references based on configuration
   const tagActionRef = getActionReference('create-tag', config)
@@ -58,7 +69,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
     "needs.version.result == 'success'",
     "needs.version.outputs.version != ''",
     "needs.gate.result == 'success'", // Gate job must succeed
-    PROMOTION_SOURCE_GATE
+    ...sourceGate
   ]
 
   // Default needs: version + gate (gate already checks all test jobs)
@@ -103,7 +114,9 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
     {
       path: 'jobs.tag.if',
       operation: 'preserve',
-      value: createValueFromString(`\${{ ${defaultTagIfCondition} }}`)
+      value: createValueFromString(`\${{ ${defaultTagIfCondition} }}`),
+      // An `if` generated before the key was set still carries the gate; drop it then.
+      ...(ctx.promoteDirectPushes === true && { rewriteExisting: stripPromotionSourceGate })
     },
     // TAG JOB RUNS-ON - Always managed
     {
@@ -139,7 +152,11 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
 `,
       value: createValueFromString(`
     needs: [ version, tag ]
-    if: \${{ always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && ${PROMOTION_SOURCE_GATE} && needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') && (${buildPromotableBranchesCondition(
+    if: \${{ always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && ${sourceGate
+      .map(gate => `${gate} && `)
+      .join(
+        ''
+      )}needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') && (${buildPromotableBranchesCondition(
         validBranchFlow
       )}) }}
     runs-on: ubuntu-latest

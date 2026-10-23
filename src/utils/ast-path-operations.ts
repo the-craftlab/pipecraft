@@ -134,6 +134,8 @@ export interface PathOperationConfig {
   spaceBefore?: boolean
   spaceBeforeComment?: boolean
   tag?: string
+  /** For `preserve`: rewrites an existing string value; a changed result replaces it. */
+  rewriteExisting?: (existing: string) => string
 }
 
 /**
@@ -336,7 +338,16 @@ export function ensurePathAndApply(
       if (!existingValue) {
         setPathValue(doc, path, value, document, commentBefore, spaceBefore)
       }
-      // If exists, do nothing - keep existing value
+      // If exists, keep it unless the config rewrites it
+      else if (config.rewriteExisting) {
+        const current = existingValue instanceof Scalar ? existingValue.value : existingValue
+        if (typeof current === 'string') {
+          const rewritten = config.rewriteExisting(current)
+          if (rewritten !== current) {
+            setPathValue(doc, path, rewritten, document, commentBefore, spaceBefore)
+          }
+        }
+      }
       break
   }
 }

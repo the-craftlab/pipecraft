@@ -475,6 +475,7 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           // true` silently behave as all-manual.
           autoPromote: config.autoPromote,
           mergeStrategy: config.mergeStrategy,
+          promoteDirectPushes: config.promoteDirectPushes,
           config
         })
       ]
