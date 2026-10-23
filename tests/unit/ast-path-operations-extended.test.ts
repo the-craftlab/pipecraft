@@ -135,6 +135,41 @@ describe('AST Path Operations - Extended Coverage', () => {
       expect(doc.contents.get('custom')).toBe('user-value')
     })
 
+    it('"preserve" with rewriteExisting replaces an existing string it changes', () => {
+      setPathValue(doc.contents, 'custom', 'a && b')
+      ensurePathAndApply(
+        doc.contents,
+        {
+          path: 'custom',
+          operation: 'preserve',
+          value: 'x',
+          rewriteExisting: s => s.replace(' && b', '')
+        },
+        doc
+      )
+      expect(doc.contents.get('custom')).toBe('a')
+    })
+
+    it('"preserve" with rewriteExisting leaves a value it does not change', () => {
+      setPathValue(doc.contents, 'custom', 'a')
+      ensurePathAndApply(
+        doc.contents,
+        { path: 'custom', operation: 'preserve', value: 'x', rewriteExisting: s => s },
+        doc
+      )
+      expect(doc.contents.get('custom')).toBe('a')
+    })
+
+    it('"preserve" with rewriteExisting ignores a non-string value', () => {
+      setPathValue(doc.contents, 'custom', ['a'])
+      ensurePathAndApply(
+        doc.contents,
+        { path: 'custom', operation: 'preserve', value: 'x', rewriteExisting: () => 'changed' },
+        doc
+      )
+      expect(doc.contents.get('custom').toJSON()).toEqual(['a'])
+    })
+
     it("should skip non-required paths that don't exist", () => {
       const config: PathOperationConfig = {
         path: 'optional.field',

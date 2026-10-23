@@ -85,6 +85,10 @@ feature → develop → staging → main
 human rather than suppressing it. If you want no promotion PRs against a branch at
 all, remove that branch from `branchFlow`.
 
+`tag` and `promote` run only for commits GitHub authored (a merged pull request) or a
+manual `workflow_dispatch`. Set `"promoteDirectPushes": true` to let any push to the initial
+branch tag and promote. See [Security](../security.md#letting-direct-pushes-promote).
+
 ### Domain-Based Testing
 
 PipeCraft implements path-based change detection for monorepo support:
