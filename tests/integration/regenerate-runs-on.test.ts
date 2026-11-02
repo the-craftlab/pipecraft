@@ -54,7 +54,7 @@ describe('generate preserves runs-on on managed jobs', () => {
       // Edit the file in place so the custom-jobs markers and comments survive.
       text = text.replace(
         /^( {2}(?:changes|version|tag|promote|release):\n(?:(?! {2}\S).*\n)*? {4}runs-on: )ubuntu-latest$/gm,
-        `$1${RUNNER}`
+        `$1${RUNNER} # org runner`
       )
       writeFileSync(pipelinePath(), text)
       for (const job of MANAGED_JOBS) expect(runsOn(job)).toBe(RUNNER)
@@ -64,6 +64,9 @@ describe('generate preserves runs-on on managed jobs', () => {
       for (const job of MANAGED_JOBS) {
         expect(runsOn(job)).toBe(RUNNER)
       }
+      expect(readFileSync(pipelinePath(), 'utf8').match(/# org runner/g)).toHaveLength(
+        MANAGED_JOBS.length
+      )
     })
   })
 })

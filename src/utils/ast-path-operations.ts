@@ -335,12 +335,16 @@ export function ensurePathAndApply(
       break
 
     case 'overwrite': {
-      const kept = (config.preserveKeys ?? [])
-        .map(key => [key, getPathValue(doc, `${path}.${key}`)] as const)
-        .filter(([, existing]) => existing !== undefined && existing !== null)
+      // Read the child nodes (keepScalar) so a trailing comment on the kept value survives.
+      const parent = getPathValue(doc, path)
+      const kept = (config.preserveKeys ?? []).flatMap(key => {
+        const node =
+          parent instanceof YAMLMap ? (parent.get(key, true) as Node | undefined) : undefined
+        return node ? [[key, node] as const] : []
+      })
       setPathValue(doc, path, value, document, commentBefore, spaceBefore)
-      for (const [key, existing] of kept) {
-        setPathValue(doc, `${path}.${key}`, existing as PathValue, document)
+      for (const [key, node] of kept) {
+        setPathValue(doc, `${path}.${key}`, node, document)
       }
       break
     }
