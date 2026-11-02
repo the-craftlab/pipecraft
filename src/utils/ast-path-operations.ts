@@ -136,6 +136,11 @@ export interface PathOperationConfig {
   tag?: string
   /** For `preserve`: rewrites an existing string value; a changed result replaces it. */
   rewriteExisting?: (existing: string) => string
+  /**
+   * For `overwrite` of a mapping: child keys whose existing value is kept when the key is
+   * present before the overwrite (for example `runs-on` on a managed job).
+   */
+  preserveKeys?: string[]
 }
 
 /**
@@ -329,9 +334,16 @@ export function ensurePathAndApply(
       mergePathValue(doc, path, value, document)
       break
 
-    case 'overwrite':
+    case 'overwrite': {
+      const kept = (config.preserveKeys ?? [])
+        .map(key => [key, getPathValue(doc, `${path}.${key}`)] as const)
+        .filter(([, existing]) => existing !== undefined && existing !== null)
       setPathValue(doc, path, value, document, commentBefore, spaceBefore)
+      for (const [key, existing] of kept) {
+        setPathValue(doc, `${path}.${key}`, existing as PathValue, document)
+      }
       break
+    }
 
     case 'preserve':
       // Only preserve if path exists, otherwise create it

@@ -46,6 +46,7 @@ export function createVersionJobOperation(ctx: VersionContext): PathOperationCon
   return {
     path: 'jobs.version',
     operation: 'overwrite',
+    preserveKeys: ['runs-on'],
     spaceBefore: true,
     commentBefore: `
 =============================================================================

@@ -64,6 +64,7 @@ export function createChangesJobOperation(ctx: ChangesContext): PathOperationCon
   return {
     path: 'jobs.changes',
     operation: 'overwrite',
+    preserveKeys: ['runs-on'],
     spaceBefore: true,
     commentBefore: comment,
     value: createValueFromString(`
