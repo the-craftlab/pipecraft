@@ -136,6 +136,11 @@ export interface PathOperationConfig {
   tag?: string
   /** For `preserve`: rewrites an existing string value; a changed result replaces it. */
   rewriteExisting?: (existing: string) => string
+  /**
+   * For `overwrite` of a mapping: child keys whose existing value is kept when the key is
+   * present before the overwrite (for example `runs-on` on a managed job).
+   */
+  preserveKeys?: string[]
 }
 
 /**
@@ -329,9 +334,20 @@ export function ensurePathAndApply(
       mergePathValue(doc, path, value, document)
       break
 
-    case 'overwrite':
+    case 'overwrite': {
+      // Read the child nodes (keepScalar) so a trailing comment on the kept value survives.
+      const parent = getPathValue(doc, path)
+      const kept = (config.preserveKeys ?? []).flatMap(key => {
+        const node =
+          parent instanceof YAMLMap ? (parent.get(key, true) as Node | undefined) : undefined
+        return node ? [[key, node] as const] : []
+      })
       setPathValue(doc, path, value, document, commentBefore, spaceBefore)
+      for (const [key, node] of kept) {
+        setPathValue(doc, `${path}.${key}`, node, document)
+      }
       break
+    }
 
     case 'preserve':
       // Only preserve if path exists, otherwise create it

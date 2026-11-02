@@ -118,10 +118,10 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
       // An `if` generated before the key was set still carries the gate; drop it then.
       ...(ctx.promoteDirectPushes === true && { rewriteExisting: stripPromotionSourceGate })
     },
-    // TAG JOB RUNS-ON - Always managed
+    // TAG JOB RUNS-ON - Customizable: an existing value is kept
     {
       path: 'jobs.tag.runs-on',
-      operation: 'overwrite',
+      operation: 'preserve',
       value: 'ubuntu-latest'
     },
     // TAG JOB STEPS - Always managed
@@ -143,6 +143,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
     {
       path: 'jobs.promote',
       operation: 'overwrite',
+      preserveKeys: ['runs-on'],
       spaceBefore: true,
       commentBefore: `
 =============================================================================
@@ -180,6 +181,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
     {
       path: 'jobs.release',
       operation: 'overwrite',
+      preserveKeys: ['runs-on'],
       spaceBefore: true,
       commentBefore: `
 =============================================================================
