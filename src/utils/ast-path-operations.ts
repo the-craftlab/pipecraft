@@ -141,6 +141,11 @@ export interface PathOperationConfig {
    * present before the overwrite (for example `runs-on` on a managed job).
    */
   preserveKeys?: string[]
+  /**
+   * For `overwrite` of a mapping: child keys holding a list (for example `needs` on a managed
+   * job). The template's entries are re-asserted and entries the user added are kept after them.
+   */
+  unionKeys?: string[]
 }
 
 /**
@@ -342,9 +347,24 @@ export function ensurePathAndApply(
           parent instanceof YAMLMap ? (parent.get(key, true) as Node | undefined) : undefined
         return node ? [[key, node] as const] : []
       })
+      const extras = (config.unionKeys ?? []).map(key => {
+        const list = parent instanceof YAMLMap ? parent.get(key) : undefined
+        return [key, list instanceof YAMLSeq ? list.items : []] as const
+      })
       setPathValue(doc, path, value, document, commentBefore, spaceBefore)
       for (const [key, node] of kept) {
         setPathValue(doc, `${path}.${key}`, node, document)
+      }
+      for (const [key, items] of extras) {
+        const template = getPathValue(doc, `${path}.${key}`)
+        if (!(template instanceof YAMLSeq)) continue
+        const names = new Set(
+          template.items.map(item => String(item instanceof Scalar ? item.value : item))
+        )
+        for (const item of items) {
+          const name = String(item instanceof Scalar ? item.value : item)
+          if (!names.has(name)) template.items.push(item)
+        }
       }
       break
     }

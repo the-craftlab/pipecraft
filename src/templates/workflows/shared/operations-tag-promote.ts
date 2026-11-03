@@ -144,6 +144,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
       path: 'jobs.promote',
       operation: 'overwrite',
       preserveKeys: ['runs-on'],
+      unionKeys: ['needs'],
       spaceBefore: true,
       commentBefore: `
 =============================================================================
@@ -152,12 +153,12 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
  Promotes code from develop to staging or main via PR.
 `,
       value: createValueFromString(`
-    needs: [ version, tag ]
+    needs: [ version, tag, gate ]
     if: \${{ always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && ${sourceGate
       .map(gate => `${gate} && `)
       .join(
         ''
-      )}needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') && (${buildPromotableBranchesCondition(
+      )}needs.version.result == 'success' && needs.version.outputs.version != '' && (needs.tag.result == 'success' || needs.tag.result == 'skipped') && needs.gate.result == 'success' && (${buildPromotableBranchesCondition(
         validBranchFlow
       )}) }}
     runs-on: ubuntu-latest
@@ -182,6 +183,7 @@ export function createTagPromoteReleaseOperations(ctx: TagPromoteContext): PathO
       path: 'jobs.release',
       operation: 'overwrite',
       preserveKeys: ['runs-on'],
+      unionKeys: ['needs'],
       spaceBefore: true,
       commentBefore: `
 =============================================================================
