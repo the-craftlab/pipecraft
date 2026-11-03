@@ -73,6 +73,17 @@ To promote a hand-pushed commit deliberately, run the workflow from the Actions 
 If your CI pushes to the initial branch under its own identity rather than through a pull
 request, those pushes will stop promoting. Trigger the workflow explicitly instead.
 
+### Letting direct pushes promote
+
+Set `"promoteDirectPushes": true` in `.pipecraftrc` when commits land on the initial
+branch under their own author's address and should still release. A CMS that commits
+straight to `develop` is an example. The key removes the `noreply@github.com` clause from
+the `tag` and `promote` conditions, so a push promotes once the tests and the gate job
+pass. Every other clause stays, and `workflow_dispatch` keeps working. The key also
+removes the guard against a hotfix typed on the wrong branch, so a wrong-branch push
+cuts a release. Turning the key on also strips the clause from an existing `tag.if` on the next `generate`. It defaults to `false`, and the generated workflow is unchanged until you
+set it.
+
 ## Keeping things secure
 
 A few simple practices will keep your PipeCraft setup secure:

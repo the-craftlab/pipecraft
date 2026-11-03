@@ -192,6 +192,12 @@ harness is the direct push the gate exists to stop, so `prove` would never reach
 If you change how the harness commits, promotion silently stops and every flavor fails at
 `auto=false`.
 
+`promoteDirectPushes: true` (default `false`) omits `PROMOTION_SOURCE_GATE` from the `tag` and
+`promote` conditions, so any push to the initial branch promotes once the other clauses
+pass. A CMS that commits directly to `develop` is the use case. The key removes the
+wrong-branch hotfix guard described above. When it is unset or false the output is
+byte-identical to before.
+
 ## `autoPromote` controls the merge, not the PR
 
 `autoPromote: false` still **opens** the promotion PR; it just leaves it for a human. There

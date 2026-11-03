@@ -16,7 +16,7 @@
  * version it would have used, and the domain jobs still test the push.
  */
 import { execSync } from 'child_process'
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { parse as parseYAML } from 'yaml'
@@ -45,9 +45,9 @@ describe('promotion source gate', () => {
   })
   afterEach(() => cleanup())
 
-  const pipeline = (): any => {
+  const pipeline = (overrides: Record<string, unknown> = {}): any => {
     execSync('git init', { cwd: workspace, stdio: 'pipe' })
-    writeFileSync('.pipecraftrc', JSON.stringify(config, null, 2))
+    writeFileSync('.pipecraftrc', JSON.stringify({ ...config, ...overrides }, null, 2))
     execSync(`node "${cliPath}" generate --skip-checks`, {
       cwd: workspace,
       stdio: 'pipe',
@@ -99,6 +99,114 @@ describe('promotion source gate', () => {
       // The new clause must be added to the guard, not replace it.
       expect(condition).toContain('github.ref_name')
       expect(condition).toContain('needs.version.result')
+    })
+  })
+
+  describe('promoteDirectPushes', () => {
+    const GATE = "github.event.head_commit.committer.email == 'noreply@github.com'"
+
+    it.each(['tag', 'promote'])('drops the committer clause from %s when true', async job => {
+      await inWorkspace(workspace, () => {
+        const condition = String(pipeline({ promoteDirectPushes: true }).jobs[job].if)
+
+        expect(condition).not.toContain('noreply@github.com')
+        expect(condition).not.toContain('committer.email')
+      })
+    })
+
+    it('keeps the version, gate and branch clauses on tag when true', async () => {
+      await inWorkspace(workspace, () => {
+        const condition = String(pipeline({ promoteDirectPushes: true }).jobs.tag.if)
+
+        expect(condition).toContain("github.event_name != 'pull_request'")
+        expect(condition).toContain("github.ref_name == 'develop'")
+        expect(condition).toContain("needs.version.result == 'success'")
+        expect(condition).toContain("needs.version.outputs.version != ''")
+        expect(condition).toContain("needs.gate.result == 'success'")
+      })
+    })
+
+    it('keeps the version, tag and branch clauses on promote when true', async () => {
+      await inWorkspace(workspace, () => {
+        const condition = String(pipeline({ promoteDirectPushes: true }).jobs.promote.if)
+
+        expect(condition).toContain("github.event_name == 'push'")
+        expect(condition).toContain("needs.version.result == 'success'")
+        expect(condition).toContain("needs.version.outputs.version != ''")
+        expect(condition).toContain("needs.tag.result == 'success'")
+        expect(condition).toContain('github.ref_name')
+      })
+    })
+
+    it.each([false, undefined])('keeps the committer clause when %s', async value => {
+      await inWorkspace(workspace, () => {
+        const jobs = pipeline(value === undefined ? {} : { promoteDirectPushes: value }).jobs
+
+        expect(String(jobs.tag.if)).toContain(GATE)
+        expect(String(jobs.promote.if)).toContain(GATE)
+      })
+    })
+
+    it('generates the same pipeline for false as for an unset key', async () => {
+      await inWorkspace(workspace, () => {
+        const unset = pipeline()
+        // generate preserves an existing `if`, so the second run starts from a clean tree.
+        rmSync(join(workspace, '.github'), { recursive: true, force: true })
+        const off = pipeline({ promoteDirectPushes: false })
+
+        expect(off).toEqual(unset)
+      })
+    })
+
+    describe('with an existing pipeline.yml', () => {
+      const tagFile = () => join(workspace, '.github/workflows/pipeline.yml')
+
+      it('strips the committer clause from a preserved tag.if when turned on', async () => {
+        await inWorkspace(workspace, () => {
+          expect(String(pipeline().jobs.tag.if)).toContain(GATE)
+
+          const condition = String(pipeline({ promoteDirectPushes: true }).jobs.tag.if)
+
+          expect(condition).not.toContain('noreply@github.com')
+          expect(condition).toContain("github.ref_name == 'develop'")
+          expect(condition).toContain("needs.version.result == 'success'")
+          expect(condition).toContain("needs.gate.result == 'success'")
+          expect(condition).not.toContain('&& &&')
+        })
+      })
+
+      it('keeps a clause the user appended to tag.if', async () => {
+        await inWorkspace(workspace, () => {
+          pipeline()
+          const text = readFileSync(tagFile(), 'utf-8')
+          // The first gate in the file belongs to the tag job.
+          const edited = text.replace(
+            /(workflow_dispatch'\))(\s*\}\})/,
+            "$1 &&\n        vars.RELEASE == 'on'$2"
+          )
+          writeFileSync(tagFile(), edited)
+          const custom = parseYAML(readFileSync(tagFile(), 'utf-8')).jobs.tag.if
+          expect(String(custom)).toContain("vars.RELEASE == 'on'")
+
+          const condition = String(pipeline({ promoteDirectPushes: true }).jobs.tag.if)
+
+          expect(condition).not.toContain('noreply@github.com')
+          expect(condition).toContain("vars.RELEASE == 'on'")
+          expect(condition).toContain("needs.gate.result == 'success'")
+        })
+      })
+
+      it.each([false, undefined])('never edits an existing tag.if when %s', async value => {
+        await inWorkspace(workspace, () => {
+          const before = String(pipeline().jobs.tag.if)
+          const after = String(
+            pipeline(value === undefined ? {} : { promoteDirectPushes: value }).jobs.tag.if
+          )
+
+          expect(after).toBe(before)
+          expect(after).toContain(GATE)
+        })
+      })
     })
   })
 })

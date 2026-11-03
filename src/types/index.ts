@@ -170,6 +170,18 @@ export interface PipecraftConfig {
   autoPromote?: boolean | Record<string, boolean>
 
   /**
+   * Let any push to the initial branch tag and promote, not only commits GitHub authored.
+   *
+   * By default `tag` and `promote` require `committer.email == 'noreply@github.com'`
+   * (or `workflow_dispatch`), so a hand-pushed commit does not release. `true` removes
+   * that clause from both jobs; every other condition stays. It also removes the guard
+   * against a hotfix typed on the wrong branch.
+   *
+   * @default false
+   */
+  promoteDirectPushes?: boolean
+
+  /**
    * Git merge method for auto-merge operations.
    * - 'auto': Use fast-forward when possible, merge otherwise
    * - 'merge': Always create merge commit
@@ -469,6 +481,7 @@ export const KNOWN_CONFIG_KEYS = [
   'finalBranch',
   'branchFlow',
   'autoPromote',
+  'promoteDirectPushes',
   'mergeMethod',
   'autoMerge',
   'semver',
