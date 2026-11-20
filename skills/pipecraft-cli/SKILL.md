@@ -86,6 +86,7 @@ domains:
 | Field                | Type          | Default  | Purpose                                                        |
 | -------------------- | ------------- | -------- | -------------------------------------------------------------- |
 | `autoPromote`        | bool/object   | `false`  | Merge promotion PRs without a person; `false` still opens them |
+| `mergeQueue`         | bool          | `false`  | Add the `merge_group` trigger for GitHub's merge queue         |
 | `mergeMethod`        | string/object | `auto`   | `merge`, `squash`, `rebase`                                    |
 | `actionSourceMode`   | string        | `local`  | `local`, `remote`, `source`                                    |
 | `actionVersion`      | string        | `v1`     | Version for remote actions                                     |

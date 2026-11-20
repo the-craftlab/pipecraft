@@ -28,6 +28,8 @@ export interface HeaderContext {
   nodeVersionFromConfig?: boolean
   /** As nodeVersionFromConfig, for env.PNPM_VERSION. */
   pnpmVersionFromConfig?: boolean
+  /** When true, add the `merge_group` trigger (types: checks_requested). */
+  mergeQueue?: boolean
 }
 
 /**
@@ -292,6 +294,18 @@ Runtime versions
       operation: 'set',
       value: [validBranchFlow[0]], // Only target initial branch
       required: true
-    }
+    },
+
+    // merge queue trigger (opt-in)
+    ...(ctx.mergeQueue
+      ? [
+          {
+            path: 'on.merge_group.types',
+            operation: 'set' as const,
+            value: ['checks_requested'],
+            required: true
+          }
+        ]
+      : [])
   ]
 }

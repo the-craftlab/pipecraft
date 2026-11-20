@@ -447,14 +447,16 @@ export const generate = (ctx: PathBasedPipelineContext) =>
           pnpmVersion:
             config.runtime?.pnpmVersion ?? (existingEnv?.PNPM_VERSION as string | undefined),
           nodeVersionFromConfig: typeof config.runtime?.nodeVersion === 'string',
-          pnpmVersionFromConfig: typeof config.runtime?.pnpmVersion === 'string'
+          pnpmVersionFromConfig: typeof config.runtime?.pnpmVersion === 'string',
+          mergeQueue: config.mergeQueue
         }),
 
         // Changes detection (path-based)
         createChangesJobOperation({
           domains,
           baseRef: config.finalBranch,
-          config
+          config,
+          mergeQueue: config.mergeQueue
         }),
 
         // Version calculation (simplified - only depends on changes)
