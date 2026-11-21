@@ -6,6 +6,7 @@
   "finalBranch": "main",
   "branchFlow": ["develop", "staging", "main"],
   "autoPromote": { "staging": true, "main": true },
+  "mergeQueue": true,
   "semver": {
     "bumpRules": { "feat": "minor", "fix": "patch", "breaking": "major" }
   },

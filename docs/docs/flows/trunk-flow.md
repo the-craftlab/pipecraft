@@ -89,6 +89,11 @@ all, remove that branch from `branchFlow`.
 manual `workflow_dispatch`. Set `"promoteDirectPushes": true` to let any push to the initial
 branch tag and promote. See [Security](../security.md#letting-direct-pushes-promote).
 
+A repository that uses GitHub's merge queue sets `"mergeQueue": true`. The generated workflow
+then adds a `merge_group` trigger, so the required checks report on the queue's temporary
+branch. On a queue run `version`, the test jobs and `gate` run; `tag`, `promote` and `release`
+skip, because their branch conditions are false on the queue's branch.
+
 ### Domain-Based Testing
 
 PipeCraft implements path-based change detection for monorepo support:

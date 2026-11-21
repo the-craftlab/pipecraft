@@ -22,6 +22,8 @@ export interface ChangesContext {
   domains: Record<string, any>
   baseRef?: string
   config?: Partial<PipecraftConfig>
+  /** When true, a merge_group run compares merge_group.base_sha to github.sha. */
+  mergeQueue?: boolean
 }
 
 /**
@@ -31,7 +33,7 @@ export interface ChangesContext {
  * The detect-changes action receives this as structured input.
  */
 export function createChangesJobOperation(ctx: ChangesContext): PathOperationConfig {
-  const { domains, baseRef = 'main', config = {} } = ctx
+  const { domains, baseRef = 'main', config = {}, mergeQueue } = ctx
   const sortedDomains = Object.keys(domains).sort()
 
   // Get the action reference based on configuration
@@ -82,7 +84,9 @@ ${domainsYaml}
         id: detect
         with:
           baseRef: \${{ inputs.baseRef || '${baseRef}' }}
-          beforeSha: \${{ inputs.beforeSha || github.event.before || '' }}
+          beforeSha: \${{ inputs.beforeSha || ${
+            mergeQueue ? 'github.event.merge_group.base_sha || ' : ''
+          }github.event.before || '' }}
           domains-config: \${{ env.DOMAINS }}
     outputs:
 ${outputsSection}

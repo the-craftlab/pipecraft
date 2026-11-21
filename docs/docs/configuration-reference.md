@@ -292,6 +292,24 @@ Common patterns include:
 
 Each branch in the flow can have different tests, deployment targets, and approval requirements defined in the generated workflows.
 
+### mergeQueue
+
+**Type**: `boolean`
+**Required**: No
+**Default**: `false`
+
+Adds the `merge_group` trigger to `pipeline.yml` for repositories that use GitHub's merge queue.
+
+```json
+{
+  "mergeQueue": true
+}
+```
+
+With `true`, the `on:` block gains `merge_group` with `types: [checks_requested]`. The `changes` job compares `github.event.merge_group.base_sha` to `github.sha`. On a queue run, `version`, the test jobs and `gate` run. `tag`, `promote` and `release` skip, because `github.ref_name` is the queue's temporary branch. Pipecraft does not change ruleset or queue settings.
+
+Removing the key removes the trigger on the next `pipecraft generate`.
+
 ## Semantic Versioning Configuration
 
 ### semver.bumpRules

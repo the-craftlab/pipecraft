@@ -2,6 +2,16 @@
 
 Repo-specific failures and what would have prevented them. Newest first.
 
+## 2026-11-20 — Documented "generate never deletes the merge_group trigger" without generating
+
+**What happened:** The design for `mergeQueue` (#674) stated that removing the key leaves the `merge_group` trigger in place, and that sentence reached the schema description, the `PipecraftConfig` JSDoc and `configuration-reference.md`. A review child generated with the key, removed it, regenerated, and counted zero `merge_group` lines: `pipeline.yml` is rewritten from config under `force`, so the trigger goes with the key.
+
+**Root cause:** The claim came from the repo rule "generate never deletes" (which is about files) and from reading `ast-path-operations.ts` (no delete op), not from a regenerate run. CLAUDE.md's first section, "Verify by generating, not by reading", covers exactly this.
+
+**Consequence:** Caught in Harden, before the PR. Three doc sites and one test case had to be rewritten.
+
+**Prevention:** Any sentence about what a second `generate` does to an existing file gets a two-run probe in a scratch directory before it is written anywhere a user reads.
+
 ## 2026-09-12 — Prettier silently rewrote a literal asterisk to an underscore in a markdown doc
 
 **What happened:** Fixing a pre-existing `lint` (Prettier) failure on `docs/goals/done/epic-ten-goals.md`, an initial `prettier --write` on the real file changed the meaning of two glob patterns written as plain text: `reqts/goal-*.md` became `reqts/goal-_.md`, and `three pr-*-draft.md files` became `three pr-_-draft.md files`. Exit code was 0 and the only signal was "reformatted" — nothing flagged the text change.

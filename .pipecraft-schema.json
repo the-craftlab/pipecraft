@@ -77,6 +77,11 @@
       "default": false,
       "description": "When true, the generated tag and promote jobs omit the committer.email == 'noreply@github.com' condition, so any push to the initial branch can tag and promote once tests and the gate pass. The workflow_dispatch clause is unaffected, and every other condition on both jobs stays. This also removes the guard that stops a hotfix typed on the wrong branch from cutting a release. When false or unset, the generated jobs are unchanged."
     },
+    "mergeQueue": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, the generated workflow adds a merge_group trigger with types [checks_requested], and the changes job compares github.event.merge_group.base_sha to github.sha. On a merge queue run, version, the test jobs and gate run; tag, promote and release still skip because github.ref_name is the queue's temporary branch. Removing the key removes the trigger on the next generate. When false or unset, the generated file is unchanged."
+    },
     "mergeMethod": {
       "oneOf": [
         {

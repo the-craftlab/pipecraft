@@ -182,6 +182,19 @@ export interface PipecraftConfig {
   promoteDirectPushes?: boolean
 
   /**
+   * Add the `merge_group` trigger so the pipeline runs for GitHub's merge queue.
+   *
+   * `true` adds `on.merge_group` with `types: [checks_requested]`, and the `changes` job
+   * compares `github.event.merge_group.base_sha` to `github.sha`. `version`, the test jobs
+   * and `gate` run on a queue run; `tag`, `promote` and `release` skip because
+   * `github.ref_name` is the queue's temporary branch. Removing the key removes the
+   * trigger on the next `generate`.
+   *
+   * @default false
+   */
+  mergeQueue?: boolean
+
+  /**
    * Git merge method for auto-merge operations.
    * - 'auto': Use fast-forward when possible, merge otherwise
    * - 'merge': Always create merge commit
@@ -482,6 +495,7 @@ export const KNOWN_CONFIG_KEYS = [
   'branchFlow',
   'autoPromote',
   'promoteDirectPushes',
+  'mergeQueue',
   'mergeMethod',
   'autoMerge',
   'semver',
